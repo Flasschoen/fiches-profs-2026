@@ -89,6 +89,11 @@ legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
       <input type="text" id="f-val1" placeholder="valeur…" oninput="renderTable()">
       <select id="f-champ2" onchange="renderTable()"><option value="">Filtrer par champ…</option></select>
       <input type="text" id="f-val2" placeholder="valeur…" oninput="renderTable()">
+      <span style="width:1px;background:var(--line);align-self:stretch;"></span>
+      <input type="text" id="f-code" placeholder="Code" style="max-width:90px;" oninput="renderTable()">
+      <input type="text" id="f-annee" placeholder="Année" style="max-width:90px;" oninput="renderTable()">
+      <input type="text" id="f-tri2" placeholder="Tri 2" style="max-width:90px;" oninput="renderTable()">
+      <input type="text" id="f-tri3" placeholder="Tri 3" style="max-width:90px;" oninput="renderTable()">
       <button class="btn" onclick="exportFiltered()">⬇️ Exporter CSV</button>
     </div>
     <div style="max-height:65vh;overflow:auto;">
@@ -111,13 +116,29 @@ legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
       <div style="margin-bottom:14px;">
         <button class="btn btn-save" id="btn-save" onclick="saveMember()">💾 Enregistrer</button>
         <button class="btn btn-cancel" onclick="cancelAndReset()">↩️ Annuler</button>
+        <button class="btn" id="btn-delete" onclick="deleteMember()" style="display:none;background:var(--err);color:#fff;">🗑️ Supprimer</button>
       </div>
 
       <div id="fiche-sections"></div>
 
       <fieldset>
-        <legend>Réservations &amp; Confirmations liées</legend>
-        <div class="linked-list" id="linked-resas">Aucune réservation liée pour ce prof.</div>
+        <legend>Réservations &amp; Confirmations</legend>
+        <div class="frow" style="margin-bottom:10px;">
+          <div class="fitem" style="grid-column:1/-1;">
+            <label>Choisir une réservation liée à ce prof</label>
+            <select id="resa-select" onchange="onResaSelect()">
+              <option value="">— Sélectionnez —</option>
+            </select>
+          </div>
+        </div>
+        <div id="resa-panel" class="hidden">
+          <div class="note-box">Coordonnées du prof : <b id="resa-prof-coord"></b></div>
+          <div class="frow" id="resa-fields"></div>
+          <div style="margin-top:10px;">
+            <button class="btn btn-save" onclick="saveResa()">💾 Enregistrer la réservation</button>
+            <button class="btn btn-cancel" onclick="closeResaPanel()">↩️ Fermer</button>
+          </div>
+        </div>
       </fieldset>
     </div>
   </div>
@@ -170,6 +191,11 @@ const TBL   = 'tbl3e83BINBUCkhMH';
 const API   = `https://api.airtable.com/v0/${BASE}/${TBL}`;
 const HDRS  = {'Authorization':'Bearer '+TK,'Content-Type':'application/json'};
 
+// Table "Réservations & Confirmations" (liée aux Profs) — utilisée pour le
+// sélecteur de réservations sur la fiche. PDF imprimables = livrable séparé.
+const RESA_TBL = 'tblWNj2tZj4CZxsuP';
+const RESA_API = `https://api.airtable.com/v0/${BASE}/${RESA_TBL}`;
+
 // ══════════════════════════════════════════════════════════
 //  CHAMPS — mapping id Airtable <-> clé DOM <-> libellé <-> type
 //  NOTE IMPORTANTE : la table Profs contient ~23 200 lignes (contre
@@ -183,6 +209,15 @@ const CHOICES = {
   probleme: ['PAS DE PROBLEME','DESINSCRIPTION','PROBLEME à vérifier','PROBLEME code 999','PROBLEME code 900','Problème','PROBLEPAS DE PROBLEMEME à vérifier'],
   langue: ['FR','NL','DE','LU','FF','Langue'],
   federation: ['Fédération Wallonie-Bruxelles','Fédération Wallonie-Bruxelles sans Matricule','Vlaamse gemeenschap','Communauté Flamande','Communauté Flamande sans Matricule','Enseignant français','Enseignant luxembourgeois','Enseignant germanophone','Fédération','Federation Wallonie-Bruxelles']
+};
+
+// Choix des champs singleSelect de la table Réservations & Confirmations
+// (les 4 valeurs existantes de "Type" suffisent — confirmé par Marc, pas
+// besoin d'ajouter Cracovie/Inde/Beauvechain pour l'instant).
+const RESA_CHOICES = {
+  type: ['Sardaigne','Astérix','Futuroscope','Profs-Contacts'],
+  modepaiement: ['Aux échéances demandées','Par mensualité','250 € par mois','150 € par mois'],
+  statutresa: ['Confirmé','En attente','Annulé']
 };
 
 const SECTIONS = [
@@ -262,6 +297,24 @@ const FLD_NMEMBRE = 'fldZW7jn18xbvyLgf';
 const FLD_NOMMAJ  = 'fldJ4Oxd0dc1Wn45s'; // formule, lecture seule
 const FLD_RESAS   = 'fldSnaOB0UODUTXRi'; // lien vers Réservations & Confirmations
 
+// Champs du formulaire "Réservations & Confirmations" affiché sur la fiche prof.
+// Clé "referenceresa" = champ primaire côté Airtable (Référence), texte libre,
+// mais NE DOIT JAMAIS être vide à l'enregistrement (contrôlé dans saveResa()).
+const RESA_SECTIONS = [
+  ['fldkO2hsS8toTvoVR','referenceresa','Référence','text'],
+  ['fldFTYCPrcRxFyhKP','typeresa','Type','select:type'],
+  ['fld7JSuIMCM900LEa','titre','Concerne / Titre','text'],
+  ['fldcIwXfNnAdd0nXg','dates','Dates','textarea'],
+  ['fld3f6D246OGqQVzJ','details','Détails du voyage','textarea'],
+  ['fldUnzUVpC5PBeYXh','modepaiement','Mode de paiement','select:modepaiement'],
+  ['fld6SlO35cEbONy7l','reduction','Réduction personnel','number'],
+  ['fldWhpEMrsMeLgk2n','montant','Montant','number'],
+  ['fldM1gKxZMebo0XTu','refpaiement','Référence paiement','text'],
+  ['fldmJPoobCoeiL0yJ','datepaiementresa','Date de paiement','date'],
+  ['fldyIl4ezdZlh3QFm','statutresa','Statut réservation','select:statutresa'],
+  ['fld28VL3QdRNpxCnN','remarqueresa','Remarque','textarea'],
+];
+
 // Colonnes filtrables dans la vue liste (id, libellé)
 const FILTER_FIELDS = [
   ['Nom','nom'],['Prénom','prenom'],['Ville','ville'],['CP','cp'],['Statut','statut'],
@@ -322,6 +375,7 @@ function buildSearchFormula(term){
 }
 
 async function doSearch(){
+  clearTimeout(_searchTimer); // annule toute recherche différée en attente (évite qu'elle écrase une fiche déjà ouverte)
   const term = document.getElementById('rch').value;
   const formula = buildSearchFormula(term);
   if(!formula){
@@ -356,7 +410,8 @@ function valueForKey(fields, key){
   // Retrouve la valeur affichable pour une clé de filtre/colonne à partir des fields Airtable
   const map = {
     nom:'Nom', prenom:'Prénom', ville:'Ville', cp:'CP', statut:'Statut', code:'Code',
-    annee:'Année', niveau:'Niveau', branche:'Branche', langue:'Langue', federation:'Fédération'
+    annee:'Année', niveau:'Niveau', branche:'Branche', langue:'Langue', federation:'Fédération',
+    tri2:'Clé de tri 2', tri3:'Clé de tri 3'
   };
   const name = map[key];
   let v = fields[name];
@@ -367,9 +422,17 @@ function valueForKey(fields, key){
 function renderTable(){
   const c1=document.getElementById('f-champ1').value, v1=document.getElementById('f-val1').value.toLowerCase();
   const c2=document.getElementById('f-champ2').value, v2=document.getElementById('f-val2').value.toLowerCase();
+  const codeV=document.getElementById('f-code').value.toLowerCase();
+  const anneeV=document.getElementById('f-annee').value.toLowerCase();
+  const tri2V=document.getElementById('f-tri2').value.toLowerCase();
+  const tri3V=document.getElementById('f-tri3').value.toLowerCase();
   let rows = lastResults;
   if(c1 && v1) rows = rows.filter(r=>valueForKey(r.fields,c1).toLowerCase().includes(v1));
   if(c2 && v2) rows = rows.filter(r=>valueForKey(r.fields,c2).toLowerCase().includes(v2));
+  if(codeV) rows = rows.filter(r=>valueForKey(r.fields,'code').toLowerCase().includes(codeV));
+  if(anneeV) rows = rows.filter(r=>valueForKey(r.fields,'annee').toLowerCase().includes(anneeV));
+  if(tri2V) rows = rows.filter(r=>valueForKey(r.fields,'tri2').toLowerCase().includes(tri2V));
+  if(tri3V) rows = rows.filter(r=>valueForKey(r.fields,'tri3').toLowerCase().includes(tri3V));
 
   const tbody = document.getElementById('tbl-body');
   tbody.innerHTML = '';
@@ -465,6 +528,7 @@ function fieldNameFor(fid,key){ return KEY_TO_NAME[key]; }
 
 async function loadMember(id){
   if(_dirty && !confirm('Des modifications non enregistrées seront perdues. Continuer ?')) return;
+  clearTimeout(_searchTimer); // une recherche différée en attente ne doit plus renvoyer vers la liste une fois la fiche ouverte
   _memberLoading = true;
   document.getElementById('btn-save').disabled = true;
   setSt('⏳ Chargement du prof...');
@@ -477,11 +541,7 @@ async function loadMember(id){
     document.getElementById('f-nmembre-disp').textContent = data.fields['N° membre']!=null ? data.fields['N° membre'] : '—';
     document.getElementById('f-nommaj-disp').textContent = data.fields['Nom (majuscules)'] || '—';
     fillForm(data.fields);
-    const resas = data.fields['Réservations & Confirmations'];
-    const box = document.getElementById('linked-resas');
-    box.innerHTML = (resas && resas.length)
-      ? resas.map(rid=>'<span>'+rid+'</span>').join('')
-      : 'Aucune réservation liée pour ce prof.';
+    await refreshResaSelect(data.fields);
     showView('fiche');
     setSt('');
   }catch(e){ setSt('❌ '+e.message); }
@@ -490,12 +550,15 @@ async function loadMember(id){
 
 function nouveauMembre(){
   if(_dirty && !confirm('Des modifications non enregistrées seront perdues. Continuer ?')) return;
+  clearTimeout(_searchTimer);
   curId = null; _dirty=false;
   document.getElementById('fiche-titre').textContent = 'Nouveau prof';
   document.getElementById('f-nmembre-disp').textContent = '(attribué automatiquement)';
   document.getElementById('f-nommaj-disp').textContent = '—';
   SECTIONS.forEach(sec=>sec.fields.forEach(([fid,key])=>sv(key,'')));
-  document.getElementById('linked-resas').innerHTML = 'Aucune réservation liée pour ce prof.';
+  resaLinkedIds = []; curResaId = null;
+  document.getElementById('resa-select').innerHTML = '<option value="">— Sélectionnez —</option><option value="__new__">+ Nouvelle réservation</option>';
+  document.getElementById('resa-panel').classList.add('hidden');
   showView('fiche');
 }
 
@@ -539,6 +602,154 @@ function cancelAndReset(){
 }
 
 // ══════════════════════════════════════════════════════════
+//  SUPPRESSION DE FICHE — réservée à MARC (voir _setAgentSession)
+// ══════════════════════════════════════════════════════════
+async function deleteMember(){
+  if(sessionStorage.getItem('auth_agent')!=='MARC') return;
+  if(!curId){ setSt('Aucune fiche chargée à supprimer.'); return; }
+  const idToDelete = curId;
+  const nom = document.getElementById('fiche-titre').textContent;
+  if(!confirm('⚠️ SUPPRESSION DÉFINITIVE\n\nSupprimer définitivement la fiche de "'+nom+'" de la base Airtable (et ses réservations restent liées à un enregistrement supprimé) ?\n\nCette action est IRRÉVERSIBLE.')) return;
+  setSt('⏳ Suppression en cours...');
+  try{
+    await atFetch(API+'/'+idToDelete, {method:'DELETE'});
+    lastResults = lastResults.filter(r=>r.id!==idToDelete);
+    curId = null; _dirty = false;
+    sessionStorage.removeItem('lastMemberId');
+    renderTable();
+    showView('liste');
+    setSt('✅ Fiche supprimée définitivement.');
+  }catch(e){ setSt('❌ '+e.message); }
+}
+
+// ══════════════════════════════════════════════════════════
+//  RÉSERVATIONS & CONFIRMATIONS — sélection/édition depuis la fiche prof
+// ══════════════════════════════════════════════════════════
+let resaLinkedIds = [];
+let curResaId = null;
+
+function buildResaForm(){
+  const wrap = document.getElementById('resa-fields');
+  wrap.innerHTML = '';
+  RESA_SECTIONS.forEach(([fid,key,label,type])=>{
+    const item = document.createElement('div'); item.className='fitem';
+    const lab = document.createElement('label'); lab.textContent = label; item.appendChild(lab);
+    let input;
+    if(type.startsWith('select:')){
+      const ck = type.split(':')[1];
+      input = document.createElement('select');
+      const empty=document.createElement('option'); empty.value=''; empty.textContent='—'; input.appendChild(empty);
+      RESA_CHOICES[ck].forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; input.appendChild(o); });
+    } else if(type==='textarea'){
+      input = document.createElement('textarea');
+    } else {
+      input = document.createElement('input');
+      input.type = (type==='number') ? 'number' : (type==='date' ? 'date' : 'text');
+    }
+    input.id = 'fr-'+key;
+    input.dataset.fieldId = fid;
+    item.appendChild(input);
+    wrap.appendChild(item);
+  });
+}
+
+function grv(key){ const el=document.getElementById('fr-'+key); return el ? el.value : ''; }
+function srv(key, v){
+  const el = document.getElementById('fr-'+key); if(!el) return;
+  if(v && typeof v==='object' && v.name) v = v.name;
+  el.value = (v==null) ? '' : v;
+}
+
+function coordProfText(){
+  const prenom=gv('prenom')||'', nom=gv('nom')||'', rue=gv('rue')||'', nmaison=gv('nmaison')||'', cp=gv('cp')||'', ville=gv('ville')||'';
+  return (prenom+' '+nom).trim()+' — '+(rue+' '+nmaison).trim()+', '+(cp+' '+ville).trim();
+}
+
+async function refreshResaSelect(fields){
+  resaLinkedIds = (fields['Réservations & Confirmations'] || []).slice();
+  const sel = document.getElementById('resa-select');
+  sel.innerHTML = '<option value="">— Sélectionnez —</option>';
+  const optNew = document.createElement('option'); optNew.value='__new__'; optNew.textContent='+ Nouvelle réservation'; sel.appendChild(optNew);
+  document.getElementById('resa-panel').classList.add('hidden');
+  curResaId = null;
+  if(!resaLinkedIds.length) return;
+  try{
+    const recs = await Promise.all(resaLinkedIds.map(id=>atFetch(RESA_API+'/'+id)));
+    recs.forEach(r=>{
+      const o=document.createElement('option');
+      o.value=r.id;
+      const type=(r.fields['Type']&&r.fields['Type'].name)||'';
+      o.textContent=(r.fields['Référence']||'(sans référence)')+(type?' — '+type:'');
+      sel.appendChild(o);
+    });
+  }catch(e){ setSt('❌ Réservations : '+e.message); }
+}
+
+async function onResaSelect(){
+  const val = document.getElementById('resa-select').value;
+  const panel = document.getElementById('resa-panel');
+  if(!val){ panel.classList.add('hidden'); curResaId=null; return; }
+  buildResaForm();
+  document.getElementById('resa-prof-coord').textContent = coordProfText();
+  if(val==='__new__'){
+    curResaId = null;
+    panel.classList.remove('hidden');
+    return;
+  }
+  curResaId = val;
+  setSt('⏳ Chargement de la réservation...');
+  try{
+    const data = await atFetch(RESA_API+'/'+val);
+    RESA_SECTIONS.forEach(([fid,key,label])=> srv(key, data.fields[label]));
+    panel.classList.remove('hidden');
+    setSt('');
+  }catch(e){ setSt('❌ '+e.message); }
+}
+
+function closeResaPanel(){
+  const ref = grv('referenceresa');
+  if(!ref || !ref.trim()){
+    if(!confirm('⚠️ Le N° de réservation (Référence) est vide. Cette réservation ne sera pas enregistrée si tu fermes maintenant. Fermer quand même ?')) return;
+  }
+  document.getElementById('resa-panel').classList.add('hidden');
+  document.getElementById('resa-select').value = '';
+  curResaId = null;
+}
+
+async function saveResa(){
+  if(!curId){ setSt('❌ Enregistre d\'abord la fiche du prof avant d\'ajouter une réservation.'); return; }
+  const ref = grv('referenceresa');
+  if(!ref || !ref.trim()){
+    alert('⚠️ Le N° de réservation (Référence) est obligatoire — il ne peut pas être vide.');
+    return;
+  }
+  const fields = {};
+  RESA_SECTIONS.forEach(([fid,key,label,type])=>{
+    let v = grv(key);
+    if(v==='') return;
+    if(type==='number') v = Number(v);
+    fields[label] = v;
+  });
+  document.getElementById('sync-pending').classList.add('show');
+  try{
+    if(curResaId){
+      await atFetch(RESA_API+'/'+curResaId, {method:'PATCH', body: JSON.stringify({fields})});
+      setSt('✅ Réservation enregistrée.');
+    } else {
+      fields['Prof'] = [curId];
+      const res = await atFetch(RESA_API, {method:'POST', body: JSON.stringify({records:[{fields}]})});
+      curResaId = res.records[0].id;
+      setSt('✅ Nouvelle réservation créée et liée au prof.');
+      const updated = await atFetch(API+'/'+curId);
+      await refreshResaSelect(updated.fields);
+      document.getElementById('resa-select').value = curResaId;
+      document.getElementById('resa-panel').classList.remove('hidden');
+    }
+  }catch(e){ setSt('❌ '+e.message); }
+  finally{ document.getElementById('sync-pending').classList.remove('show'); }
+}
+
+// ══════════════════════════════════════════════════════════
 //  SYSTÈME PIN — AUTHENTIFICATION (identique au site Attractions)
 //  Valeurs par défaut au 1er déploiement — MARC peut les changer via 🔑
 // ══════════════════════════════════════════════════════════
@@ -555,6 +766,7 @@ function _setAgentSession(agent){
   sessionStorage.setItem('auth_agent', agent);
   document.getElementById('header-agent').textContent = agent;
   document.getElementById('btn-pin-mgr').style.display = (agent==='MARC') ? '' : 'none';
+  document.getElementById('btn-delete').style.display = (agent==='MARC') ? '' : 'none';
 }
 function loginPin(){
   const agent = document.getElementById('pin-agent').value;
