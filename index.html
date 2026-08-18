@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FICHE PROF — EDUCPASS 2026</title>
+<style>
+:root{
+  --navy:#1e3a6e; --navy-dark:#152a52; --orange:#c55a11; --bg:#f0f4fa;
+  --line:#d7e0ee; --ok:#27ae60; --err:#c0392b;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:Calibri,Arial,sans-serif;background:var(--bg);color:#222;}
+.hdr-bar{background:var(--navy);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.hdr-bar .logo{font-weight:900;letter-spacing:1px;}
+.hdr-bar .title{font-weight:700;flex:1;}
+.btn{border:none;border-radius:4px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;background:#eee;color:#222;}
+.btn:hover{filter:brightness(0.95);}
+.btn-orange{background:var(--orange);color:#fff;}
+.btn-navy{background:var(--navy-dark);color:#fff;}
+.btn-save{background:var(--ok);color:#fff;}
+.btn-cancel{background:#888;color:#fff;}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+.toolbar{background:#fff;border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.toolbar input[type=text],.toolbar select{padding:6px 8px;border:1px solid #bbb;border-radius:4px;font-size:13px;}
+#st-bar{padding:4px 16px;font-size:12px;color:#555;min-height:18px;}
+#sync-pending{display:none;background:#f39c12;color:#fff;text-align:center;padding:4px;font-weight:700;font-size:12px;}
+#sync-pending.show{display:block;animation:pulse 1s infinite alternate;}
+@keyframes pulse{from{opacity:.6}to{opacity:1}}
+.wrap{padding:14px 16px;}
+table.results{border-collapse:collapse;width:100%;background:#fff;font-size:12.5px;}
+table.results th{background:var(--navy);color:#fff;padding:6px 8px;text-align:left;position:sticky;top:0;cursor:pointer;white-space:nowrap;}
+table.results td{padding:5px 8px;border-bottom:1px solid var(--line);white-space:nowrap;}
+table.results tr:nth-child(even){background:#f7faff;}
+table.results tr:hover{background:#eaf1ff;cursor:pointer;}
+.filters-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+.filters-row select,.filters-row input{padding:5px 7px;border:1px solid #bbb;border-radius:4px;font-size:12.5px;}
+.fiche-box{background:#fff;border-radius:6px;box-shadow:0 1px 6px rgba(30,58,110,.12);padding:16px 20px;max-width:1100px;}
+.fiche-hdr{font-size:20px;font-weight:900;color:var(--navy);margin-bottom:4px;}
+.fiche-sub{color:#777;font-size:13px;margin-bottom:14px;}
+fieldset{border:1px solid var(--line);border-radius:6px;margin-bottom:14px;padding:10px 14px 14px;}
+legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
+.frow{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px 14px;}
+.fitem label{display:block;font-size:11.5px;color:#555;margin-bottom:2px;font-weight:600;}
+.fitem input,.fitem select,.fitem textarea{width:100%;padding:6px 7px;border:1px solid #bbb;border-radius:4px;font-size:13px;font-family:inherit;}
+.fitem input:disabled,.fitem textarea:disabled{background:#f2f2f2;color:#777;}
+.fitem textarea{min-height:52px;resize:vertical;}
+.hidden{display:none !important;}
+.pin-box,.pin-mgr-box{background:#fff;border-radius:8px;padding:32px 40px;box-shadow:0 2px 20px rgba(0,0,0,.25);text-align:center;min-width:320px;}
+#overlay-pin,#overlay-pin-mgr{position:fixed;inset:0;background:rgba(20,30,50,.55);display:flex;align-items:center;justify-content:center;z-index:999;}
+.pin-logo{font-weight:900;color:var(--navy);letter-spacing:1px;font-size:20px;margin-bottom:6px;}
+.pin-box label,.pin-mgr-box label{display:block;text-align:left;font-size:12.5px;font-weight:600;margin:12px 0 4px;}
+.pin-box select,.pin-box input,.pin-mgr-box input{width:100%;padding:8px;border:1px solid #bbb;border-radius:4px;font-size:14px;}
+.pin-btn{margin-top:18px;width:100%;padding:10px;background:var(--navy);color:#fff;border:none;border-radius:4px;font-weight:700;cursor:pointer;}
+.pin-err{color:var(--err);font-size:12.5px;min-height:18px;margin-top:6px;}
+.pin-row{display:flex;align-items:center;gap:8px;margin:8px 0;text-align:left;}
+.pin-row label{min-width:80px;margin:0;}
+.linked-list{font-size:12.5px;color:#333;}
+.linked-list span{display:inline-block;background:#eef2fa;border-radius:3px;padding:2px 6px;margin:2px 4px 2px 0;}
+.note-box{background:#fff8e6;border:1px solid #f0d98a;border-radius:5px;padding:8px 12px;font-size:12px;color:#7a5c00;margin-bottom:12px;}
+</style>
+</head>
+<body>
+
+<div class="hdr-bar">
+  <div class="logo">EDUCPASS</div>
+  <div class="title">📋 FICHE PROF — 2026</div>
+  <button class="btn btn-orange" id="btn-nouveau" onclick="nouveauMembre()">+ Nouveau prof</button>
+  <button class="btn" id="btn-pin-mgr" onclick="showGestionPins()" style="display:none;">🔑 PINs</button>
+  <button class="btn" onclick="logoutPin()">🔒 <span id="header-agent">—</span></button>
+</div>
+
+<div id="sync-pending">⏳ Synchronisation en cours…</div>
+<div id="st-bar"></div>
+
+<div class="wrap">
+
+  <div class="toolbar">
+    <input type="text" id="rch" placeholder="Rechercher : nom, prénom, N° membre, matricule, ville..." style="min-width:320px;" oninput="onSearchInput()">
+    <button class="btn" onclick="doSearch()">🔍 Rechercher</button>
+    <button class="btn" onclick="showView('liste')">📄 Liste des résultats</button>
+    <span id="rch-count" style="font-size:12.5px;color:#666;"></span>
+  </div>
+
+  <!-- ====================== VUE LISTE ====================== -->
+  <div id="view-liste">
+    <div class="filters-row">
+      <select id="f-champ1" onchange="renderTable()"><option value="">Filtrer par champ…</option></select>
+      <input type="text" id="f-val1" placeholder="valeur…" oninput="renderTable()">
+      <select id="f-champ2" onchange="renderTable()"><option value="">Filtrer par champ…</option></select>
+      <input type="text" id="f-val2" placeholder="valeur…" oninput="renderTable()">
+      <button class="btn" onclick="exportFiltered()">⬇️ Exporter CSV</button>
+    </div>
+    <div style="max-height:65vh;overflow:auto;">
+      <table class="results" id="tbl-results">
+        <thead><tr>
+          <th>N° membre</th><th>Nom</th><th>Prénom</th><th>Ville</th><th>CP</th>
+          <th>Statut</th><th>Code</th><th>Année</th><th>Niveau</th><th>Branche</th><th>Langue</th><th>Fédération</th>
+        </tr></thead>
+        <tbody id="tbl-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ====================== VUE FICHE ====================== -->
+  <div id="view-fiche" class="hidden">
+    <div class="fiche-box">
+      <div class="fiche-hdr" id="fiche-titre">—</div>
+      <div class="fiche-sub">N° membre : <b id="f-nmembre-disp">—</b> · Nom (majuscules, auto) : <b id="f-nommaj-disp">—</b></div>
+
+      <div style="margin-bottom:14px;">
+        <button class="btn btn-save" id="btn-save" onclick="saveMember()">💾 Enregistrer</button>
+        <button class="btn btn-cancel" onclick="cancelAndReset()">↩️ Annuler</button>
+      </div>
+
+      <div id="fiche-sections"></div>
+
+      <fieldset>
+        <legend>Réservations &amp; Confirmations liées</legend>
+        <div class="linked-list" id="linked-resas">Aucune réservation liée pour ce prof.</div>
+      </fieldset>
+    </div>
+  </div>
+
+</div>
+
+<!-- ====================== OVERLAY LOGIN PIN ====================== -->
+<div id="overlay-pin" class="hidden">
+  <div class="pin-box">
+    <div class="pin-logo">EDUCPASS</div>
+    <h2>🔐 Accès sécurisé</h2>
+    <label>Agent :</label>
+    <select id="pin-agent">
+      <option value="">— Sélectionnez —</option>
+      <option>MARC</option>
+      <option>MAÏTE</option>
+      <option>PASCAL</option>
+      <option>VANESSA</option>
+    </select>
+    <label>Code PIN (4 chiffres) :</label>
+    <input type="password" id="pin-code" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" placeholder="••••" autocomplete="off" oninput="if(this.value.length===4)loginPin()">
+    <div id="pin-error" class="pin-err"></div>
+    <button class="pin-btn" onclick="loginPin()">Connexion →</button>
+  </div>
+</div>
+
+<!-- ====================== OVERLAY GESTION PINS (MARC uniquement) ====================== -->
+<div id="overlay-pin-mgr" class="hidden">
+  <div class="pin-mgr-box">
+    <h2>🔑 Gestion des codes PIN</h2>
+    <div class="pin-row"><label>MARC :</label><input type="password" id="pm-marc" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
+    <div class="pin-row"><label>MAÏTE :</label><input type="password" id="pm-maite" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
+    <div class="pin-row"><label>PASCAL :</label><input type="password" id="pm-pascal" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
+    <div class="pin-row"><label>VANESSA :</label><input type="password" id="pm-vanessa" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
+    <div class="pin-err" id="pm-msg"></div>
+    <div style="display:flex;gap:8px;margin-top:14px;">
+      <button class="btn btn-cancel" onclick="closeGestionPins()">Annuler</button>
+      <button class="btn btn-save" onclick="saveGestionPins()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  CONFIG AIRTABLE — jeton dédié, limité à la seule base Profs
+// ══════════════════════════════════════════════════════════
+const TK    = 'patyu2dGhm3pZK8p6.f983d554a802727eeb8f787e7f62cafe555af2dde602b49f557cbcbb8f4567f6';
+const BASE  = 'appWCfo8WBkMGUuc2';
+const TBL   = 'tbl3e83BINBUCkhMH';
+const API   = `https://api.airtable.com/v0/${BASE}/${TBL}`;
+const HDRS  = {'Authorization':'Bearer '+TK,'Content-Type':'application/json'};
+
+// ══════════════════════════════════════════════════════════
+//  CHAMPS — mapping id Airtable <-> clé DOM <-> libellé <-> type
+//  NOTE IMPORTANTE : la table Profs contient ~23 200 lignes (contre
+//  ~1000 côté Attractions). On NE charge donc JAMAIS tout en mémoire :
+//  chaque recherche interroge Airtable avec une formule filtrée
+//  (voir doSearch()), et l'export CSV ne porte que sur les résultats
+//  affichés à l'écran, pas sur toute la base.
+// ══════════════════════════════════════════════════════════
+const CHOICES = {
+  statut: ['Actif','Retraité','Prof relais','Comité','ACTIF','Statut'],
+  probleme: ['PAS DE PROBLEME','DESINSCRIPTION','PROBLEME à vérifier','PROBLEME code 999','PROBLEME code 900','Problème','PROBLEPAS DE PROBLEMEME à vérifier'],
+  langue: ['FR','NL','DE','LU','FF','Langue'],
+  federation: ['Fédération Wallonie-Bruxelles','Fédération Wallonie-Bruxelles sans Matricule','Vlaamse gemeenschap','Communauté Flamande','Communauté Flamande sans Matricule','Enseignant français','Enseignant luxembourgeois','Enseignant germanophone','Fédération','Federation Wallonie-Bruxelles']
+};
+
+const SECTIONS = [
+  {title:'Identité', fields:[
+    ['fldJXdSf8R0jebj4R','nom','Nom','text'],
+    ['fld5nkGdGAHBYaREe','prenom','Prénom','text'],
+    ['fldDGvawJ2OVDahqP','matricule','N° matricule','text'],
+    ['flduyaF2E9lV1APP5','naissance','Date de naissance','date'],
+    ['fldCkcXCKGApacCZM','langue','Langue','select:langue'],
+    ['fldk43F6qdZmtRB4a','federation','Fédération','select:federation'],
+  ]},
+  {title:'Coordonnées', fields:[
+    ['fldjY3SgvJsG4lJul','rue','Rue','text'],
+    ['fldmDaQM5TcT8tk4I','nmaison','N° maison','text'],
+    ['fldeGAIch9nWdERoh','cp','CP','text'],
+    ['fldEgejAPrVQF7MuF','ville','Ville','text'],
+    ['fld3ZvYWPpP6zrpWz','tel','Téléphone','text'],
+    ['fldDwi0VXgLg66ydt','gsm','GSM','text'],
+    ['fld2xVdHX8N6kWJZV','email','Email','text'],
+  ]},
+  {title:'Enseignement', fields:[
+    ['fldD15z5di5ZLX8d4','niveau','Niveau','text'],
+    ['fldvVztzyHfDj5vKK','branche','Branche','text'],
+    ['fldq5ZUxCvviR3mnJ','autreniveau',"Autre(s) niveau(x)",'text'],
+    ['fldZU8bGWGZSLEhGh','autrebranche',"Autre(s) branche(s)",'text'],
+    ['fldbSgslspYE5le4Z','annee','Année','number'],
+    ['fldU5X9CD1DCoHZy0','selection','Sélection','text'],
+  ]},
+  {title:'Statut & suivi', fields:[
+    ['fldNcZS21o9aKm9kf','statut','Statut','select:statut'],
+    ['fldJgMZuqyE1yVxa0','probleme','Problème','select:probleme'],
+    ['fldnuMEtKlfiS7MTW','code','Code','number'],
+    ['fldih9wNDgjRhAUIe','controleid','Contrôle ID','text'],
+    ['fldwyGIzVRvvfxYKb','operateur','Opérateur','text'],
+    ['fldLPWo2RnpWf2qtW','etablissement','N° établissement','number'],
+    ['fldTZAwBOZ9r6STOX','actiondir','Action direction','number'],
+    ['fldVKpHtb2Tj1G9tM','tri2','Clé de tri 2','number'],
+    ['fldzx5EdPg3ugcQXd','tri3','Clé de tri 3','text'],
+  ]},
+  {title:'Paiement', fields:[
+    ['fldYpwabCtlt9esnQ','paye','Payé','number'],
+    ['fldqIs6Y2ebWFDg62','datepaiement','Date de paiement','date'],
+    ['fldMYWTiBVzMG41fN','transaction','Transaction','text'],
+  ]},
+  {title:'Cadeaux & envois', fields:[
+    ['fldnxZJW1MYYDijOV','brochures','Brochures','number'],
+    ['fld1cMmXoVDYA7ijz','vip','Carte VIP','number'],
+    ['fldw7hHvzXddD5BlA','envoivip','Envoi carte VIP','number'],
+    ['fld8WytPOryoaSZmm','dateenvoivip','Date envoi carte VIP','date'],
+    ['fldxO4eD5iot5UxE8','envoicoupons','Envoi coupons','number'],
+    ['fldu8p3hWQYIuaTAi','dateenvoicoupons','Date envoi coupons','date'],
+    ['fldFGOaPyHuh90vLC','codecoupons','Code coupons','number'],
+    ['fldSANXmGXV6tR7yM','passeport','Passeport','number'],
+    ['fld5n3zYX2tb4jztV','passeportgratuit','Passeport gratuit','number'],
+    ['fldp6zWHRnPmtgjKN','dateenvoicadeau','Date envoi cadeau','date'],
+    ['fldeVTdK0tnkarmYU','cadeauparrainage','Cadeau parrainage','text'],
+    ['fldGIJ0K3CRgYOR2A','parrainage','Parrainage','text'],
+    ['fld17igtQyMai3WMP','codeambassadeur','Code Ambassadeur','number'],
+    ['fldHjzw84pj5a17nS','ambassadeur','Ambassadeur','number'],
+    ['fldMfJ9IAlOt9YWue','coderappel','Code Rappel','number'],
+    ['fldvpfUh1tvugwPwu','dateenvoirappel','Date envoi rappel','date'],
+    ['flda3oigFxtPsB253','dateenvoinews','Date envoi News','date'],
+    ['fldNcrgYuNmvWyyF4','envoi2','Envoi 2','number'],
+    ['fldgMqgleSXMPJG4T','newsletter','Newsletter','number'],
+    ['fldb2FG2H2Cf1eHZK','noneducnews','Non Educ News','number'],
+    ['fld2B6aVy4t1FiI73','codeed','Code ED','number'],
+  ]},
+  {title:'Système', fields:[
+    ['fld27fyNwjrxACB8H','mdpcrypte','Mot de passe (crypté)','text'],
+    ['fld7PsmgUd0dyDqYQ','datecreation','Date de création','date'],
+    ['fldHahB2gLpJ2LEjM','datemodif','Date de modification','date'],
+    ['fldoMQ9wjOZJVFBg5','syncwindev','Dernière synchro WinDev','text'],
+    ['fldpf5Y6ocLyM6MjL','remarque','Remarque','textarea'],
+  ]},
+];
+const FLD_NMEMBRE = 'fldZW7jn18xbvyLgf';
+const FLD_NOMMAJ  = 'fldJ4Oxd0dc1Wn45s'; // formule, lecture seule
+const FLD_RESAS   = 'fldSnaOB0UODUTXRi'; // lien vers Réservations & Confirmations
+
+// Colonnes filtrables dans la vue liste (id, libellé)
+const FILTER_FIELDS = [
+  ['Nom','nom'],['Prénom','prenom'],['Ville','ville'],['CP','cp'],['Statut','statut'],
+  ['Code','code'],['Année','annee'],['Niveau','niveau'],['Branche','branche'],
+  ['Langue','langue'],['Fédération','federation']
+];
+
+// ══════════════════════════════════════════════════════════
+//  ÉTAT
+// ══════════════════════════════════════════════════════════
+let lastResults = [];   // enregistrements du dernier fetch (recherche)
+let curId = null;       // recordId Airtable en cours d'édition
+let _memberLoading = false;
+let _dirty = false;
+
+function setSt(msg){ document.getElementById('st-bar').textContent = msg || ''; }
+function esc(s){ return String(s).replace(/\\/g,'\\\\').replace(/"/g,'\\"'); }
+function fld(sec,key){ return document.getElementById('f-'+key); }
+
+// ══════════════════════════════════════════════════════════
+//  APPELS AIRTABLE
+// ══════════════════════════════════════════════════════════
+async function atFetch(url, opts){
+  const r = await fetch(url, Object.assign({headers:HDRS}, opts||{}));
+  if(!r.ok){
+    const t = await r.text().catch(()=> '');
+    throw new Error('Airtable '+r.status+' : '+t.slice(0,200));
+  }
+  return r.json();
+}
+
+async function searchRecords(formula){
+  let all = [], offset;
+  do{
+    const params = new URLSearchParams({pageSize:'100', filterByFormula: formula});
+    if(offset) params.set('offset', offset);
+    const data = await atFetch(API+'?'+params.toString());
+    all = all.concat(data.records||[]);
+    offset = data.offset;
+  } while(offset && all.length < 300); // garde-fou : 300 résultats max affichés
+  return all;
+}
+
+// ══════════════════════════════════════════════════════════
+//  RECHERCHE
+// ══════════════════════════════════════════════════════════
+let _searchTimer=null;
+function onSearchInput(){
+  clearTimeout(_searchTimer);
+  _searchTimer = setTimeout(doSearch, 450);
+}
+
+function buildSearchFormula(term){
+  if(!term || !term.trim()) return null;
+  const t = esc(term.trim());
+  const tl = esc(term.trim().toLowerCase());
+  return `OR(SEARCH("${tl}",LOWER({Nom}&"")),SEARCH("${tl}",LOWER({Prénom}&"")),SEARCH("${tl}",LOWER({N° matricule}&"")),SEARCH("${t}",{N° membre}&""),SEARCH("${tl}",LOWER({Ville}&"")))`;
+}
+
+async function doSearch(){
+  const term = document.getElementById('rch').value;
+  const formula = buildSearchFormula(term);
+  if(!formula){
+    setSt('Tape au moins un nom, une ville ou un N° pour lancer une recherche.');
+    lastResults = []; renderTable(); showView('liste');
+    return;
+  }
+  setSt('🔎 Recherche en cours...');
+  try{
+    const recs = await searchRecords(formula);
+    lastResults = recs;
+    document.getElementById('rch-count').textContent = recs.length>=300
+      ? '300+ résultats — affinez votre recherche'
+      : recs.length+' résultat(s)';
+    renderTable();
+    showView('liste');
+    setSt('');
+  }catch(e){ setSt('❌ '+e.message); }
+}
+
+function populateFilterSelects(){
+  ['f-champ1','f-champ2'].forEach(id=>{
+    const sel = document.getElementById(id);
+    if(sel.options.length>1) return;
+    FILTER_FIELDS.forEach(([label,key])=>{
+      const o=document.createElement('option'); o.value=key; o.textContent=label; sel.appendChild(o);
+    });
+  });
+}
+
+function valueForKey(fields, key){
+  // Retrouve la valeur affichable pour une clé de filtre/colonne à partir des fields Airtable
+  const map = {
+    nom:'Nom', prenom:'Prénom', ville:'Ville', cp:'CP', statut:'Statut', code:'Code',
+    annee:'Année', niveau:'Niveau', branche:'Branche', langue:'Langue', federation:'Fédération'
+  };
+  const name = map[key];
+  let v = fields[name];
+  if(v && typeof v === 'object' && v.name) v = v.name;
+  return v==null ? '' : String(v);
+}
+
+function renderTable(){
+  const c1=document.getElementById('f-champ1').value, v1=document.getElementById('f-val1').value.toLowerCase();
+  const c2=document.getElementById('f-champ2').value, v2=document.getElementById('f-val2').value.toLowerCase();
+  let rows = lastResults;
+  if(c1 && v1) rows = rows.filter(r=>valueForKey(r.fields,c1).toLowerCase().includes(v1));
+  if(c2 && v2) rows = rows.filter(r=>valueForKey(r.fields,c2).toLowerCase().includes(v2));
+
+  const tbody = document.getElementById('tbl-body');
+  tbody.innerHTML = '';
+  rows.forEach(r=>{
+    const f = r.fields;
+    const tr = document.createElement('tr');
+    tr.onclick = ()=>loadMember(r.id);
+    const cols = [f['N° membre'], f['Nom'], f['Prénom'], f['Ville'], f['CP'],
+      (f['Statut']&&f['Statut'].name)||'', f['Code'], f['Année'], f['Niveau'], f['Branche'],
+      (f['Langue']&&f['Langue'].name)||'', (f['Fédération']&&f['Fédération'].name)||''];
+    tr.innerHTML = cols.map(v=>'<td>'+(v==null?'':String(v).replace(/</g,'&lt;'))+'</td>').join('');
+    tbody.appendChild(tr);
+  });
+  window._lastFiltered = rows;
+}
+
+function exportFiltered(){
+  const rows = window._lastFiltered || [];
+  if(!rows.length){ setSt("Aucun résultat à exporter — lance une recherche d'abord."); return; }
+  const headers = ['N° membre','Nom','Prénom','Ville','CP','Statut','Code','Année','Niveau','Branche','Langue','Fédération'];
+  const lines = [headers.join(';')];
+  rows.forEach(r=>{
+    const f=r.fields;
+    const vals=[f['N° membre'],f['Nom'],f['Prénom'],f['Ville'],f['CP'],
+      (f['Statut']&&f['Statut'].name)||'',f['Code'],f['Année'],f['Niveau'],f['Branche'],
+      (f['Langue']&&f['Langue'].name)||'',(f['Fédération']&&f['Fédération'].name)||''];
+    lines.push(vals.map(v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"').join(';'));
+  });
+  const blob = new Blob(['﻿'+lines.join('\r\n')], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'export_profs_'+new Date().toISOString().slice(0,10)+'.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+// ══════════════════════════════════════════════════════════
+//  VUES
+// ══════════════════════════════════════════════════════════
+function showView(v){
+  document.getElementById('view-liste').classList.toggle('hidden', v!=='liste');
+  document.getElementById('view-fiche').classList.toggle('hidden', v!=='fiche');
+}
+
+function buildFicheForm(){
+  const wrap = document.getElementById('fiche-sections');
+  wrap.innerHTML = '';
+  SECTIONS.forEach(sec=>{
+    const fs = document.createElement('fieldset');
+    const lg = document.createElement('legend'); lg.textContent = sec.title; fs.appendChild(lg);
+    const row = document.createElement('div'); row.className='frow';
+    sec.fields.forEach(([fid,key,label,type])=>{
+      const item = document.createElement('div'); item.className='fitem';
+      const lab = document.createElement('label'); lab.textContent = label; item.appendChild(lab);
+      let input;
+      if(type.startsWith('select:')){
+        const choiceKey = type.split(':')[1];
+        input = document.createElement('select');
+        const empty=document.createElement('option'); empty.value=''; empty.textContent='—'; input.appendChild(empty);
+        CHOICES[choiceKey].forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; input.appendChild(o); });
+      } else if(type==='textarea'){
+        input = document.createElement('textarea');
+      } else {
+        input = document.createElement('input');
+        input.type = (type==='number') ? 'number' : (type==='date' ? 'date' : 'text');
+      }
+      input.id = 'f-'+key;
+      input.dataset.fieldId = fid;
+      input.oninput = markDirty;
+      item.appendChild(input);
+      row.appendChild(item);
+    });
+    fs.appendChild(row);
+    wrap.appendChild(fs);
+  });
+}
+
+function markDirty(){ _dirty = true; }
+
+function gv(key){ const el=fld(null,key); if(!el) return null; const v=el.value; return v===''?null:v; }
+function sv(key, v){
+  const el = fld(null,key); if(!el) return;
+  if(v && typeof v==='object' && v.name) v = v.name;
+  el.value = (v==null) ? '' : v;
+}
+
+function fillForm(fields){
+  SECTIONS.forEach(sec=>sec.fields.forEach(([fid,key])=> sv(key, fields[fieldNameFor(fid,key)]) ));
+}
+// Petite table de correspondance clé -> nom de champ Airtable (pour la lecture des valeurs reçues)
+const KEY_TO_NAME = {};
+SECTIONS.forEach(sec=>sec.fields.forEach(([fid,key,label])=>{ KEY_TO_NAME[key]=label; }));
+function fieldNameFor(fid,key){ return KEY_TO_NAME[key]; }
+
+async function loadMember(id){
+  if(_dirty && !confirm('Des modifications non enregistrées seront perdues. Continuer ?')) return;
+  _memberLoading = true;
+  document.getElementById('btn-save').disabled = true;
+  setSt('⏳ Chargement du prof...');
+  try{
+    const data = await atFetch(API+'/'+id);
+    curId = id;
+    _dirty = false;
+    sessionStorage.setItem('lastMemberId', id);
+    document.getElementById('fiche-titre').textContent = (data.fields['Prénom']||'')+' '+(data.fields['Nom']||'');
+    document.getElementById('f-nmembre-disp').textContent = data.fields['N° membre']!=null ? data.fields['N° membre'] : '—';
+    document.getElementById('f-nommaj-disp').textContent = data.fields['Nom (majuscules)'] || '—';
+    fillForm(data.fields);
+    const resas = data.fields['Réservations & Confirmations'];
+    const box = document.getElementById('linked-resas');
+    box.innerHTML = (resas && resas.length)
+      ? resas.map(rid=>'<span>'+rid+'</span>').join('')
+      : 'Aucune réservation liée pour ce prof.';
+    showView('fiche');
+    setSt('');
+  }catch(e){ setSt('❌ '+e.message); }
+  finally{ _memberLoading=false; document.getElementById('btn-save').disabled=false; }
+}
+
+function nouveauMembre(){
+  if(_dirty && !confirm('Des modifications non enregistrées seront perdues. Continuer ?')) return;
+  curId = null; _dirty=false;
+  document.getElementById('fiche-titre').textContent = 'Nouveau prof';
+  document.getElementById('f-nmembre-disp').textContent = '(attribué automatiquement)';
+  document.getElementById('f-nommaj-disp').textContent = '—';
+  SECTIONS.forEach(sec=>sec.fields.forEach(([fid,key])=>sv(key,'')));
+  document.getElementById('linked-resas').innerHTML = 'Aucune réservation liée pour ce prof.';
+  showView('fiche');
+}
+
+async function saveMember(){
+  if(_memberLoading){ setSt('⏳ Chargement en cours, réessaie dans un instant.'); return; }
+  const fields = {};
+  SECTIONS.forEach(sec=>sec.fields.forEach(([fid,key,label,type])=>{
+    const el = fld(null,key); if(!el) return;
+    let v = el.value;
+    if(v===''){ return; } // on n'écrase pas avec du vide, sauf choix explicite futur
+    if(type==='number') v = Number(v);
+    fields[label] = v;
+  }));
+  document.getElementById('sync-pending').classList.add('show');
+  document.getElementById('btn-save').disabled = true;
+  try{
+    if(curId){
+      await atFetch(API+'/'+curId, {method:'PATCH', body: JSON.stringify({fields})});
+      setSt('✅ Prof enregistré.');
+      await loadMember(curId);
+    } else {
+      const res = await atFetch(API, {method:'POST', body: JSON.stringify({records:[{fields}]})});
+      curId = res.records[0].id;
+      setSt('✅ Nouveau prof créé (N° membre attribué par Airtable ou à saisir manuellement).');
+      await loadMember(curId);
+    }
+    _dirty = false;
+  }catch(e){ setSt('❌ '+e.message); }
+  finally{
+    document.getElementById('sync-pending').classList.remove('show');
+    document.getElementById('btn-save').disabled = false;
+  }
+}
+
+function cancelAndReset(){
+  if(_dirty && !confirm('Annuler les modifications non enregistrées ?')) return;
+  _dirty = false;
+  sessionStorage.removeItem('lastMemberId');
+  curId = null;
+  showView('liste');
+}
+
+// ══════════════════════════════════════════════════════════
+//  SYSTÈME PIN — AUTHENTIFICATION (identique au site Attractions)
+//  Valeurs par défaut au 1er déploiement — MARC peut les changer via 🔑
+// ══════════════════════════════════════════════════════════
+const AGENT_PINS_DEFAULT = { 'MARC':'1111', 'MAÏTE':'2222', 'PASCAL':'3333', 'VANESSA':'4444' };
+let AGENT_PINS = (function(){
+  try{
+    const stored = localStorage.getItem('educpass_profs_pins');
+    if(stored){ const p=JSON.parse(stored); if(p&&p.MARC) return p; }
+  }catch(e){}
+  return Object.assign({}, AGENT_PINS_DEFAULT);
+})();
+
+function _setAgentSession(agent){
+  sessionStorage.setItem('auth_agent', agent);
+  document.getElementById('header-agent').textContent = agent;
+  document.getElementById('btn-pin-mgr').style.display = (agent==='MARC') ? '' : 'none';
+}
+function loginPin(){
+  const agent = document.getElementById('pin-agent').value;
+  const pin = document.getElementById('pin-code').value;
+  const err = document.getElementById('pin-error');
+  err.textContent='';
+  if(!agent){ err.textContent='Sélectionnez votre nom.'; return; }
+  if(pin.length!==4){ err.textContent='Le code doit contenir 4 chiffres.'; return; }
+  if(AGENT_PINS[agent]!==pin){
+    err.textContent='❌ Code incorrect — réessayez.';
+    document.getElementById('pin-code').value=''; document.getElementById('pin-code').focus();
+    return;
+  }
+  document.getElementById('overlay-pin').classList.add('hidden');
+  _setAgentSession(agent);
+  init();
+}
+function logoutPin(){
+  if(!confirm('Se déconnecter ?')) return;
+  sessionStorage.removeItem('auth_agent');
+  location.reload();
+}
+function showGestionPins(){
+  if(sessionStorage.getItem('auth_agent')!=='MARC') return;
+  document.getElementById('pm-marc').value = AGENT_PINS['MARC']||'';
+  document.getElementById('pm-maite').value = AGENT_PINS['MAÏTE']||'';
+  document.getElementById('pm-pascal').value = AGENT_PINS['PASCAL']||'';
+  document.getElementById('pm-vanessa').value = AGENT_PINS['VANESSA']||'';
+  document.getElementById('pm-msg').textContent='';
+  document.getElementById('overlay-pin-mgr').classList.remove('hidden');
+}
+function closeGestionPins(){ document.getElementById('overlay-pin-mgr').classList.add('hidden'); }
+function saveGestionPins(){
+  const pins = {
+    MARC: document.getElementById('pm-marc').value.trim(),
+    'MAÏTE': document.getElementById('pm-maite').value.trim(),
+    PASCAL: document.getElementById('pm-pascal').value.trim(),
+    VANESSA: document.getElementById('pm-vanessa').value.trim(),
+  };
+  for(const [agent,pin] of Object.entries(pins)){
+    if(pin && !/^\d{4}$/.test(pin)){
+      document.getElementById('pm-msg').style.color='#c0392b';
+      document.getElementById('pm-msg').textContent='❌ PIN de '+agent+' invalide — 4 chiffres requis.';
+      return;
+    }
+    if(!pin) pins[agent]=AGENT_PINS[agent];
+  }
+  try{
+    localStorage.setItem('educpass_profs_pins', JSON.stringify(pins));
+    Object.assign(AGENT_PINS, pins);
+    document.getElementById('pm-msg').style.color='#27ae60';
+    document.getElementById('pm-msg').textContent='✅ Codes PIN enregistrés !';
+    setTimeout(closeGestionPins, 1200);
+  }catch(e){
+    document.getElementById('pm-msg').style.color='#c0392b';
+    document.getElementById('pm-msg').textContent='❌ Erreur : '+e.message;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════
+function init(){
+  buildFicheForm();
+  populateFilterSelects();
+  showView('liste');
+  setSt('Tape un nom, une ville ou un N° de membre ci-dessus pour commencer une recherche.');
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  const saved = sessionStorage.getItem('auth_agent');
+  if(saved && AGENT_PINS[saved]){
+    _setAgentSession(saved);
+    init();
+  } else {
+    document.getElementById('overlay-pin').classList.remove('hidden');
+  }
+});
+</script>
+</body>
+</html>
