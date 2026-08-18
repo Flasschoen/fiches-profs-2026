@@ -85,16 +85,21 @@ legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
   <!-- ====================== VUE LISTE ====================== -->
   <div id="view-liste">
     <div class="filters-row">
-      <select id="f-champ1" onchange="renderTable()"><option value="">Filtrer par champ…</option></select>
+      <select id="f-champ1" onchange="renderTable()"><option value="">Filtrer par champ (parmi les résultats)…</option></select>
       <input type="text" id="f-val1" placeholder="valeur…" oninput="renderTable()">
-      <select id="f-champ2" onchange="renderTable()"><option value="">Filtrer par champ…</option></select>
+      <select id="f-champ2" onchange="renderTable()"><option value="">Filtrer par champ (parmi les résultats)…</option></select>
       <input type="text" id="f-val2" placeholder="valeur…" oninput="renderTable()">
-      <span style="width:1px;background:var(--line);align-self:stretch;"></span>
-      <input type="text" id="f-code" placeholder="Code" style="max-width:90px;" oninput="renderTable()">
-      <input type="text" id="f-annee" placeholder="Année" style="max-width:90px;" oninput="renderTable()">
-      <input type="text" id="f-tri2" placeholder="Tri 2" style="max-width:90px;" oninput="renderTable()">
-      <input type="text" id="f-tri3" placeholder="Tri 3" style="max-width:90px;" oninput="renderTable()">
       <button class="btn" onclick="exportFiltered()">⬇️ Exporter CSV</button>
+    </div>
+    <div class="filters-row" style="margin-top:-4px;">
+      <span style="font-size:12px;color:#777;align-self:center;">Critères exacts (combinables, interrogent toute la base) :</span>
+      <input type="text" id="f-code" placeholder="Code" title="Code" style="max-width:80px;" oninput="onSearchInput()">
+      <input type="text" id="f-annee" placeholder="Année" title="Année" style="max-width:80px;" oninput="onSearchInput()">
+      <input type="text" id="f-newsletter" placeholder="Newsletter" title="Newsletter (0 ou 1)" style="max-width:90px;" oninput="onSearchInput()">
+      <input type="text" id="f-codesms" placeholder="Code SMS" title="Code SMS (0 ou 1) — GSM valide" style="max-width:90px;" oninput="onSearchInput()">
+      <input type="text" id="f-codenews" placeholder="Code NEWS" title="Code NEWS (0 ou 1) — Non Educ News" style="max-width:95px;" oninput="onSearchInput()">
+      <input type="text" id="f-tri2" placeholder="Tri 2" title="Clé de tri 2" style="max-width:80px;" oninput="onSearchInput()">
+      <input type="text" id="f-tri3" placeholder="Tri 3" title="Clé de tri 3" style="max-width:80px;" oninput="onSearchInput()">
     </div>
     <div style="max-height:65vh;overflow:auto;">
       <table class="results" id="tbl-results">
@@ -183,18 +188,21 @@ legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
 
 <script>
 // ══════════════════════════════════════════════════════════
-//  CONFIG AIRTABLE — jeton dédié, limité à la seule base Profs
+//  CONFIG AIRTABLE — passe désormais par un proxy Cloudflare Worker qui
+//  garde le jeton Airtable caché côté serveur (jamais exposé dans ce
+//  fichier ni visible via "Afficher le code source"). Le Worker ne
+//  fait que relayer vers Airtable en ajoutant lui-même le jeton.
 // ══════════════════════════════════════════════════════════
-const TK    = 'patyu2dGhm3pZK8p6.f983d554a802727eeb8f787e7f62cafe555af2dde602b49f557cbcbb8f4567f6';
+const PROXY = 'https://educpass-profs-proxy.marc-flasschoen.workers.dev';
 const BASE  = 'appWCfo8WBkMGUuc2';
 const TBL   = 'tbl3e83BINBUCkhMH';
-const API   = `https://api.airtable.com/v0/${BASE}/${TBL}`;
-const HDRS  = {'Authorization':'Bearer '+TK,'Content-Type':'application/json'};
+const API   = `${PROXY}/v0/${BASE}/${TBL}`;
+const HDRS  = {'Content-Type':'application/json'};
 
 // Table "Réservations & Confirmations" (liée aux Profs) — utilisée pour le
 // sélecteur de réservations sur la fiche. PDF imprimables = livrable séparé.
 const RESA_TBL = 'tblWNj2tZj4CZxsuP';
-const RESA_API = `https://api.airtable.com/v0/${BASE}/${RESA_TBL}`;
+const RESA_API = `${PROXY}/v0/${BASE}/${RESA_TBL}`;
 
 // ══════════════════════════════════════════════════════════
 //  CHAMPS — mapping id Airtable <-> clé DOM <-> libellé <-> type
@@ -346,7 +354,12 @@ async function atFetch(url, opts){
   return r.json();
 }
 
-async function searchRecords(formula){
+// Plafond de sécurité : au-delà, on arrête de charger (Airtable pagine par 100).
+// Relevé le 2026-08-18 (300 -> 15000) pour permettre à Marc d'extraire de grandes
+// listes (ex : tous les profs actifs pour un envoi de newsletter/brochure postale).
+const MAX_RESULTS = 15000;
+
+async function searchRecords(formula, onProgress){
   let all = [], offset;
   do{
     const params = new URLSearchParams({pageSize:'100', filterByFormula: formula});
@@ -354,7 +367,8 @@ async function searchRecords(formula){
     const data = await atFetch(API+'?'+params.toString());
     all = all.concat(data.records||[]);
     offset = data.offset;
-  } while(offset && all.length < 300); // garde-fou : 300 résultats max affichés
+    if(onProgress) onProgress(all.length);
+  } while(offset && all.length < MAX_RESULTS);
   return all;
 }
 
@@ -367,11 +381,41 @@ function onSearchInput(){
   _searchTimer = setTimeout(doSearch, 450);
 }
 
+// Critères exacts combinables (interrogent Airtable directement, pas seulement
+// les résultats déjà chargés) : Code, Année, Newsletter, Code SMS, Code NEWS
+// (= champ "Non Educ News"), Clé de tri 2 (numériques) et Clé de tri 3 (texte).
+function buildStructuredConditions(){
+  const conds = [];
+  const numericMap = [
+    ['f-code','Code'], ['f-annee','Année'], ['f-newsletter','Newsletter'],
+    ['f-codesms','Code SMS'], ['f-codenews','Non Educ News'], ['f-tri2','Clé de tri 2'],
+  ];
+  numericMap.forEach(([id,fieldName])=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    const v = el.value.trim();
+    if(v==='') return;
+    const n = Number(v);
+    conds.push(isNaN(n) ? `{${fieldName}}="${esc(v)}"` : `{${fieldName}}=${n}`);
+  });
+  const tri3 = document.getElementById('f-tri3');
+  if(tri3 && tri3.value.trim()!==''){
+    conds.push(`{Clé de tri 3}="${esc(tri3.value.trim())}"`);
+  }
+  return conds;
+}
+
 function buildSearchFormula(term){
-  if(!term || !term.trim()) return null;
-  const t = esc(term.trim());
-  const tl = esc(term.trim().toLowerCase());
-  return `OR(SEARCH("${tl}",LOWER({Nom}&"")),SEARCH("${tl}",LOWER({Prénom}&"")),SEARCH("${tl}",LOWER({N° matricule}&"")),SEARCH("${t}",{N° membre}&""),SEARCH("${tl}",LOWER({Ville}&"")))`;
+  const structured = buildStructuredConditions();
+  const t = term && term.trim() ? term.trim() : '';
+  const allConds = [];
+  if(t){
+    const esc1 = esc(t), escl = esc(t.toLowerCase());
+    allConds.push(`OR(SEARCH("${escl}",LOWER({Nom}&"")),SEARCH("${escl}",LOWER({Prénom}&"")),SEARCH("${escl}",LOWER({N° matricule}&"")),SEARCH("${esc1}",{N° membre}&""),SEARCH("${escl}",LOWER({Ville}&"")))`);
+  }
+  allConds.push(...structured);
+  if(!allConds.length) return null;
+  return allConds.length===1 ? allConds[0] : `AND(${allConds.join(',')})`;
 }
 
 async function doSearch(){
@@ -379,16 +423,16 @@ async function doSearch(){
   const term = document.getElementById('rch').value;
   const formula = buildSearchFormula(term);
   if(!formula){
-    setSt('Tape au moins un nom, une ville ou un N° pour lancer une recherche.');
+    setSt('Tape au moins un nom/ville/N°, ou remplis un critère exact (Code, Année…) pour lancer une recherche.');
     lastResults = []; renderTable(); showView('liste');
     return;
   }
   setSt('🔎 Recherche en cours...');
   try{
-    const recs = await searchRecords(formula);
+    const recs = await searchRecords(formula, n=>setSt(`⏳ Chargement en cours... ${n} résultat(s) trouvé(s) jusqu'ici`));
     lastResults = recs;
-    document.getElementById('rch-count').textContent = recs.length>=300
-      ? '300+ résultats — affinez votre recherche'
+    document.getElementById('rch-count').textContent = recs.length>=MAX_RESULTS
+      ? MAX_RESULTS+'+ résultats — affinez votre recherche'
       : recs.length+' résultat(s)';
     renderTable();
     showView('liste');
@@ -420,19 +464,15 @@ function valueForKey(fields, key){
 }
 
 function renderTable(){
+  // Note : Code/Année/Newsletter/Code SMS/Code NEWS/Tri 2/Tri 3 sont désormais
+  // des critères exacts appliqués directement dans la requête Airtable (voir
+  // buildStructuredConditions()) — lastResults les respecte déjà. Seuls les 2
+  // filtres génériques ci-dessous s'appliquent en plus, localement, sur ces résultats.
   const c1=document.getElementById('f-champ1').value, v1=document.getElementById('f-val1').value.toLowerCase();
   const c2=document.getElementById('f-champ2').value, v2=document.getElementById('f-val2').value.toLowerCase();
-  const codeV=document.getElementById('f-code').value.toLowerCase();
-  const anneeV=document.getElementById('f-annee').value.toLowerCase();
-  const tri2V=document.getElementById('f-tri2').value.toLowerCase();
-  const tri3V=document.getElementById('f-tri3').value.toLowerCase();
   let rows = lastResults;
   if(c1 && v1) rows = rows.filter(r=>valueForKey(r.fields,c1).toLowerCase().includes(v1));
   if(c2 && v2) rows = rows.filter(r=>valueForKey(r.fields,c2).toLowerCase().includes(v2));
-  if(codeV) rows = rows.filter(r=>valueForKey(r.fields,'code').toLowerCase().includes(codeV));
-  if(anneeV) rows = rows.filter(r=>valueForKey(r.fields,'annee').toLowerCase().includes(anneeV));
-  if(tri2V) rows = rows.filter(r=>valueForKey(r.fields,'tri2').toLowerCase().includes(tri2V));
-  if(tri3V) rows = rows.filter(r=>valueForKey(r.fields,'tri3').toLowerCase().includes(tri3V));
 
   const tbody = document.getElementById('tbl-body');
   tbody.innerHTML = '';
