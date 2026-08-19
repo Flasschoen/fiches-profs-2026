@@ -47,7 +47,9 @@ legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
 .fitem textarea{min-height:52px;resize:vertical;}
 .hidden{display:none !important;}
 .pin-box,.pin-mgr-box{background:#fff;border-radius:8px;padding:32px 40px;box-shadow:0 2px 20px rgba(0,0,0,.25);text-align:center;min-width:320px;}
-#overlay-pin,#overlay-pin-mgr{position:fixed;inset:0;background:rgba(20,30,50,.55);display:flex;align-items:center;justify-content:center;z-index:999;}
+#overlay-pin,#overlay-pin-mgr,#overlay-resa{position:fixed;inset:0;background:rgba(20,30,50,.55);display:flex;align-items:center;justify-content:center;z-index:999;}
+.resa-mgr-box{background:#fff;border-radius:8px;padding:22px 28px;box-shadow:0 2px 20px rgba(0,0,0,.25);max-width:900px;width:92vw;max-height:85vh;overflow:auto;text-align:left;}
+.resa-mgr-box h2{margin-top:0;color:var(--navy);}
 .pin-logo{font-weight:900;color:var(--navy);letter-spacing:1px;font-size:20px;margin-bottom:6px;}
 .pin-box label,.pin-mgr-box label{display:block;text-align:left;font-size:12.5px;font-weight:600;margin:12px 0 4px;}
 .pin-box select,.pin-box input,.pin-mgr-box input{width:100%;padding:8px;border:1px solid #bbb;border-radius:4px;font-size:14px;}
@@ -93,13 +95,13 @@ legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
     </div>
     <div class="filters-row" style="margin-top:-4px;">
       <span style="font-size:12px;color:#777;align-self:center;">Critères exacts (combinables, interrogent toute la base) :</span>
-      <input type="text" id="f-code" placeholder="Code" title="Code" style="max-width:80px;" oninput="onSearchInput()">
-      <input type="text" id="f-annee" placeholder="Année" title="Année" style="max-width:80px;" oninput="onSearchInput()">
-      <input type="text" id="f-newsletter" placeholder="Newsletter" title="Newsletter (0 ou 1)" style="max-width:90px;" oninput="onSearchInput()">
-      <input type="text" id="f-codesms" placeholder="Code SMS" title="Code SMS (0 ou 1) — GSM valide" style="max-width:90px;" oninput="onSearchInput()">
-      <input type="text" id="f-codenews" placeholder="Code NEWS" title="Code NEWS (0 ou 1) — Non Educ News" style="max-width:95px;" oninput="onSearchInput()">
-      <input type="text" id="f-tri2" placeholder="Tri 2" title="Clé de tri 2" style="max-width:80px;" oninput="onSearchInput()">
-      <input type="text" id="f-tri3" placeholder="Tri 3" title="Clé de tri 3" style="max-width:80px;" oninput="onSearchInput()">
+      <input type="text" id="flt-code" placeholder="Code" title="Code" style="max-width:80px;" oninput="onSearchInput()">
+      <input type="text" id="flt-annee" placeholder="Année" title="Année" style="max-width:80px;" oninput="onSearchInput()">
+      <input type="text" id="flt-newsletter" placeholder="Newsletter" title="Newsletter (0 ou 1)" style="max-width:90px;" oninput="onSearchInput()">
+      <input type="text" id="flt-codesms" placeholder="Code SMS" title="Code SMS (0 ou 1) — GSM valide" style="max-width:90px;" oninput="onSearchInput()">
+      <input type="text" id="flt-codenews" placeholder="Code NEWS" title="Code NEWS (0 ou 1) — Non Educ News" style="max-width:95px;" oninput="onSearchInput()">
+      <input type="text" id="flt-tri2" placeholder="Tri 2" title="Clé de tri 2" style="max-width:80px;" oninput="onSearchInput()">
+      <input type="text" id="flt-tri3" placeholder="Tri 3" title="Clé de tri 3" style="max-width:80px;" oninput="onSearchInput()">
     </div>
     <div style="max-height:65vh;overflow:auto;">
       <table class="results" id="tbl-results">
@@ -121,30 +123,43 @@ legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
       <div style="margin-bottom:14px;">
         <button class="btn btn-save" id="btn-save" onclick="saveMember()">💾 Enregistrer</button>
         <button class="btn btn-cancel" onclick="cancelAndReset()">↩️ Annuler</button>
+        <button class="btn" onclick="openResaOverlay()">📋 Réservation/Confirmation</button>
         <button class="btn" id="btn-delete" onclick="deleteMember()" style="display:none;background:var(--err);color:#fff;">🗑️ Supprimer</button>
       </div>
 
       <div id="fiche-sections"></div>
 
-      <fieldset>
-        <legend>Réservations &amp; Confirmations</legend>
-        <div class="frow" style="margin-bottom:10px;">
-          <div class="fitem" style="grid-column:1/-1;">
-            <label>Choisir une réservation liée à ce prof</label>
-            <select id="resa-select" onchange="onResaSelect()">
-              <option value="">— Sélectionnez —</option>
-            </select>
-          </div>
+      <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line);">
+        <button class="btn btn-save" id="btn-save-bottom" onclick="saveMember()">💾 Enregistrer</button>
+        <button class="btn btn-cancel" onclick="cancelAndReset()">↩️ Annuler</button>
+        <button class="btn" id="btn-delete-bottom" onclick="deleteMember()" style="display:none;background:var(--err);color:#fff;">🗑️ Supprimer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== FENÊTRE RÉSERVATIONS & CONFIRMATIONS ============== -->
+  <div id="overlay-resa" class="hidden">
+    <div class="resa-mgr-box">
+      <h2>📋 Réservations &amp; Confirmations</h2>
+      <div class="frow" style="margin-bottom:10px;">
+        <div class="fitem" style="grid-column:1/-1;">
+          <label>Choisir une réservation liée à ce prof</label>
+          <select id="resa-select" onchange="onResaSelect()">
+            <option value="">— Sélectionnez —</option>
+          </select>
         </div>
-        <div id="resa-panel" class="hidden">
-          <div class="note-box">Coordonnées du prof : <b id="resa-prof-coord"></b></div>
-          <div class="frow" id="resa-fields"></div>
-          <div style="margin-top:10px;">
-            <button class="btn btn-save" onclick="saveResa()">💾 Enregistrer la réservation</button>
-            <button class="btn btn-cancel" onclick="closeResaPanel()">↩️ Fermer</button>
-          </div>
+      </div>
+      <div id="resa-panel" class="hidden">
+        <div class="note-box">Coordonnées du prof : <b id="resa-prof-coord"></b></div>
+        <div class="frow" id="resa-fields"></div>
+        <div style="margin-top:10px;">
+          <button class="btn btn-save" onclick="saveResa()">💾 Enregistrer la réservation</button>
+          <button class="btn btn-cancel" onclick="closeResaPanel()">↩️ Fermer le formulaire</button>
         </div>
-      </fieldset>
+      </div>
+      <div style="margin-top:16px;text-align:right;">
+        <button class="btn btn-cancel" onclick="closeResaOverlay()">✖ Fermer la fenêtre</button>
+      </div>
     </div>
   </div>
 
@@ -233,7 +248,7 @@ const SECTIONS = [
     ['fldJXdSf8R0jebj4R','nom','Nom','text'],
     ['fld5nkGdGAHBYaREe','prenom','Prénom','text'],
     ['fldDGvawJ2OVDahqP','matricule','N° matricule','text'],
-    ['flduyaF2E9lV1APP5','naissance','Date de naissance','date'],
+    ['flduyaF2E9lV1APP5','naissance','Date de naissance','text'],
     ['fldCkcXCKGApacCZM','langue','Langue','select:langue'],
     ['fldk43F6qdZmtRB4a','federation','Fédération','select:federation'],
   ]},
@@ -251,7 +266,7 @@ const SECTIONS = [
     ['fldvVztzyHfDj5vKK','branche','Branche','text'],
     ['fldq5ZUxCvviR3mnJ','autreniveau',"Autre(s) niveau(x)",'text'],
     ['fldZU8bGWGZSLEhGh','autrebranche',"Autre(s) branche(s)",'text'],
-    ['fldbSgslspYE5le4Z','annee','Année','number'],
+    ['fldbSgslspYE5le4Z','annee','Année','numtext'],
     ['fldU5X9CD1DCoHZy0','selection','Sélection','text'],
   ]},
   {title:'Statut & suivi', fields:[
@@ -387,8 +402,8 @@ function onSearchInput(){
 function buildStructuredConditions(){
   const conds = [];
   const numericMap = [
-    ['f-code','Code'], ['f-annee','Année'], ['f-newsletter','Newsletter'],
-    ['f-codesms','Code SMS'], ['f-codenews','Non Educ News'], ['f-tri2','Clé de tri 2'],
+    ['flt-code','Code'], ['flt-annee','Année'], ['flt-newsletter','Newsletter'],
+    ['flt-codesms','Code SMS'], ['flt-codenews','Non Educ News'], ['flt-tri2','Clé de tri 2'],
   ];
   numericMap.forEach(([id,fieldName])=>{
     const el = document.getElementById(id);
@@ -398,7 +413,7 @@ function buildStructuredConditions(){
     const n = Number(v);
     conds.push(isNaN(n) ? `{${fieldName}}="${esc(v)}"` : `{${fieldName}}=${n}`);
   });
-  const tri3 = document.getElementById('f-tri3');
+  const tri3 = document.getElementById('flt-tri3');
   if(tri3 && tri3.value.trim()!==''){
     conds.push(`{Clé de tri 3}="${esc(tri3.value.trim())}"`);
   }
@@ -537,11 +552,18 @@ function buildFicheForm(){
       } else {
         input = document.createElement('input');
         input.type = (type==='number') ? 'number' : (type==='date' ? 'date' : 'text');
+        if(key==='naissance'){ input.placeholder = 'AAAA-MM-JJ ou JJ/MM/AAAA'; }
       }
       input.id = 'f-'+key;
       input.dataset.fieldId = fid;
       input.oninput = markDirty;
       item.appendChild(input);
+      if(key==='paye'){
+        const suf = document.createElement('span');
+        suf.textContent = ' €';
+        suf.style.cssText = 'margin-left:4px;font-weight:700;color:#555;';
+        item.appendChild(suf);
+      }
       row.appendChild(item);
     });
     fs.appendChild(row);
@@ -566,11 +588,22 @@ const KEY_TO_NAME = {};
 SECTIONS.forEach(sec=>sec.fields.forEach(([fid,key,label])=>{ KEY_TO_NAME[key]=label; }));
 function fieldNameFor(fid,key){ return KEY_TO_NAME[key]; }
 
+// Les 3 boutons d'action (Enregistrer/Annuler/Supprimer) existent en double : en haut et en
+// bas de la fiche. Ces fonctions gardent les deux copies synchronisées.
+function setSaveDisabled(v){
+  document.getElementById('btn-save').disabled = v;
+  const b2 = document.getElementById('btn-save-bottom'); if(b2) b2.disabled = v;
+}
+function setDeleteVisible(v){
+  const d1 = document.getElementById('btn-delete'); if(d1) d1.style.display = v ? '' : 'none';
+  const d2 = document.getElementById('btn-delete-bottom'); if(d2) d2.style.display = v ? '' : 'none';
+}
+
 async function loadMember(id){
   if(_dirty && !confirm('Des modifications non enregistrées seront perdues. Continuer ?')) return;
   clearTimeout(_searchTimer); // une recherche différée en attente ne doit plus renvoyer vers la liste une fois la fiche ouverte
   _memberLoading = true;
-  document.getElementById('btn-save').disabled = true;
+  setSaveDisabled(true);
   setSt('⏳ Chargement du prof...');
   try{
     const data = await atFetch(API+'/'+id);
@@ -585,7 +618,7 @@ async function loadMember(id){
     showView('fiche');
     setSt('');
   }catch(e){ setSt('❌ '+e.message); }
-  finally{ _memberLoading=false; document.getElementById('btn-save').disabled=false; }
+  finally{ _memberLoading=false; setSaveDisabled(false); }
 }
 
 function nouveauMembre(){
@@ -602,18 +635,41 @@ function nouveauMembre(){
   showView('fiche');
 }
 
+// Accepte AAAA-MM-JJ (déjà ISO) ou JJ/MM/AAAA, JJ-MM-AAAA, JJ.MM.AAAA -> renvoie une date ISO ou null si invalide.
+function parseFlexibleDate(v){
+  v = (v||'').trim();
+  if(/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+  const m = v.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
+  if(m){
+    const d = m[1].padStart(2,'0'), mo = m[2].padStart(2,'0'), y = m[3];
+    return y+'-'+mo+'-'+d;
+  }
+  return null;
+}
+
 async function saveMember(){
   if(_memberLoading){ setSt('⏳ Chargement en cours, réessaie dans un instant.'); return; }
   const fields = {};
+  let numError = null, dateError = null;
   SECTIONS.forEach(sec=>sec.fields.forEach(([fid,key,label,type])=>{
     const el = fld(null,key); if(!el) return;
     let v = el.value;
     if(v===''){ return; } // on n'écrase pas avec du vide, sauf choix explicite futur
-    if(type==='number') v = Number(v);
+    if(type==='number' || type==='numtext'){
+      v = Number(v);
+      if(isNaN(v)){ numError = numError || {label,val:el.value}; return; }
+    }
+    if(key==='naissance'){
+      const iso = parseFlexibleDate(v);
+      if(!iso){ dateError = v; return; }
+      v = iso;
+    }
     fields[label] = v;
   }));
+  if(numError){ setSt('❌ Valeur invalide pour « '+numError.label+' » : "'+numError.val+'". Merci de n\'entrer que des chiffres.'); return; }
+  if(dateError){ setSt('❌ Date de naissance invalide : "'+dateError+'". Utilise le format AAAA-MM-JJ ou JJ/MM/AAAA.'); return; }
   document.getElementById('sync-pending').classList.add('show');
-  document.getElementById('btn-save').disabled = true;
+  setSaveDisabled(true);
   try{
     if(curId){
       await atFetch(API+'/'+curId, {method:'PATCH', body: JSON.stringify({fields})});
@@ -629,7 +685,7 @@ async function saveMember(){
   }catch(e){ setSt('❌ '+e.message); }
   finally{
     document.getElementById('sync-pending').classList.remove('show');
-    document.getElementById('btn-save').disabled = false;
+    setSaveDisabled(false);
   }
 }
 
@@ -667,6 +723,13 @@ async function deleteMember(){
 // ══════════════════════════════════════════════════════════
 let resaLinkedIds = [];
 let curResaId = null;
+
+function openResaOverlay(){
+  document.getElementById('overlay-resa').classList.remove('hidden');
+}
+function closeResaOverlay(){
+  document.getElementById('overlay-resa').classList.add('hidden');
+}
 
 function buildResaForm(){
   const wrap = document.getElementById('resa-fields');
@@ -806,7 +869,7 @@ function _setAgentSession(agent){
   sessionStorage.setItem('auth_agent', agent);
   document.getElementById('header-agent').textContent = agent;
   document.getElementById('btn-pin-mgr').style.display = (agent==='MARC') ? '' : 'none';
-  document.getElementById('btn-delete').style.display = (agent==='MARC') ? '' : 'none';
+  setDeleteVisible(agent==='MARC');
 }
 function loginPin(){
   const agent = document.getElementById('pin-agent').value;
