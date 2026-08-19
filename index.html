@@ -115,6 +115,7 @@ legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
         <thead><tr>
           <th>N° membre</th><th>Nom</th><th>Prénom</th><th>Ville</th><th>CP</th>
           <th>Statut</th><th>Code</th><th>Année</th><th>Niveau</th><th>Branche</th><th>Langue</th><th>Fédération</th>
+          <th>Email</th><th>GSM</th>
         </tr></thead>
         <tbody id="tbl-body"></tbody>
       </table>
@@ -349,7 +350,7 @@ const RESA_SECTIONS = [
 const FILTER_FIELDS = [
   ['Nom','nom'],['Prénom','prenom'],['Ville','ville'],['CP','cp'],['Statut','statut'],
   ['Code','code'],['Année','annee'],['Niveau','niveau'],['Branche','branche'],
-  ['Langue','langue'],['Fédération','federation']
+  ['Langue','langue'],['Fédération','federation'],['Email','email'],['GSM','gsm']
 ];
 
 // ══════════════════════════════════════════════════════════
@@ -446,7 +447,7 @@ function buildSearchFormula(term){
   const allConds = [];
   if(t){
     const esc1 = esc(t), escl = esc(t.toLowerCase());
-    allConds.push(`OR(SEARCH("${escl}",LOWER({Nom}&"")),SEARCH("${escl}",LOWER({Prénom}&"")),SEARCH("${escl}",LOWER({N° matricule}&"")),SEARCH("${esc1}",{N° membre}&""),SEARCH("${escl}",LOWER({Ville}&"")))`);
+    allConds.push(`OR(SEARCH("${escl}",LOWER({Nom}&"")),SEARCH("${escl}",LOWER({Prénom}&"")),SEARCH("${escl}",LOWER({N° matricule}&"")),SEARCH("${esc1}",{N° membre}&""),SEARCH("${escl}",LOWER({Ville}&"")),SEARCH("${escl}",LOWER({Email}&"")),SEARCH("${escl}",LOWER({GSM}&"")))`);
   }
   allConds.push(...structured);
   if(!allConds.length) return null;
@@ -504,7 +505,7 @@ function valueForKey(fields, key){
   const map = {
     nom:'Nom', prenom:'Prénom', ville:'Ville', cp:'CP', statut:'Statut', code:'Code',
     annee:'Année', niveau:'Niveau', branche:'Branche', langue:'Langue', federation:'Fédération',
-    tri2:'Clé de tri 2', tri3:'Clé de tri 3'
+    tri2:'Clé de tri 2', tri3:'Clé de tri 3', email:'Email', gsm:'GSM'
   };
   const name = map[key];
   let v = fields[name];
@@ -531,7 +532,8 @@ function renderTable(){
     tr.onclick = ()=>loadMember(r.id);
     const cols = [f['N° membre'], f['Nom'], f['Prénom'], f['Ville'], f['CP'],
       (f['Statut']&&f['Statut'].name)||'', f['Code'], f['Année'], f['Niveau'], f['Branche'],
-      (f['Langue']&&f['Langue'].name)||'', (f['Fédération']&&f['Fédération'].name)||''];
+      (f['Langue']&&f['Langue'].name)||'', (f['Fédération']&&f['Fédération'].name)||'',
+      f['Email'], f['GSM']];
     tr.innerHTML = cols.map(v=>'<td>'+(v==null?'':String(v).replace(/</g,'&lt;'))+'</td>').join('');
     tbody.appendChild(tr);
   });
@@ -541,13 +543,14 @@ function renderTable(){
 function exportFiltered(){
   const rows = window._lastFiltered || [];
   if(!rows.length){ setSt("Aucun résultat à exporter — lance une recherche d'abord."); return; }
-  const headers = ['N° membre','Nom','Prénom','Ville','CP','Statut','Code','Année','Niveau','Branche','Langue','Fédération'];
+  const headers = ['N° membre','Nom','Prénom','Ville','CP','Statut','Code','Année','Niveau','Branche','Langue','Fédération','Email','GSM'];
   const lines = [headers.join(';')];
   rows.forEach(r=>{
     const f=r.fields;
     const vals=[f['N° membre'],f['Nom'],f['Prénom'],f['Ville'],f['CP'],
       (f['Statut']&&f['Statut'].name)||'',f['Code'],f['Année'],f['Niveau'],f['Branche'],
-      (f['Langue']&&f['Langue'].name)||'',(f['Fédération']&&f['Fédération'].name)||''];
+      (f['Langue']&&f['Langue'].name)||'',(f['Fédération']&&f['Fédération'].name)||'',
+      f['Email'],f['GSM']];
     lines.push(vals.map(v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"').join(';'));
   });
   const blob = new Blob(['﻿'+lines.join('\r\n')], {type:'text/csv;charset=utf-8;'});
