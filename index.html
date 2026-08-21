@@ -47,11 +47,19 @@ legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
 .fitem textarea{min-height:52px;resize:vertical;}
 .hidden{display:none !important;}
 .pin-box,.pin-mgr-box{background:#fff;border-radius:8px;padding:32px 40px;box-shadow:0 2px 20px rgba(0,0,0,.25);text-align:center;min-width:320px;}
-#overlay-pin,#overlay-pin-mgr,#overlay-resa{position:fixed;inset:0;background:rgba(20,30,50,.55);display:flex;align-items:center;justify-content:center;z-index:999;}
+#overlay-pin,#overlay-pin-mgr,#overlay-resa,#overlay-email{position:fixed;inset:0;background:rgba(20,30,50,.55);display:flex;align-items:center;justify-content:center;z-index:999;}
 #overlay-loading{position:fixed;inset:0;background:rgba(20,30,50,.35);display:flex;align-items:center;justify-content:center;z-index:1000;pointer-events:none;}
 .loading-box{background:#fff;border-radius:10px;padding:26px 40px;box-shadow:0 4px 28px rgba(0,0,0,.3);font-size:19px;font-weight:700;color:var(--navy);text-align:center;min-width:320px;}
 .resa-mgr-box{background:#fff;border-radius:8px;padding:22px 28px;box-shadow:0 2px 20px rgba(0,0,0,.25);max-width:900px;width:92vw;max-height:85vh;overflow:auto;text-align:left;}
 .resa-mgr-box h2{margin-top:0;color:var(--navy);}
+.email-box{background:#fff;border-radius:8px;padding:22px 28px;box-shadow:0 2px 20px rgba(0,0,0,.25);max-width:640px;width:92vw;max-height:85vh;overflow:auto;text-align:left;}
+.email-box h2{margin-top:0;color:var(--navy);}
+.email-box label{display:block;font-size:12px;color:#555;margin:10px 0 3px;font-weight:600;}
+.email-box input[type=text],.email-box textarea{width:100%;padding:7px 9px;border:1px solid #bbb;border-radius:4px;font-size:13px;font-family:inherit;}
+.email-box textarea{min-height:160px;resize:vertical;}
+.email-status{font-size:12.5px;min-height:18px;margin-top:8px;}
+.email-status.err{color:var(--err);}
+.email-status.ok{color:var(--ok);}
 .pin-logo{font-weight:900;color:var(--navy);letter-spacing:1px;font-size:20px;margin-bottom:6px;}
 .pin-box label,.pin-mgr-box label{display:block;text-align:left;font-size:12.5px;font-weight:600;margin:12px 0 4px;}
 .pin-box select,.pin-box input,.pin-mgr-box input{width:100%;padding:8px;border:1px solid #bbb;border-radius:4px;font-size:14px;}
@@ -133,6 +141,8 @@ legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
         <button class="btn btn-cancel" onclick="cancelAndReset()">↩️ Annuler</button>
         <button class="btn" onclick="openResaOverlay()">📋 Réservation/Confirmation</button>
         <button class="btn" id="btn-delete" onclick="deleteMember()" style="display:none;background:var(--err);color:#fff;">🗑️ Supprimer</button>
+        <button class="btn" id="btn-email-adresse" onclick="openEmailOverlay('adresse')">📮 Adresse incorrecte</button>
+        <button class="btn" id="btn-email-paiement" onclick="openEmailOverlay('paiement')">💰 Paiement reçu</button>
       </div>
 
       <div id="fiche-sections"></div>
@@ -167,6 +177,24 @@ legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
       </div>
       <div style="margin-top:16px;text-align:right;">
         <button class="btn btn-cancel" onclick="closeResaOverlay()">✖ Fermer la fenêtre</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== FENÊTRE APERÇU EMAIL (avant envoi) ============== -->
+  <div id="overlay-email" class="hidden">
+    <div class="email-box">
+      <h2 id="email-titre">📮 Aperçu de l'email</h2>
+      <label>Destinataire</label>
+      <input type="text" id="email-to" readonly>
+      <label>Objet</label>
+      <input type="text" id="email-subject">
+      <label>Message (modifiable avant envoi)</label>
+      <textarea id="email-body"></textarea>
+      <div class="email-status" id="email-status"></div>
+      <div style="margin-top:14px;">
+        <button class="btn btn-save" id="btn-email-send" onclick="sendEmailNow()">📤 Envoyer</button>
+        <button class="btn btn-cancel" onclick="closeEmailOverlay()">✖ Annuler</button>
       </div>
     </div>
   </div>
@@ -226,6 +254,11 @@ const HDRS  = {'Content-Type':'application/json'};
 // sélecteur de réservations sur la fiche. PDF imprimables = livrable séparé.
 const RESA_TBL = 'tblWNj2tZj4CZxsuP';
 const RESA_API = `${PROXY}/v0/${BASE}/${RESA_TBL}`;
+
+// Envoi d'emails (adresse incorrecte / paiement reçu) — même Worker Cloudflare,
+// nouvelle route dédiée qui appelle Resend côté serveur avec la clé API cachée
+// (même principe que le jeton Airtable : jamais visible dans ce fichier).
+const EMAIL_API = `${PROXY}/send-email`;
 
 // ══════════════════════════════════════════════════════════
 //  CHAMPS — mapping id Airtable <-> clé DOM <-> libellé <-> type
@@ -766,6 +799,99 @@ function openResaOverlay(){
 }
 function closeResaOverlay(){
   document.getElementById('overlay-resa').classList.add('hidden');
+}
+
+// ══════════════════════════════════════════════════════════
+//  ENVOI D'EMAILS (adresse incorrecte / paiement reçu)
+//  Bouton sur la fiche -> aperçu modifiable -> validation employé -> envoi
+//  réel via le Worker Cloudflare (route /send-email, qui appelle Resend).
+// ══════════════════════════════════════════════════════════
+let _emailType = null;
+
+function fullAddress(){
+  const rue = gv('rue') || '', nmaison = gv('nmaison') || '';
+  const cp = gv('cp') || '', ville = gv('ville') || '';
+  const line1 = (rue + ' ' + nmaison).trim();
+  const line2 = (cp + ' ' + ville).trim();
+  return [line1, line2].filter(Boolean).join(', ');
+}
+
+const EMAIL_TEMPLATES = {
+  adresse: {
+    titre: '📮 Aperçu — Adresse incorrecte',
+    subject: 'Educpass — Vérification de votre adresse',
+    body: () => 'Bonjour ' + (gv('prenom')||'') + ' ' + (gv('nom')||'') + ',\n\n' +
+      'notre courrier postal nous est retourné avec la mention "n\'habite plus à cette adresse ou adresse incorrecte".\n\n' +
+      'Les coordonnées que nous avons dans notre fichier sont : ' + fullAddress() + '.\n\n' +
+      'Pourriez-vous nous renseigner ?\n\n' +
+      'En vous remerciant d\'avance.\n\n' +
+      'Le Secrétariat d\'Educpass.'
+  },
+  paiement: {
+    titre: '💰 Aperçu — Paiement reçu',
+    subject: 'Educpass — Confirmation de réception de paiement',
+    body: () => 'Bonjour ' + (gv('prenom')||'') + ' ' + (gv('nom')||'') + ',\n\n' +
+      'nous avons bien reçu votre paiement ' + (gv('paye')||'0') + ' €.\n\n' +
+      'Nous allons actualiser votre compte dans les prochaines minutes.\n\n' +
+      'Nous vous souhaitons de belles découvertes avec Educpass.\n\n' +
+      'L\'équipe d\'Educpass.'
+  }
+};
+
+function openEmailOverlay(type){
+  const tpl = EMAIL_TEMPLATES[type];
+  if(!tpl) return;
+  const email = gv('email');
+  if(!email){
+    setSt('❌ Impossible d\'envoyer : aucune adresse email enregistrée pour ce prof.');
+    return;
+  }
+  _emailType = type;
+  document.getElementById('email-titre').textContent = tpl.titre;
+  document.getElementById('email-to').value = email;
+  document.getElementById('email-subject').value = tpl.subject;
+  document.getElementById('email-body').value = tpl.body();
+  document.getElementById('email-status').textContent = '';
+  document.getElementById('email-status').className = 'email-status';
+  document.getElementById('btn-email-send').disabled = false;
+  document.getElementById('overlay-email').classList.remove('hidden');
+}
+function closeEmailOverlay(){
+  document.getElementById('overlay-email').classList.add('hidden');
+  _emailType = null;
+}
+
+async function sendEmailNow(){
+  const to = document.getElementById('email-to').value;
+  const subject = document.getElementById('email-subject').value;
+  const body = document.getElementById('email-body').value;
+  const statusEl = document.getElementById('email-status');
+  if(!to || !subject || !body){
+    statusEl.textContent = '❌ Destinataire, objet et message sont obligatoires.';
+    statusEl.className = 'email-status err';
+    return;
+  }
+  document.getElementById('btn-email-send').disabled = true;
+  statusEl.textContent = '⏳ Envoi en cours...';
+  statusEl.className = 'email-status';
+  try{
+    const r = await fetch(EMAIL_API, {
+      method: 'POST',
+      headers: HDRS,
+      body: JSON.stringify({ type: _emailType, to, subject, body, recordId: curId })
+    });
+    const data = await r.json().catch(()=>({}));
+    if(!r.ok || data.ok === false){
+      throw new Error(data.error || ('Erreur '+r.status));
+    }
+    statusEl.textContent = '✅ Email envoyé à ' + to + '.';
+    statusEl.className = 'email-status ok';
+    setTimeout(closeEmailOverlay, 1400);
+  }catch(e){
+    statusEl.textContent = '❌ ' + e.message;
+    statusEl.className = 'email-status err';
+    document.getElementById('btn-email-send').disabled = false;
+  }
 }
 
 function buildResaForm(){
