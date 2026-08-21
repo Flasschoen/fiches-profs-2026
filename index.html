@@ -21,6 +21,9 @@ body{margin:0;font-family:Calibri,Arial,sans-serif;background:var(--bg);color:#2
 .btn-save{background:var(--ok);color:#fff;}
 .btn-cancel{background:#888;color:#fff;}
 .btn-warn{background:#f8d7da;color:#7a1f1f;}
+.btn-yellow{background:#fff3b0;color:#6b5900;}
+.btn-green{background:#d4f4d4;color:#1e6b1e;}
+.btn-blue{background:#d4e6f9;color:#1a4d80;}
 .btn:disabled{opacity:.5;cursor:not-allowed;}
 .toolbar{background:#fff;border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .toolbar input[type=text],.toolbar select{padding:6px 8px;border:1px solid #bbb;border-radius:4px;font-size:13px;}
@@ -32,6 +35,7 @@ body{margin:0;font-family:Calibri,Arial,sans-serif;background:var(--bg);color:#2
 table.results{border-collapse:collapse;width:100%;background:#fff;font-size:12.5px;}
 table.results th{background:var(--navy);color:#fff;padding:6px 8px;text-align:left;position:sticky;top:0;cursor:pointer;white-space:nowrap;}
 table.results td{padding:5px 8px;border-bottom:1px solid var(--line);white-space:nowrap;}
+table.results td.col-niveau,table.results td.col-branche{max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 table.results tr:nth-child(even){background:#f7faff;}
 table.results tr:hover{background:#eaf1ff;cursor:pointer;}
 .filters-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
@@ -46,6 +50,10 @@ legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
 .fitem input,.fitem select,.fitem textarea{width:100%;padding:6px 7px;border:1px solid #bbb;border-radius:4px;font-size:13px;font-family:inherit;}
 .fitem input:disabled,.fitem textarea:disabled{background:#f2f2f2;color:#777;}
 .fitem textarea{min-height:52px;resize:vertical;}
+.fitem input.fld-yellow{background:#fffbe0;}
+.fitem input.fld-green{background:#e6f9e6;}
+.fitem input.fld-matricule{background:#fde3cc;}
+.fitem input.fld-matricule:disabled{background:#f5d8bb;color:#7a4a1f;cursor:not-allowed;}
 .hidden{display:none !important;}
 .pin-box,.pin-mgr-box{background:#fff;border-radius:8px;padding:32px 40px;box-shadow:0 2px 20px rgba(0,0,0,.25);text-align:center;min-width:320px;}
 #overlay-pin,#overlay-pin-mgr,#overlay-resa,#overlay-email{position:fixed;inset:0;background:rgba(20,30,50,.55);display:flex;align-items:center;justify-content:center;z-index:999;}
@@ -71,7 +79,7 @@ legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
 .linked-list{font-size:12.5px;color:#333;}
 .linked-list span{display:inline-block;background:#eef2fa;border-radius:3px;padding:2px 6px;margin:2px 4px 2px 0;}
 .note-box{background:#fff8e6;border:1px solid #f0d98a;border-radius:5px;padding:8px 12px;font-size:12px;color:#7a5c00;margin-bottom:12px;}
-.result-count{display:inline-block;font-size:17px;font-weight:800;color:var(--navy);background:#fff;border:2px solid var(--navy);border-radius:6px;padding:5px 14px;min-width:20px;text-align:center;}
+.result-count{display:inline-block;font-size:17px;font-weight:800;color:#5b2c8a;background:#eee0f7;border:2px solid #8e44ad;border-radius:6px;padding:5px 14px;min-width:20px;text-align:center;}
 .result-count:empty{display:none;}
 </style>
 </head>
@@ -80,7 +88,7 @@ legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
 <div class="hdr-bar">
   <div class="logo">EDUCPASS</div>
   <div class="title">📋 FICHE PROF — 2026</div>
-  <button class="btn btn-orange" id="btn-nouveau" onclick="nouveauMembre()">+ Nouveau prof</button>
+  <button class="btn" id="btn-delete-header" onclick="deleteMember()" style="display:none;background:var(--err);color:#fff;">🗑️ Supprimer</button>
   <button class="btn" id="btn-pin-mgr" onclick="showGestionPins()" style="display:none;">🔑 PINs</button>
   <button class="btn" onclick="logoutPin()">🔒 <span id="header-agent">—</span></button>
 </div>
@@ -123,7 +131,7 @@ legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
       <table class="results" id="tbl-results">
         <thead><tr>
           <th>N° membre</th><th>Nom</th><th>Prénom</th><th>Ville</th><th>CP</th>
-          <th>Statut</th><th>Code</th><th>Année</th><th>Niveau</th><th>Branche</th><th>Langue</th><th>Fédération</th>
+          <th>Statut</th><th>Code</th><th>Année</th><th>Niveau</th><th>Branche</th>
           <th>Email</th><th>GSM</th>
         </tr></thead>
         <tbody id="tbl-body"></tbody>
@@ -140,10 +148,9 @@ legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
       <div style="margin-bottom:14px;">
         <button class="btn btn-save" id="btn-save" onclick="saveMember()">💾 Enregistrer</button>
         <button class="btn btn-cancel" onclick="cancelAndReset()">↩️ Annuler</button>
-        <button class="btn" onclick="openResaOverlay()">📋 Réservation/Confirmation</button>
-        <button class="btn" id="btn-delete" onclick="deleteMember()" style="display:none;background:var(--err);color:#fff;">🗑️ Supprimer</button>
-        <button class="btn" id="btn-email-adresse" onclick="openEmailOverlay('adresse')">📮 Adresse incorrecte</button>
-        <button class="btn" id="btn-email-paiement" onclick="openEmailOverlay('paiement')">💰 Paiement reçu</button>
+        <button class="btn btn-blue" onclick="openResaOverlay()">📋 Réservation/Confirmation</button>
+        <button class="btn btn-yellow" id="btn-email-adresse" onclick="openEmailOverlay('adresse')">📮 RETOUR POSTAL</button>
+        <button class="btn btn-green" id="btn-email-paiement" onclick="openEmailOverlay('paiement')">💰 Paiement reçu</button>
         <button class="btn btn-warn" id="btn-email-rappel" onclick="openEmailOverlay('rappel')">⚠️ Rappel paiement</button>
       </div>
 
@@ -309,8 +316,6 @@ const SECTIONS = [
     ['fldvVztzyHfDj5vKK','branche','Branche','text'],
     ['fldq5ZUxCvviR3mnJ','autreniveau',"Autre(s) niveau(x)",'text'],
     ['fldZU8bGWGZSLEhGh','autrebranche',"Autre(s) branche(s)",'text'],
-    ['fldbSgslspYE5le4Z','annee','Année','numtext'],
-    ['fldU5X9CD1DCoHZy0','selection','Sélection','text'],
   ]},
   {title:'Statut & suivi', fields:[
     ['fldNcZS21o9aKm9kf','statut','Statut','select:statut'],
@@ -321,9 +326,11 @@ const SECTIONS = [
     ['fldLPWo2RnpWf2qtW','etablissement','N° établissement','number'],
     ['fldTZAwBOZ9r6STOX','actiondir','Action direction','number'],
     ['fldVKpHtb2Tj1G9tM','tri2','Clé de tri 2','number'],
-    ['fldzx5EdPg3ugcQXd','tri3','Clé de tri 3','text'],
   ]},
   {title:'Paiement', fields:[
+    ['fldbSgslspYE5le4Z','annee','Année','numtext'],
+    ['fldU5X9CD1DCoHZy0','selection','Sélection','text'],
+    ['fldzx5EdPg3ugcQXd','tri3','Clé de tri 3','text'],
     ['fldYpwabCtlt9esnQ','paye','Payé','number'],
     ['fldqIs6Y2ebWFDg62','datepaiement','Date de paiement','date'],
     ['fldMYWTiBVzMG41fN','transaction','Transaction','text'],
@@ -565,11 +572,13 @@ function renderTable(){
     const f = r.fields;
     const tr = document.createElement('tr');
     tr.onclick = ()=>loadMember(r.id);
-    const cols = [f['N° membre'], f['Nom'], f['Prénom'], f['Ville'], f['CP'],
-      (f['Statut']&&f['Statut'].name)||'', f['Code'], f['Année'], f['Niveau'], f['Branche'],
-      (f['Langue']&&f['Langue'].name)||'', (f['Fédération']&&f['Fédération'].name)||'',
-      f['Email'], f['GSM']];
-    tr.innerHTML = cols.map(v=>'<td>'+(v==null?'':String(v).replace(/</g,'&lt;'))+'</td>').join('');
+    const cols = [
+      [f['N° membre'], ''], [f['Nom'], ''], [f['Prénom'], ''], [f['Ville'], ''], [f['CP'], ''],
+      [(f['Statut']&&f['Statut'].name)||'', ''], [f['Code'], ''], [f['Année'], ''],
+      [f['Niveau'], 'col-niveau'], [f['Branche'], 'col-branche'],
+      [f['Email'], ''], [f['GSM'], ''],
+    ];
+    tr.innerHTML = cols.map(([v,cls])=>'<td'+(cls?' class="'+cls+'"':'')+'>'+(v==null?'':String(v).replace(/</g,'&lt;'))+'</td>').join('');
     tbody.appendChild(tr);
   });
   window._lastFiltered = rows;
@@ -603,6 +612,13 @@ function showView(v){
   document.getElementById('view-fiche').classList.toggle('hidden', v!=='fiche');
 }
 
+// Fond jaune pâle (identité/coordonnées) et vert pâle (paiement), + ordre de
+// tabulation demandé par Marc (2026-08-21) : Nom→Prénom→Naissance→Rue→CP→
+// Ville→Année→Sélection→Tri 3.
+const FLD_YELLOW = ['nom','prenom','naissance','rue','cp','ville'];
+const FLD_GREEN = ['annee','selection','tri3'];
+const FLD_TABORDER = ['nom','prenom','naissance','rue','cp','ville','annee','selection','tri3'];
+
 function buildFicheForm(){
   const wrap = document.getElementById('fiche-sections');
   wrap.innerHTML = '';
@@ -629,6 +645,11 @@ function buildFicheForm(){
       input.id = 'f-'+key;
       input.dataset.fieldId = fid;
       input.oninput = markDirty;
+      if(FLD_YELLOW.includes(key)) input.classList.add('fld-yellow');
+      if(FLD_GREEN.includes(key)) input.classList.add('fld-green');
+      if(key==='matricule') input.classList.add('fld-matricule');
+      const tabPos = FLD_TABORDER.indexOf(key);
+      if(tabPos !== -1) input.tabIndex = tabPos + 1;
       item.appendChild(input);
       if(key==='paye'){
         const suf = document.createElement('span');
@@ -641,6 +662,7 @@ function buildFicheForm(){
     fs.appendChild(row);
     wrap.appendChild(fs);
   });
+  updateMatriculeEditable();
 }
 
 function markDirty(){ _dirty = true; }
@@ -667,7 +689,7 @@ function setSaveDisabled(v){
   const b2 = document.getElementById('btn-save-bottom'); if(b2) b2.disabled = v;
 }
 function setDeleteVisible(v){
-  const d1 = document.getElementById('btn-delete'); if(d1) d1.style.display = v ? '' : 'none';
+  const d1 = document.getElementById('btn-delete-header'); if(d1) d1.style.display = v ? '' : 'none';
   const d2 = document.getElementById('btn-delete-bottom'); if(d2) d2.style.display = v ? '' : 'none';
 }
 
@@ -691,20 +713,6 @@ async function loadMember(id){
     setSt('');
   }catch(e){ setSt('❌ '+e.message); }
   finally{ _memberLoading=false; setSaveDisabled(false); }
-}
-
-function nouveauMembre(){
-  if(_dirty && !confirm('Des modifications non enregistrées seront perdues. Continuer ?')) return;
-  clearTimeout(_searchTimer);
-  curId = null; _dirty=false;
-  document.getElementById('fiche-titre').textContent = 'Nouveau prof';
-  document.getElementById('f-nmembre-disp').textContent = '(attribué automatiquement)';
-  document.getElementById('f-nommaj-disp').textContent = '—';
-  SECTIONS.forEach(sec=>sec.fields.forEach(([fid,key])=>sv(key,'')));
-  resaLinkedIds = []; curResaId = null;
-  document.getElementById('resa-select').innerHTML = '<option value="">— Sélectionnez —</option><option value="__new__">+ Nouvelle réservation</option>';
-  document.getElementById('resa-panel').classList.add('hidden');
-  showView('fiche');
 }
 
 // Accepte AAAA-MM-JJ (déjà ISO) ou JJ/MM/AAAA, JJ-MM-AAAA, JJ.MM.AAAA -> renvoie une date ISO ou null si invalide.
@@ -1071,6 +1079,15 @@ function _setAgentSession(agent){
   document.getElementById('header-agent').textContent = agent;
   document.getElementById('btn-pin-mgr').style.display = (agent==='MARC') ? '' : 'none';
   setDeleteVisible(agent==='MARC');
+  updateMatriculeEditable();
+}
+
+// Matricule modifiable uniquement par MARC et VANESSA (demande de Marc, 2026-08-21).
+function updateMatriculeEditable(){
+  const agent = sessionStorage.getItem('auth_agent');
+  const canEdit = (agent==='MARC' || agent==='VANESSA');
+  const el = document.getElementById('f-matricule');
+  if(el) el.disabled = !canEdit;
 }
 function loginPin(){
   const agent = document.getElementById('pin-agent').value;
