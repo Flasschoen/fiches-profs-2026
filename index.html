@@ -20,6 +20,7 @@ body{margin:0;font-family:Calibri,Arial,sans-serif;background:var(--bg);color:#2
 .btn-navy{background:var(--navy-dark);color:#fff;}
 .btn-save{background:var(--ok);color:#fff;}
 .btn-cancel{background:#888;color:#fff;}
+.btn-warn{background:#f8d7da;color:#7a1f1f;}
 .btn:disabled{opacity:.5;cursor:not-allowed;}
 .toolbar{background:#fff;border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .toolbar input[type=text],.toolbar select{padding:6px 8px;border:1px solid #bbb;border-radius:4px;font-size:13px;}
@@ -143,6 +144,7 @@ legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
         <button class="btn" id="btn-delete" onclick="deleteMember()" style="display:none;background:var(--err);color:#fff;">🗑️ Supprimer</button>
         <button class="btn" id="btn-email-adresse" onclick="openEmailOverlay('adresse')">📮 Adresse incorrecte</button>
         <button class="btn" id="btn-email-paiement" onclick="openEmailOverlay('paiement')">💰 Paiement reçu</button>
+        <button class="btn btn-warn" id="btn-email-rappel" onclick="openEmailOverlay('rappel')">⚠️ Rappel paiement</button>
       </div>
 
       <div id="fiche-sections"></div>
@@ -835,8 +837,43 @@ const EMAIL_TEMPLATES = {
       'Nous allons actualiser votre compte dans les prochaines minutes.\n\n' +
       'Nous vous souhaitons de belles découvertes avec Educpass.\n\n' +
       'L\'équipe d\'Educpass.'
+  },
+  rappel: {
+    titre: '⚠️ Aperçu — Rappel paiement',
+    subject: 'Educpass — Rappel de paiement',
+    body: () => 'RAPPEL DE PAIEMENT\n' +
+      'Bonjour ' + (gv('prenom')||'') + ' ' + (gv('nom')||'') + ',\n\n' +
+      'Bienvenue chez EDUCPASS. Nous avons bien reçu votre inscription sur notre site et nous vous en remercions.\n\n' +
+      'Sauf erreur de notre part, nous n\'avons pas enregistré le paiement de votre cotisation.\n\n' +
+      'Pour ce faire, vous devez aller sur CONNEXION, vous connecter comme « membre » à l\'aide de votre matricule ou de votre adresse électronique + votre mot de passe que vous avez enregistré lors de votre inscription.\n\n' +
+      'Une fois connecté, il suffit d\'aller sur COTISATION et effectuer le paiement avec la banque de votre choix ou un virement bancaire. Vous serez activé directement sauf avec les virements bancaires. Il faudra attendre 24 à 48h.\n\n' +
+      'En cas de soucis, nous assurons une permanence 7 jours sur 7 de 10h à 18h au 0474/966.968. N\'hésitez pas à nous contacter par GSM ou par mail à info@educpass.eu.\n\n' +
+      'L\'équipe d\'Educpass.'
   }
 };
+
+// Mots-clés qui, s'ils apparaissent tels quels (mot entier) dans un message,
+// sont automatiquement transformés en lien cliquable dans la version HTML de
+// l'email envoyée (la zone de texte de l'aperçu reste en texte brut, modifiable
+// normalement — seule la conversion à l'envoi ajoute les liens).
+const EMAIL_LINK_KEYWORDS = {
+  'CONNEXION': 'https://www.educpass.eu/FR/Connexion.awp',
+  'COTISATION': 'https://www.educpass.eu/FR/Produits.awp'
+};
+
+function escapeHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function bodyToHtml(text){
+  let html = escapeHtml(text);
+  Object.keys(EMAIL_LINK_KEYWORDS).forEach(function(word){
+    const url = EMAIL_LINK_KEYWORDS[word];
+    const re = new RegExp('\\b' + word + '\\b', 'g');
+    html = html.replace(re, '<a href="' + url + '">' + word + '</a>');
+  });
+  return html.replace(/\n/g, '<br>');
+}
 
 function openEmailOverlay(type){
   const tpl = EMAIL_TEMPLATES[type];
@@ -875,10 +912,11 @@ async function sendEmailNow(){
   statusEl.textContent = '⏳ Envoi en cours...';
   statusEl.className = 'email-status';
   try{
+    const html = bodyToHtml(body);
     const r = await fetch(EMAIL_API, {
       method: 'POST',
       headers: HDRS,
-      body: JSON.stringify({ type: _emailType, to, subject, body, recordId: curId })
+      body: JSON.stringify({ type: _emailType, to, subject, body, html, recordId: curId })
     });
     const data = await r.json().catch(()=>({}));
     if(!r.ok || data.ok === false){
