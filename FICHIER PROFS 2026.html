@@ -390,7 +390,7 @@ const RESA_SECTIONS = [
 
 // Colonnes filtrables dans la vue liste (id, libellé)
 const FILTER_FIELDS = [
-  ['Nom','nom'],['Prénom','prenom'],['Ville','ville'],['CP','cp'],['Statut','statut'],
+  ['Nom','nom'],['Prénom','prenom'],['N° matricule','matricule'],['Ville','ville'],['CP','cp'],['Statut','statut'],
   ['Code','code'],['Année','annee'],['Niveau','niveau'],['Branche','branche'],
   ['Langue','langue'],['Fédération','federation'],['Email','email'],['GSM','gsm']
 ];
@@ -545,7 +545,7 @@ function populateFilterSelects(){
 function valueForKey(fields, key){
   // Retrouve la valeur affichable pour une clé de filtre/colonne à partir des fields Airtable
   const map = {
-    nom:'Nom', prenom:'Prénom', ville:'Ville', cp:'CP', statut:'Statut', code:'Code',
+    nom:'Nom', prenom:'Prénom', matricule:'N° matricule', ville:'Ville', cp:'CP', statut:'Statut', code:'Code',
     annee:'Année', niveau:'Niveau', branche:'Branche', langue:'Langue', federation:'Fédération',
     tri2:'Clé de tri 2', tri3:'Clé de tri 3', email:'Email', gsm:'GSM'
   };
