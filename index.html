@@ -2,11 +2,1170 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>FICHE PROF — EDUCPASS 2026</title>
-<meta http-equiv="refresh" content="0; url=FICHIER%20PROFS%202026.html">
-<script>location.replace("FICHIER PROFS 2026.html");</script>
+<style>
+:root{
+  --navy:#1e3a6e; --navy-dark:#152a52; --orange:#c55a11; --bg:#f0f4fa;
+  --line:#d7e0ee; --ok:#27ae60; --err:#c0392b;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:Calibri,Arial,sans-serif;background:var(--bg);color:#222;}
+.hdr-bar{background:var(--navy);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.hdr-bar .logo{font-weight:900;letter-spacing:1px;}
+.hdr-bar .title{font-weight:700;flex:1;}
+.btn{border:none;border-radius:4px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;background:#eee;color:#222;}
+.btn:hover{filter:brightness(0.95);}
+.btn-orange{background:var(--orange);color:#fff;}
+.btn-navy{background:var(--navy-dark);color:#fff;}
+.btn-save{background:var(--ok);color:#fff;}
+.btn-cancel{background:#888;color:#fff;}
+.btn-warn{background:#f8d7da;color:#7a1f1f;}
+.btn-yellow{background:#fff3b0;color:#6b5900;}
+.btn-green{background:#d4f4d4;color:#1e6b1e;}
+.btn-blue{background:#d4e6f9;color:#1a4d80;}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+.toolbar{background:#fff;border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.toolbar input[type=text],.toolbar select{padding:6px 8px;border:1px solid #bbb;border-radius:4px;font-size:13px;}
+#st-bar{padding:4px 16px;font-size:12px;color:#555;min-height:18px;}
+#sync-pending{display:none;background:#f39c12;color:#fff;text-align:center;padding:4px;font-weight:700;font-size:12px;}
+#sync-pending.show{display:block;animation:pulse 1s infinite alternate;}
+@keyframes pulse{from{opacity:.6}to{opacity:1}}
+.wrap{padding:14px 16px;}
+table.results{border-collapse:collapse;width:100%;background:#fff;font-size:12.5px;}
+table.results th{background:var(--navy);color:#fff;padding:6px 8px;text-align:left;position:sticky;top:0;cursor:pointer;white-space:nowrap;}
+table.results td{padding:5px 8px;border-bottom:1px solid var(--line);white-space:nowrap;}
+table.results td.col-niveau,table.results td.col-branche{max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+table.results tr:nth-child(even){background:#f7faff;}
+table.results tr:hover{background:#eaf1ff;cursor:pointer;}
+.filters-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+.filters-row select,.filters-row input{padding:5px 7px;border:1px solid #bbb;border-radius:4px;font-size:12.5px;}
+.fiche-box{background:#fff;border-radius:6px;box-shadow:0 1px 6px rgba(30,58,110,.12);padding:16px 20px;max-width:1100px;}
+.fiche-hdr{font-size:20px;font-weight:900;color:var(--navy);margin-bottom:4px;}
+.fiche-sub{color:#777;font-size:13px;margin-bottom:14px;}
+fieldset{border:1px solid var(--line);border-radius:6px;margin-bottom:14px;padding:10px 14px 14px;}
+legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
+.frow{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px 14px;}
+.fitem label{display:block;font-size:11.5px;color:#555;margin-bottom:2px;font-weight:600;}
+.fitem input,.fitem select,.fitem textarea{width:100%;padding:6px 7px;border:1px solid #bbb;border-radius:4px;font-size:13px;font-family:inherit;}
+.fitem input:disabled,.fitem textarea:disabled{background:#f2f2f2;color:#777;}
+.fitem textarea{min-height:52px;resize:vertical;}
+.fitem input.fld-yellow{background:#fffbe0;}
+.fitem input.fld-green{background:#e6f9e6;}
+.fitem input.fld-matricule{background:#fde3cc;}
+.fitem input.fld-matricule:disabled{background:#f5d8bb;color:#7a4a1f;cursor:not-allowed;}
+.hidden{display:none !important;}
+.pin-box,.pin-mgr-box{background:#fff;border-radius:8px;padding:32px 40px;box-shadow:0 2px 20px rgba(0,0,0,.25);text-align:center;min-width:320px;}
+#overlay-pin,#overlay-pin-mgr,#overlay-resa,#overlay-email{position:fixed;inset:0;background:rgba(20,30,50,.55);display:flex;align-items:center;justify-content:center;z-index:999;}
+#overlay-loading{position:fixed;inset:0;background:rgba(20,30,50,.35);display:flex;align-items:center;justify-content:center;z-index:1000;pointer-events:none;}
+.loading-box{background:#fff;border-radius:10px;padding:26px 40px;box-shadow:0 4px 28px rgba(0,0,0,.3);font-size:19px;font-weight:700;color:var(--navy);text-align:center;min-width:320px;}
+.resa-mgr-box{background:#fff;border-radius:8px;padding:22px 28px;box-shadow:0 2px 20px rgba(0,0,0,.25);max-width:900px;width:92vw;max-height:85vh;overflow:auto;text-align:left;}
+.resa-mgr-box h2{margin-top:0;color:var(--navy);}
+.email-box{background:#fff;border-radius:8px;padding:22px 28px;box-shadow:0 2px 20px rgba(0,0,0,.25);max-width:640px;width:92vw;max-height:85vh;overflow:auto;text-align:left;}
+.email-box h2{margin-top:0;color:var(--navy);}
+.email-box label{display:block;font-size:12px;color:#555;margin:10px 0 3px;font-weight:600;}
+.email-box input[type=text],.email-box textarea{width:100%;padding:7px 9px;border:1px solid #bbb;border-radius:4px;font-size:13px;font-family:inherit;}
+.email-box textarea{min-height:160px;resize:vertical;}
+.email-status{font-size:12.5px;min-height:18px;margin-top:8px;}
+.email-status.err{color:var(--err);}
+.email-status.ok{color:var(--ok);}
+.pin-logo{font-weight:900;color:var(--navy);letter-spacing:1px;font-size:20px;margin-bottom:6px;}
+.pin-box label,.pin-mgr-box label{display:block;text-align:left;font-size:12.5px;font-weight:600;margin:12px 0 4px;}
+.pin-box select,.pin-box input,.pin-mgr-box input{width:100%;padding:8px;border:1px solid #bbb;border-radius:4px;font-size:14px;}
+.pin-btn{margin-top:18px;width:100%;padding:10px;background:var(--navy);color:#fff;border:none;border-radius:4px;font-weight:700;cursor:pointer;}
+.pin-err{color:var(--err);font-size:12.5px;min-height:18px;margin-top:6px;}
+.pin-row{display:flex;align-items:center;gap:8px;margin:8px 0;text-align:left;}
+.pin-row label{min-width:80px;margin:0;}
+.linked-list{font-size:12.5px;color:#333;}
+.linked-list span{display:inline-block;background:#eef2fa;border-radius:3px;padding:2px 6px;margin:2px 4px 2px 0;}
+.note-box{background:#fff8e6;border:1px solid #f0d98a;border-radius:5px;padding:8px 12px;font-size:12px;color:#7a5c00;margin-bottom:12px;}
+.result-count{display:inline-block;font-size:17px;font-weight:800;color:#5b2c8a;background:#eee0f7;border:2px solid #8e44ad;border-radius:6px;padding:5px 14px;min-width:20px;text-align:center;}
+.result-count:empty{display:none;}
+</style>
 </head>
 <body>
-<p>Redirection vers la page... Si rien ne se passe, <a href="FICHIER%20PROFS%202026.html">cliquez ici</a>.</p>
+
+<div class="hdr-bar">
+  <div class="logo">EDUCPASS</div>
+  <div class="title">📋 FICHE PROF — 2026</div>
+  <button class="btn" id="btn-delete-header" onclick="deleteMember()" style="display:none;background:var(--err);color:#fff;">🗑️ Supprimer</button>
+  <button class="btn" id="btn-pin-mgr" onclick="showGestionPins()" style="display:none;">🔑 PINs</button>
+  <button class="btn" onclick="logoutPin()">🔒 <span id="header-agent">—</span></button>
+</div>
+
+<div id="sync-pending">⏳ Synchronisation en cours…</div>
+<div id="st-bar"></div>
+<div id="overlay-loading" class="hidden">
+  <div class="loading-box" id="loading-msg"></div>
+</div>
+
+<div class="wrap">
+
+  <div class="toolbar">
+    <input type="text" id="rch" placeholder="Rechercher : nom, prénom, N° membre, matricule, ville..." style="min-width:320px;" oninput="onSearchInput()">
+    <button class="btn" onclick="doSearch()">🔍 Rechercher</button>
+    <button class="btn" onclick="showView('liste')">📄 Liste des résultats</button>
+    <span id="rch-count" class="result-count"></span>
+  </div>
+
+  <!-- ====================== VUE LISTE ====================== -->
+  <div id="view-liste">
+    <div class="filters-row">
+      <select id="f-champ1" onchange="renderTable()"><option value="">Filtrer par champ (parmi les résultats)…</option></select>
+      <input type="text" id="f-val1" placeholder="valeur…" oninput="renderTable()">
+      <select id="f-champ2" onchange="renderTable()"><option value="">Filtrer par champ (parmi les résultats)…</option></select>
+      <input type="text" id="f-val2" placeholder="valeur…" oninput="renderTable()">
+      <button class="btn" onclick="exportFiltered()">⬇️ Exporter CSV</button>
+    </div>
+    <div class="filters-row" style="margin-top:-4px;">
+      <span style="font-size:12px;color:#777;align-self:center;">Critères exacts (combinables, interrogent toute la base) :</span>
+      <input type="text" id="flt-code" placeholder="Code" title="Code" style="max-width:80px;" oninput="onSearchInput()">
+      <input type="text" id="flt-annee" placeholder="Année" title="Année" style="max-width:80px;" oninput="onSearchInput()">
+      <input type="text" id="flt-newsletter" placeholder="Newsletter" title="Newsletter (0 ou 1)" style="max-width:90px;" oninput="onSearchInput()">
+      <input type="text" id="flt-codesms" placeholder="Code SMS" title="Code SMS (0 ou 1) — GSM valide" style="max-width:90px;" oninput="onSearchInput()">
+      <input type="text" id="flt-codenews" placeholder="Code NEWS" title="Code NEWS (0 ou 1) — Non Educ News" style="max-width:95px;" oninput="onSearchInput()">
+      <input type="text" id="flt-tri2" placeholder="Tri 2" title="Clé de tri 2" style="max-width:80px;" oninput="onSearchInput()">
+      <input type="text" id="flt-tri3" placeholder="Tri 3" title="Clé de tri 3" style="max-width:80px;" oninput="onSearchInput()">
+    </div>
+    <div style="max-height:65vh;overflow:auto;">
+      <table class="results" id="tbl-results">
+        <thead><tr>
+          <th>N° membre</th><th>Nom</th><th>Prénom</th><th>Ville</th><th>CP</th>
+          <th>Statut</th><th>Code</th><th>Année</th><th>Niveau</th><th>Branche</th>
+          <th>Email</th><th>GSM</th>
+        </tr></thead>
+        <tbody id="tbl-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ====================== VUE FICHE ====================== -->
+  <div id="view-fiche" class="hidden">
+    <div class="fiche-box">
+      <div class="fiche-hdr" id="fiche-titre">—</div>
+      <div class="fiche-sub">N° membre : <b id="f-nmembre-disp">—</b> · Nom (majuscules, auto) : <b id="f-nommaj-disp">—</b></div>
+
+      <div style="margin-bottom:14px;">
+        <button class="btn btn-save" id="btn-save" onclick="saveMember()">💾 Enregistrer</button>
+        <button class="btn btn-cancel" onclick="cancelAndReset()">↩️ Annuler</button>
+        <button class="btn btn-blue" onclick="openResaOverlay()">📋 Réservation/Confirmation</button>
+        <button class="btn btn-yellow" id="btn-email-adresse" onclick="openEmailOverlay('adresse')">📮 RETOUR POSTAL</button>
+        <button class="btn btn-green" id="btn-email-paiement" onclick="openEmailOverlay('paiement')">💰 Paiement reçu</button>
+        <button class="btn btn-warn" id="btn-email-rappel" onclick="openEmailOverlay('rappel')">⚠️ Rappel paiement</button>
+      </div>
+
+      <div id="fiche-sections"></div>
+
+      <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line);">
+        <button class="btn btn-save" id="btn-save-bottom" onclick="saveMember()">💾 Enregistrer</button>
+        <button class="btn btn-cancel" onclick="cancelAndReset()">↩️ Annuler</button>
+        <button class="btn" id="btn-delete-bottom" onclick="deleteMember()" style="display:none;background:var(--err);color:#fff;">🗑️ Supprimer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== FENÊTRE RÉSERVATIONS & CONFIRMATIONS ============== -->
+  <div id="overlay-resa" class="hidden">
+    <div class="resa-mgr-box">
+      <h2>📋 Réservations &amp; Confirmations</h2>
+      <div class="frow" style="margin-bottom:10px;">
+        <div class="fitem" style="grid-column:1/-1;">
+          <label>Choisir une réservation liée à ce prof</label>
+          <select id="resa-select" onchange="onResaSelect()">
+            <option value="">— Sélectionnez —</option>
+          </select>
+        </div>
+      </div>
+      <div id="resa-panel" class="hidden">
+        <div class="note-box">Coordonnées du prof : <b id="resa-prof-coord"></b></div>
+        <div class="frow" id="resa-fields"></div>
+        <div style="margin-top:10px;">
+          <button class="btn btn-save" onclick="saveResa()">💾 Enregistrer la réservation</button>
+          <button class="btn btn-cancel" onclick="closeResaPanel()">↩️ Fermer le formulaire</button>
+        </div>
+      </div>
+      <div style="margin-top:16px;text-align:right;">
+        <button class="btn btn-cancel" onclick="closeResaOverlay()">✖ Fermer la fenêtre</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== FENÊTRE APERÇU EMAIL (avant envoi) ============== -->
+  <div id="overlay-email" class="hidden">
+    <div class="email-box">
+      <h2 id="email-titre">📮 Aperçu de l'email</h2>
+      <label>Destinataire</label>
+      <input type="text" id="email-to" readonly>
+      <label>Objet</label>
+      <input type="text" id="email-subject">
+      <label>Message (modifiable avant envoi)</label>
+      <textarea id="email-body"></textarea>
+      <div class="email-status" id="email-status"></div>
+      <div style="margin-top:14px;">
+        <button class="btn btn-save" id="btn-email-send" onclick="sendEmailNow()">📤 Envoyer</button>
+        <button class="btn btn-cancel" onclick="closeEmailOverlay()">✖ Annuler</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ====================== OVERLAY LOGIN PIN ====================== -->
+<div id="overlay-pin" class="hidden">
+  <div class="pin-box">
+    <div class="pin-logo">EDUCPASS</div>
+    <h2>🔐 Accès sécurisé</h2>
+    <label>Agent :</label>
+    <select id="pin-agent">
+      <option value="">— Sélectionnez —</option>
+      <option>MARC</option>
+      <option>MAÏTE</option>
+      <option>PASCAL</option>
+      <option>VANESSA</option>
+    </select>
+    <label>Code PIN (4 chiffres) :</label>
+    <input type="password" id="pin-code" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" placeholder="••••" autocomplete="off" oninput="if(this.value.length===4)loginPin()">
+    <div id="pin-error" class="pin-err"></div>
+    <button class="pin-btn" onclick="loginPin()">Connexion →</button>
+  </div>
+</div>
+
+<!-- ====================== OVERLAY GESTION PINS (MARC uniquement) ====================== -->
+<div id="overlay-pin-mgr" class="hidden">
+  <div class="pin-mgr-box">
+    <h2>🔑 Gestion des codes PIN</h2>
+    <div class="pin-row"><label>MARC :</label><input type="password" id="pm-marc" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
+    <div class="pin-row"><label>MAÏTE :</label><input type="password" id="pm-maite" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
+    <div class="pin-row"><label>PASCAL :</label><input type="password" id="pm-pascal" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
+    <div class="pin-row"><label>VANESSA :</label><input type="password" id="pm-vanessa" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
+    <div class="pin-err" id="pm-msg"></div>
+    <div style="display:flex;gap:8px;margin-top:14px;">
+      <button class="btn btn-cancel" onclick="closeGestionPins()">Annuler</button>
+      <button class="btn btn-save" onclick="saveGestionPins()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  CONFIG AIRTABLE — passe désormais par un proxy Cloudflare Worker qui
+//  garde le jeton Airtable caché côté serveur (jamais exposé dans ce
+//  fichier ni visible via "Afficher le code source"). Le Worker ne
+//  fait que relayer vers Airtable en ajoutant lui-même le jeton.
+// ══════════════════════════════════════════════════════════
+const PROXY = 'https://educpass-profs-proxy.marc-flasschoen.workers.dev';
+const BASE  = 'appWCfo8WBkMGUuc2';
+const TBL   = 'tbl3e83BINBUCkhMH';
+const API   = `${PROXY}/v0/${BASE}/${TBL}`;
+const HDRS  = {'Content-Type':'application/json'};
+
+// Table "Réservations & Confirmations" (liée aux Profs) — utilisée pour le
+// sélecteur de réservations sur la fiche. PDF imprimables = livrable séparé.
+const RESA_TBL = 'tblWNj2tZj4CZxsuP';
+const RESA_API = `${PROXY}/v0/${BASE}/${RESA_TBL}`;
+
+// Envoi d'emails (adresse incorrecte / paiement reçu) — même Worker Cloudflare,
+// nouvelle route dédiée qui appelle Resend côté serveur avec la clé API cachée
+// (même principe que le jeton Airtable : jamais visible dans ce fichier).
+const EMAIL_API = `${PROXY}/send-email`;
+
+// ══════════════════════════════════════════════════════════
+//  CHAMPS — mapping id Airtable <-> clé DOM <-> libellé <-> type
+//  NOTE IMPORTANTE : la table Profs contient ~23 200 lignes (contre
+//  ~1000 côté Attractions). On NE charge donc JAMAIS tout en mémoire :
+//  chaque recherche interroge Airtable avec une formule filtrée
+//  (voir doSearch()), et l'export CSV ne porte que sur les résultats
+//  affichés à l'écran, pas sur toute la base.
+// ══════════════════════════════════════════════════════════
+const CHOICES = {
+  statut: ['Actif','Retraité','Prof relais','Comité','ACTIF','Statut'],
+  probleme: ['PAS DE PROBLEME','DESINSCRIPTION','PROBLEME à vérifier','PROBLEME code 999','PROBLEME code 900','Problème','PROBLEPAS DE PROBLEMEME à vérifier'],
+  langue: ['FR','NL','DE','LU','FF','Langue'],
+  federation: ['Fédération Wallonie-Bruxelles','Fédération Wallonie-Bruxelles sans Matricule','Vlaamse gemeenschap','Communauté Flamande','Communauté Flamande sans Matricule','Enseignant français','Enseignant luxembourgeois','Enseignant germanophone','Fédération','Federation Wallonie-Bruxelles']
+};
+
+// Choix des champs singleSelect de la table Réservations & Confirmations
+// (les 4 valeurs existantes de "Type" suffisent — confirmé par Marc, pas
+// besoin d'ajouter Cracovie/Inde/Beauvechain pour l'instant).
+const RESA_CHOICES = {
+  type: ['Sardaigne','Astérix','Futuroscope','Profs-Contacts'],
+  modepaiement: ['Aux échéances demandées','Par mensualité','250 € par mois','150 € par mois'],
+  statutresa: ['Confirmé','En attente','Annulé']
+};
+
+const SECTIONS = [
+  {title:'Identité', fields:[
+    ['fldJXdSf8R0jebj4R','nom','Nom','text'],
+    ['fld5nkGdGAHBYaREe','prenom','Prénom','text'],
+    ['fldDGvawJ2OVDahqP','matricule','N° matricule','text'],
+    ['flduyaF2E9lV1APP5','naissance','Date de naissance','text'],
+    ['fldCkcXCKGApacCZM','langue','Langue','select:langue'],
+    ['fldk43F6qdZmtRB4a','federation','Fédération','select:federation'],
+  ]},
+  {title:'Coordonnées', fields:[
+    ['fldjY3SgvJsG4lJul','rue','Rue','text'],
+    ['fldmDaQM5TcT8tk4I','nmaison','N° maison','text'],
+    ['fldeGAIch9nWdERoh','cp','CP','text'],
+    ['fldEgejAPrVQF7MuF','ville','Ville','text'],
+    ['fld3ZvYWPpP6zrpWz','tel','Téléphone','text'],
+    ['fldDwi0VXgLg66ydt','gsm','GSM','text'],
+    ['fld2xVdHX8N6kWJZV','email','Email','text'],
+  ]},
+  {title:'Enseignement', fields:[
+    ['fldD15z5di5ZLX8d4','niveau','Niveau','text'],
+    ['fldvVztzyHfDj5vKK','branche','Branche','text'],
+    ['fldq5ZUxCvviR3mnJ','autreniveau',"Autre(s) niveau(x)",'text'],
+    ['fldZU8bGWGZSLEhGh','autrebranche',"Autre(s) branche(s)",'text'],
+  ]},
+  {title:'Statut & suivi', fields:[
+    ['fldNcZS21o9aKm9kf','statut','Statut','select:statut'],
+    ['fldJgMZuqyE1yVxa0','probleme','Problème','select:probleme'],
+    ['fldnuMEtKlfiS7MTW','code','Code','number'],
+    ['fldih9wNDgjRhAUIe','controleid','Contrôle ID','text'],
+    ['fldwyGIzVRvvfxYKb','operateur','Opérateur','text'],
+    ['fldLPWo2RnpWf2qtW','etablissement','N° établissement','number'],
+    ['fldTZAwBOZ9r6STOX','actiondir','Action direction','number'],
+    ['fldVKpHtb2Tj1G9tM','tri2','Clé de tri 2','number'],
+  ]},
+  {title:'Paiement', fields:[
+    ['fldbSgslspYE5le4Z','annee','Année','numtext'],
+    ['fldU5X9CD1DCoHZy0','selection','Sélection','text'],
+    ['fldzx5EdPg3ugcQXd','tri3','Clé de tri 3','text'],
+    ['fldYpwabCtlt9esnQ','paye','Payé','number'],
+    ['fldqIs6Y2ebWFDg62','datepaiement','Date de paiement','date'],
+    ['fldMYWTiBVzMG41fN','transaction','Transaction','text'],
+  ]},
+  {title:'Cadeaux & envois', fields:[
+    ['fldnxZJW1MYYDijOV','brochures','Brochures','number'],
+    ['fld1cMmXoVDYA7ijz','vip','Carte VIP','number'],
+    ['fldw7hHvzXddD5BlA','envoivip','Envoi carte VIP','number'],
+    ['fld8WytPOryoaSZmm','dateenvoivip','Date envoi carte VIP','date'],
+    ['fldxO4eD5iot5UxE8','envoicoupons','Envoi coupons','number'],
+    ['fldu8p3hWQYIuaTAi','dateenvoicoupons','Date envoi coupons','date'],
+    ['fldFGOaPyHuh90vLC','codecoupons','Code coupons','number'],
+    ['fldSANXmGXV6tR7yM','passeport','Passeport','number'],
+    ['fld5n3zYX2tb4jztV','passeportgratuit','Passeport gratuit','number'],
+    ['fldp6zWHRnPmtgjKN','dateenvoicadeau','Date envoi cadeau','date'],
+    ['fldeVTdK0tnkarmYU','cadeauparrainage','Cadeau parrainage','text'],
+    ['fldGIJ0K3CRgYOR2A','parrainage','Parrainage','text'],
+    ['fld17igtQyMai3WMP','codeambassadeur','Code Ambassadeur','number'],
+    ['fldHjzw84pj5a17nS','ambassadeur','Ambassadeur','number'],
+    ['fldMfJ9IAlOt9YWue','coderappel','Code Rappel','number'],
+    ['fldvpfUh1tvugwPwu','dateenvoirappel','Date envoi rappel','date'],
+    ['flda3oigFxtPsB253','dateenvoinews','Date envoi News','date'],
+    ['fldNcrgYuNmvWyyF4','envoi2','Envoi 2','number'],
+    ['fldgMqgleSXMPJG4T','newsletter','Newsletter','number'],
+    ['fldb2FG2H2Cf1eHZK','noneducnews','Non Educ News','number'],
+    ['fld2B6aVy4t1FiI73','codeed','Code ED','number'],
+  ]},
+  {title:'Système', fields:[
+    ['fld27fyNwjrxACB8H','mdpcrypte','Mot de passe (crypté)','text'],
+    ['fld7PsmgUd0dyDqYQ','datecreation','Date de création','date'],
+    ['fldHahB2gLpJ2LEjM','datemodif','Date de modification','date'],
+    ['fldoMQ9wjOZJVFBg5','syncwindev','Dernière synchro WinDev','text'],
+    ['fldpf5Y6ocLyM6MjL','remarque','Remarque','textarea'],
+  ]},
+];
+const FLD_NMEMBRE = 'fldZW7jn18xbvyLgf';
+const FLD_NOMMAJ  = 'fldJ4Oxd0dc1Wn45s'; // formule, lecture seule
+const FLD_RESAS   = 'fldSnaOB0UODUTXRi'; // lien vers Réservations & Confirmations
+
+// Champs du formulaire "Réservations & Confirmations" affiché sur la fiche prof.
+// Clé "referenceresa" = champ primaire côté Airtable (Référence), texte libre,
+// mais NE DOIT JAMAIS être vide à l'enregistrement (contrôlé dans saveResa()).
+const RESA_SECTIONS = [
+  ['fldkO2hsS8toTvoVR','referenceresa','Référence','text'],
+  ['fldFTYCPrcRxFyhKP','typeresa','Type','select:type'],
+  ['fld7JSuIMCM900LEa','titre','Concerne / Titre','text'],
+  ['fldcIwXfNnAdd0nXg','dates','Dates','textarea'],
+  ['fld3f6D246OGqQVzJ','details','Détails du voyage','textarea'],
+  ['fldUnzUVpC5PBeYXh','modepaiement','Mode de paiement','select:modepaiement'],
+  ['fld6SlO35cEbONy7l','reduction','Réduction personnel','number'],
+  ['fldWhpEMrsMeLgk2n','montant','Montant','number'],
+  ['fldM1gKxZMebo0XTu','refpaiement','Référence paiement','text'],
+  ['fldmJPoobCoeiL0yJ','datepaiementresa','Date de paiement','date'],
+  ['fldyIl4ezdZlh3QFm','statutresa','Statut réservation','select:statutresa'],
+  ['fld28VL3QdRNpxCnN','remarqueresa','Remarque','textarea'],
+];
+
+// Colonnes filtrables dans la vue liste (id, libellé)
+const FILTER_FIELDS = [
+  ['Nom','nom'],['Prénom','prenom'],['N° matricule','matricule'],['Ville','ville'],['CP','cp'],['Statut','statut'],
+  ['Code','code'],['Année','annee'],['Niveau','niveau'],['Branche','branche'],
+  ['Langue','langue'],['Fédération','federation'],['Email','email'],['GSM','gsm']
+];
+
+// ══════════════════════════════════════════════════════════
+//  ÉTAT
+// ══════════════════════════════════════════════════════════
+let lastResults = [];   // enregistrements du dernier fetch (recherche)
+let curId = null;       // recordId Airtable en cours d'édition
+let _memberLoading = false;
+let _dirty = false;
+
+// Les messages "en cours" (recherche, chargement...) s'affichent en grand dans un
+// rectangle centré (plus visible), demandé par Marc. Les autres messages (erreurs,
+// confirmations, indications) restent dans la petite barre de statut comme avant.
+function setSt(msg){
+  document.getElementById('st-bar').textContent = msg || '';
+  const box = document.getElementById('overlay-loading');
+  const isLoading = !!msg && (msg.indexOf('🔎')===0 || msg.indexOf('⏳')===0);
+  if(isLoading){
+    document.getElementById('loading-msg').textContent = msg;
+    box.classList.remove('hidden');
+  } else {
+    box.classList.add('hidden');
+  }
+}
+function esc(s){ return String(s).replace(/\\/g,'\\\\').replace(/"/g,'\\"'); }
+function fld(sec,key){ return document.getElementById('f-'+key); }
+
+// ══════════════════════════════════════════════════════════
+//  APPELS AIRTABLE
+// ══════════════════════════════════════════════════════════
+async function atFetch(url, opts){
+  const r = await fetch(url, Object.assign({headers:HDRS}, opts||{}));
+  if(!r.ok){
+    const t = await r.text().catch(()=> '');
+    throw new Error('Airtable '+r.status+' : '+t.slice(0,200));
+  }
+  return r.json();
+}
+
+// Plafond de sécurité : au-delà, on arrête de charger (Airtable pagine par 100).
+// Relevé le 2026-08-18 (300 -> 15000) pour permettre à Marc d'extraire de grandes
+// listes (ex : tous les profs actifs pour un envoi de newsletter/brochure postale).
+const MAX_RESULTS = 15000;
+
+async function searchRecords(formula, onProgress){
+  let all = [], offset;
+  do{
+    const params = new URLSearchParams({pageSize:'100', filterByFormula: formula});
+    if(offset) params.set('offset', offset);
+    const data = await atFetch(API+'?'+params.toString());
+    all = all.concat(data.records||[]);
+    offset = data.offset;
+    if(onProgress) onProgress(all.length);
+  } while(offset && all.length < MAX_RESULTS);
+  return all;
+}
+
+// ══════════════════════════════════════════════════════════
+//  RECHERCHE
+// ══════════════════════════════════════════════════════════
+let _searchTimer=null;
+function onSearchInput(){
+  clearTimeout(_searchTimer);
+  _searchTimer = setTimeout(doSearch, 450);
+}
+
+// Critères exacts combinables (interrogent Airtable directement, pas seulement
+// les résultats déjà chargés) : Code, Année, Newsletter, Code SMS, Code NEWS
+// (= champ "Non Educ News"), Clé de tri 2 (numériques) et Clé de tri 3 (texte).
+function buildStructuredConditions(){
+  const conds = [];
+  const numericMap = [
+    ['flt-code','Code'], ['flt-annee','Année'], ['flt-newsletter','Newsletter'],
+    ['flt-codesms','Code SMS'], ['flt-codenews','Non Educ News'], ['flt-tri2','Clé de tri 2'],
+  ];
+  numericMap.forEach(([id,fieldName])=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    const v = el.value.trim();
+    if(v==='') return;
+    const n = Number(v);
+    conds.push(isNaN(n) ? `{${fieldName}}="${esc(v)}"` : `{${fieldName}}=${n}`);
+  });
+  const tri3 = document.getElementById('flt-tri3');
+  if(tri3 && tri3.value.trim()!==''){
+    conds.push(`{Clé de tri 3}="${esc(tri3.value.trim())}"`);
+  }
+  return conds;
+}
+
+function buildSearchFormula(term){
+  const structured = buildStructuredConditions();
+  const t = term && term.trim() ? term.trim() : '';
+  const allConds = [];
+  if(t){
+    const esc1 = esc(t), escl = esc(t.toLowerCase());
+    allConds.push(`OR(SEARCH("${escl}",LOWER({Nom}&"")),SEARCH("${escl}",LOWER({Prénom}&"")),SEARCH("${escl}",LOWER({N° matricule}&"")),SEARCH("${esc1}",{N° membre}&""),SEARCH("${escl}",LOWER({Ville}&"")),SEARCH("${escl}",LOWER({Email}&"")),SEARCH("${escl}",LOWER({GSM}&"")))`);
+  }
+  allConds.push(...structured);
+  if(!allConds.length) return null;
+  return allConds.length===1 ? allConds[0] : `AND(${allConds.join(',')})`;
+}
+
+// Numéro de génération de la recherche en cours. Si l'utilisateur tape assez
+// lentement, chaque terme intermédiaire (ex. "d", puis "du", puis "dumont") peut
+// déclencher SA PROPRE recherche (au-delà du délai anti-rebond de 450ms). Comme ce
+// sont des requêtes réseau indépendantes, rien ne garantit qu'elles reviennent dans
+// l'ordre : une recherche large ("d", qui remonte beaucoup plus de profs et prend
+// donc plus de temps à paginer) peut très bien répondre APRÈS une recherche plus
+// précise lancée ensuite ("dumont"), et écraser le bon résultat avec un résultat
+// obsolète. On numérote chaque recherche et on ignore toute réponse qui n'est plus
+// la plus récente lancée.
+let _searchGen = 0;
+
+async function doSearch(){
+  clearTimeout(_searchTimer); // annule toute recherche différée en attente (évite qu'elle écrase une fiche déjà ouverte)
+  const myGen = ++_searchGen;
+  const term = document.getElementById('rch').value;
+  const formula = buildSearchFormula(term);
+  if(!formula){
+    if(myGen !== _searchGen) return;
+    setSt('Tape au moins un nom/ville/N°, ou remplis un critère exact (Code, Année…) pour lancer une recherche.');
+    lastResults = []; renderTable(); showView('liste');
+    return;
+  }
+  setSt('🔎 Recherche en cours...');
+  try{
+    const recs = await searchRecords(formula, n=>{ if(myGen===_searchGen) setSt(`⏳ Chargement en cours... ${n} résultat(s) trouvé(s) jusqu'ici`); });
+    if(myGen !== _searchGen) return; // une recherche plus récente a été lancée entre-temps : on ignore ce résultat obsolète
+    lastResults = recs;
+    document.getElementById('rch-count').textContent = recs.length>=MAX_RESULTS
+      ? MAX_RESULTS+'+ résultats — affinez votre recherche'
+      : recs.length+' résultat(s)';
+    renderTable();
+    showView('liste');
+    setSt('');
+  }catch(e){ if(myGen===_searchGen) setSt('❌ '+e.message); }
+}
+
+function populateFilterSelects(){
+  ['f-champ1','f-champ2'].forEach(id=>{
+    const sel = document.getElementById(id);
+    if(sel.options.length>1) return;
+    FILTER_FIELDS.forEach(([label,key])=>{
+      const o=document.createElement('option'); o.value=key; o.textContent=label; sel.appendChild(o);
+    });
+  });
+}
+
+function valueForKey(fields, key){
+  // Retrouve la valeur affichable pour une clé de filtre/colonne à partir des fields Airtable
+  const map = {
+    nom:'Nom', prenom:'Prénom', matricule:'N° matricule', ville:'Ville', cp:'CP', statut:'Statut', code:'Code',
+    annee:'Année', niveau:'Niveau', branche:'Branche', langue:'Langue', federation:'Fédération',
+    tri2:'Clé de tri 2', tri3:'Clé de tri 3', email:'Email', gsm:'GSM'
+  };
+  const name = map[key];
+  let v = fields[name];
+  if(v && typeof v === 'object' && v.name) v = v.name;
+  return v==null ? '' : String(v);
+}
+
+function renderTable(){
+  // Note : Code/Année/Newsletter/Code SMS/Code NEWS/Tri 2/Tri 3 sont désormais
+  // des critères exacts appliqués directement dans la requête Airtable (voir
+  // buildStructuredConditions()) — lastResults les respecte déjà. Seuls les 2
+  // filtres génériques ci-dessous s'appliquent en plus, localement, sur ces résultats.
+  const c1=document.getElementById('f-champ1').value, v1=document.getElementById('f-val1').value.toLowerCase();
+  const c2=document.getElementById('f-champ2').value, v2=document.getElementById('f-val2').value.toLowerCase();
+  let rows = lastResults;
+  if(c1 && v1) rows = rows.filter(r=>valueForKey(r.fields,c1).toLowerCase().includes(v1));
+  if(c2 && v2) rows = rows.filter(r=>valueForKey(r.fields,c2).toLowerCase().includes(v2));
+
+  const tbody = document.getElementById('tbl-body');
+  tbody.innerHTML = '';
+  rows.forEach(r=>{
+    const f = r.fields;
+    const tr = document.createElement('tr');
+    tr.onclick = ()=>loadMember(r.id);
+    const cols = [
+      [f['N° membre'], ''], [f['Nom'], ''], [f['Prénom'], ''], [f['Ville'], ''], [f['CP'], ''],
+      [(f['Statut']&&f['Statut'].name)||'', ''], [f['Code'], ''], [f['Année'], ''],
+      [f['Niveau'], 'col-niveau'], [f['Branche'], 'col-branche'],
+      [f['Email'], ''], [f['GSM'], ''],
+    ];
+    tr.innerHTML = cols.map(([v,cls])=>'<td'+(cls?' class="'+cls+'"':'')+'>'+(v==null?'':String(v).replace(/</g,'&lt;'))+'</td>').join('');
+    tbody.appendChild(tr);
+  });
+  window._lastFiltered = rows;
+}
+
+function exportFiltered(){
+  const rows = window._lastFiltered || [];
+  if(!rows.length){ setSt("Aucun résultat à exporter — lance une recherche d'abord."); return; }
+  const headers = ['N° membre','Nom','Prénom','Ville','CP','Statut','Code','Année','Niveau','Branche','Langue','Fédération','Email','GSM'];
+  const lines = [headers.join(';')];
+  rows.forEach(r=>{
+    const f=r.fields;
+    const vals=[f['N° membre'],f['Nom'],f['Prénom'],f['Ville'],f['CP'],
+      (f['Statut']&&f['Statut'].name)||'',f['Code'],f['Année'],f['Niveau'],f['Branche'],
+      (f['Langue']&&f['Langue'].name)||'',(f['Fédération']&&f['Fédération'].name)||'',
+      f['Email'],f['GSM']];
+    lines.push(vals.map(v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"').join(';'));
+  });
+  const blob = new Blob(['﻿'+lines.join('\r\n')], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'export_profs_'+new Date().toISOString().slice(0,10)+'.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+// ══════════════════════════════════════════════════════════
+//  VUES
+// ══════════════════════════════════════════════════════════
+function showView(v){
+  document.getElementById('view-liste').classList.toggle('hidden', v!=='liste');
+  document.getElementById('view-fiche').classList.toggle('hidden', v!=='fiche');
+}
+
+// Fond jaune pâle (identité/coordonnées) et vert pâle (paiement), + ordre de
+// tabulation demandé par Marc (2026-08-21) : Nom→Prénom→Naissance→Rue→CP→
+// Ville→Année→Sélection→Tri 3.
+const FLD_YELLOW = ['nom','prenom','naissance','rue','cp','ville'];
+const FLD_GREEN = ['annee','selection','tri3'];
+const FLD_TABORDER = ['nom','prenom','naissance','rue','cp','ville','annee','selection','tri3'];
+
+function buildFicheForm(){
+  const wrap = document.getElementById('fiche-sections');
+  wrap.innerHTML = '';
+  SECTIONS.forEach(sec=>{
+    const fs = document.createElement('fieldset');
+    const lg = document.createElement('legend'); lg.textContent = sec.title; fs.appendChild(lg);
+    const row = document.createElement('div'); row.className='frow';
+    sec.fields.forEach(([fid,key,label,type])=>{
+      const item = document.createElement('div'); item.className='fitem';
+      const lab = document.createElement('label'); lab.textContent = label; item.appendChild(lab);
+      let input;
+      if(type.startsWith('select:')){
+        const choiceKey = type.split(':')[1];
+        input = document.createElement('select');
+        const empty=document.createElement('option'); empty.value=''; empty.textContent='—'; input.appendChild(empty);
+        CHOICES[choiceKey].forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; input.appendChild(o); });
+      } else if(type==='textarea'){
+        input = document.createElement('textarea');
+      } else {
+        input = document.createElement('input');
+        input.type = (type==='number') ? 'number' : (type==='date' ? 'date' : 'text');
+        if(key==='naissance'){ input.placeholder = 'AAAA-MM-JJ ou JJ/MM/AAAA'; }
+      }
+      input.id = 'f-'+key;
+      input.dataset.fieldId = fid;
+      input.oninput = markDirty;
+      if(FLD_YELLOW.includes(key)) input.classList.add('fld-yellow');
+      if(FLD_GREEN.includes(key)) input.classList.add('fld-green');
+      if(key==='matricule') input.classList.add('fld-matricule');
+      const tabPos = FLD_TABORDER.indexOf(key);
+      if(tabPos !== -1) input.tabIndex = tabPos + 1;
+      item.appendChild(input);
+      if(key==='paye'){
+        const suf = document.createElement('span');
+        suf.textContent = ' €';
+        suf.style.cssText = 'margin-left:4px;font-weight:700;color:#555;';
+        item.appendChild(suf);
+      }
+      row.appendChild(item);
+    });
+    fs.appendChild(row);
+    wrap.appendChild(fs);
+  });
+  updateMatriculeEditable();
+}
+
+function markDirty(){ _dirty = true; }
+
+function gv(key){ const el=fld(null,key); if(!el) return null; const v=el.value; return v===''?null:v; }
+function sv(key, v){
+  const el = fld(null,key); if(!el) return;
+  if(v && typeof v==='object' && v.name) v = v.name;
+  el.value = (v==null) ? '' : v;
+}
+
+function fillForm(fields){
+  SECTIONS.forEach(sec=>sec.fields.forEach(([fid,key])=> sv(key, fields[fieldNameFor(fid,key)]) ));
+}
+// Petite table de correspondance clé -> nom de champ Airtable (pour la lecture des valeurs reçues)
+const KEY_TO_NAME = {};
+SECTIONS.forEach(sec=>sec.fields.forEach(([fid,key,label])=>{ KEY_TO_NAME[key]=label; }));
+function fieldNameFor(fid,key){ return KEY_TO_NAME[key]; }
+
+// Les 3 boutons d'action (Enregistrer/Annuler/Supprimer) existent en double : en haut et en
+// bas de la fiche. Ces fonctions gardent les deux copies synchronisées.
+function setSaveDisabled(v){
+  document.getElementById('btn-save').disabled = v;
+  const b2 = document.getElementById('btn-save-bottom'); if(b2) b2.disabled = v;
+}
+function setDeleteVisible(v){
+  const d1 = document.getElementById('btn-delete-header'); if(d1) d1.style.display = v ? '' : 'none';
+  const d2 = document.getElementById('btn-delete-bottom'); if(d2) d2.style.display = v ? '' : 'none';
+}
+
+async function loadMember(id){
+  if(_dirty && !confirm('Des modifications non enregistrées seront perdues. Continuer ?')) return;
+  clearTimeout(_searchTimer); // une recherche différée en attente ne doit plus renvoyer vers la liste une fois la fiche ouverte
+  _memberLoading = true;
+  setSaveDisabled(true);
+  setSt('⏳ Chargement du prof...');
+  try{
+    const data = await atFetch(API+'/'+id);
+    curId = id;
+    _dirty = false;
+    sessionStorage.setItem('lastMemberId', id);
+    document.getElementById('fiche-titre').textContent = (data.fields['Prénom']||'')+' '+(data.fields['Nom']||'');
+    document.getElementById('f-nmembre-disp').textContent = data.fields['N° membre']!=null ? data.fields['N° membre'] : '—';
+    document.getElementById('f-nommaj-disp').textContent = data.fields['Nom (majuscules)'] || '—';
+    fillForm(data.fields);
+    await refreshResaSelect(data.fields);
+    showView('fiche');
+    setSt('');
+  }catch(e){ setSt('❌ '+e.message); }
+  finally{ _memberLoading=false; setSaveDisabled(false); }
+}
+
+// Accepte AAAA-MM-JJ (déjà ISO) ou JJ/MM/AAAA, JJ-MM-AAAA, JJ.MM.AAAA -> renvoie une date ISO ou null si invalide.
+function parseFlexibleDate(v){
+  v = (v||'').trim();
+  if(/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+  const m = v.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
+  if(m){
+    const d = m[1].padStart(2,'0'), mo = m[2].padStart(2,'0'), y = m[3];
+    return y+'-'+mo+'-'+d;
+  }
+  return null;
+}
+
+async function saveMember(){
+  if(_memberLoading){ setSt('⏳ Chargement en cours, réessaie dans un instant.'); return; }
+  const fields = {};
+  let numError = null, dateError = null;
+  SECTIONS.forEach(sec=>sec.fields.forEach(([fid,key,label,type])=>{
+    const el = fld(null,key); if(!el) return;
+    let v = el.value;
+    if(v===''){ return; } // on n'écrase pas avec du vide, sauf choix explicite futur
+    if(type==='number' || type==='numtext'){
+      v = Number(v);
+      if(isNaN(v)){ numError = numError || {label,val:el.value}; return; }
+    }
+    if(key==='naissance'){
+      const iso = parseFlexibleDate(v);
+      if(!iso){ dateError = v; return; }
+      v = iso;
+    }
+    fields[label] = v;
+  }));
+  if(numError){ setSt('❌ Valeur invalide pour « '+numError.label+' » : "'+numError.val+'". Merci de n\'entrer que des chiffres.'); return; }
+  if(dateError){ setSt('❌ Date de naissance invalide : "'+dateError+'". Utilise le format AAAA-MM-JJ ou JJ/MM/AAAA.'); return; }
+  document.getElementById('sync-pending').classList.add('show');
+  setSaveDisabled(true);
+  try{
+    if(curId){
+      await atFetch(API+'/'+curId, {method:'PATCH', body: JSON.stringify({fields})});
+      setSt('✅ Prof enregistré.');
+      await loadMember(curId);
+    } else {
+      const res = await atFetch(API, {method:'POST', body: JSON.stringify({records:[{fields}]})});
+      curId = res.records[0].id;
+      setSt('✅ Nouveau prof créé (N° membre attribué par Airtable ou à saisir manuellement).');
+      await loadMember(curId);
+    }
+    _dirty = false;
+  }catch(e){ setSt('❌ '+e.message); }
+  finally{
+    document.getElementById('sync-pending').classList.remove('show');
+    setSaveDisabled(false);
+  }
+}
+
+function cancelAndReset(){
+  if(_dirty && !confirm('Annuler les modifications non enregistrées ?')) return;
+  _dirty = false;
+  sessionStorage.removeItem('lastMemberId');
+  curId = null;
+  showView('liste');
+}
+
+// ══════════════════════════════════════════════════════════
+//  SUPPRESSION DE FICHE — réservée à MARC (voir _setAgentSession)
+// ══════════════════════════════════════════════════════════
+async function deleteMember(){
+  if(sessionStorage.getItem('auth_agent')!=='MARC') return;
+  if(!curId){ setSt('Aucune fiche chargée à supprimer.'); return; }
+  const idToDelete = curId;
+  const nom = document.getElementById('fiche-titre').textContent;
+  if(!confirm('⚠️ SUPPRESSION DÉFINITIVE\n\nSupprimer définitivement la fiche de "'+nom+'" de la base Airtable (et ses réservations restent liées à un enregistrement supprimé) ?\n\nCette action est IRRÉVERSIBLE.')) return;
+  setSt('⏳ Suppression en cours...');
+  try{
+    await atFetch(API+'/'+idToDelete, {method:'DELETE'});
+    lastResults = lastResults.filter(r=>r.id!==idToDelete);
+    curId = null; _dirty = false;
+    sessionStorage.removeItem('lastMemberId');
+    renderTable();
+    showView('liste');
+    setSt('✅ Fiche supprimée définitivement.');
+  }catch(e){ setSt('❌ '+e.message); }
+}
+
+// ══════════════════════════════════════════════════════════
+//  RÉSERVATIONS & CONFIRMATIONS — sélection/édition depuis la fiche prof
+// ══════════════════════════════════════════════════════════
+let resaLinkedIds = [];
+let curResaId = null;
+
+function openResaOverlay(){
+  document.getElementById('overlay-resa').classList.remove('hidden');
+}
+function closeResaOverlay(){
+  document.getElementById('overlay-resa').classList.add('hidden');
+}
+
+// ══════════════════════════════════════════════════════════
+//  ENVOI D'EMAILS (adresse incorrecte / paiement reçu)
+//  Bouton sur la fiche -> aperçu modifiable -> validation employé -> envoi
+//  réel via le Worker Cloudflare (route /send-email, qui appelle Resend).
+// ══════════════════════════════════════════════════════════
+let _emailType = null;
+
+function fullAddress(){
+  const rue = gv('rue') || '', nmaison = gv('nmaison') || '';
+  const cp = gv('cp') || '', ville = gv('ville') || '';
+  const line1 = (rue + ' ' + nmaison).trim();
+  const line2 = (cp + ' ' + ville).trim();
+  return [line1, line2].filter(Boolean).join(', ');
+}
+
+const EMAIL_TEMPLATES = {
+  adresse: {
+    titre: '📮 Aperçu — Adresse incorrecte',
+    subject: 'Educpass — Vérification de votre adresse',
+    body: () => 'Bonjour ' + (gv('prenom')||'') + ' ' + (gv('nom')||'') + ',\n\n' +
+      'notre courrier postal nous est retourné avec la mention "n\'habite plus à cette adresse ou adresse incorrecte".\n\n' +
+      'Les coordonnées que nous avons dans notre fichier sont : ' + fullAddress() + '.\n\n' +
+      'Pourriez-vous nous renseigner ?\n\n' +
+      'En vous remerciant d\'avance.\n\n' +
+      'Le Secrétariat d\'Educpass.'
+  },
+  paiement: {
+    titre: '💰 Aperçu — Paiement reçu',
+    subject: 'Educpass — Confirmation de réception de paiement',
+    body: () => 'Bonjour ' + (gv('prenom')||'') + ' ' + (gv('nom')||'') + ',\n\n' +
+      'nous avons bien reçu votre paiement ' + (gv('paye')||'0') + ' €.\n\n' +
+      'Nous allons actualiser votre compte dans les prochaines minutes.\n\n' +
+      'Nous vous souhaitons de belles découvertes avec Educpass.\n\n' +
+      'L\'équipe d\'Educpass.'
+  },
+  rappel: {
+    titre: '⚠️ Aperçu — Rappel paiement',
+    subject: 'Educpass — Rappel de paiement',
+    body: () => 'RAPPEL DE PAIEMENT\n' +
+      'Bonjour ' + (gv('prenom')||'') + ' ' + (gv('nom')||'') + ',\n\n' +
+      'Bienvenue chez EDUCPASS. Nous avons bien reçu votre inscription sur notre site et nous vous en remercions.\n\n' +
+      'Sauf erreur de notre part, nous n\'avons pas enregistré le paiement de votre cotisation.\n\n' +
+      'Pour ce faire, vous devez aller sur CONNEXION, vous connecter comme « membre » à l\'aide de votre matricule ou de votre adresse électronique + votre mot de passe que vous avez enregistré lors de votre inscription.\n\n' +
+      'Une fois connecté, il suffit d\'aller sur COTISATION et effectuer le paiement avec la banque de votre choix ou un virement bancaire. Vous serez activé directement sauf avec les virements bancaires. Il faudra attendre 24 à 48h.\n\n' +
+      'En cas de soucis, nous assurons une permanence 7 jours sur 7 de 10h à 18h au 0474/966.968. N\'hésitez pas à nous contacter par GSM ou par mail à info@educpass.eu.\n\n' +
+      'L\'équipe d\'Educpass.'
+  }
+};
+
+// Mots-clés qui, s'ils apparaissent tels quels (mot entier) dans un message,
+// sont automatiquement transformés en lien cliquable dans la version HTML de
+// l'email envoyée (la zone de texte de l'aperçu reste en texte brut, modifiable
+// normalement — seule la conversion à l'envoi ajoute les liens).
+const EMAIL_LINK_KEYWORDS = {
+  'CONNEXION': 'https://www.educpass.eu/FR/Connexion.awp',
+  'COTISATION': 'https://www.educpass.eu/FR/Produits.awp'
+};
+
+function escapeHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function bodyToHtml(text){
+  let html = escapeHtml(text);
+  Object.keys(EMAIL_LINK_KEYWORDS).forEach(function(word){
+    const url = EMAIL_LINK_KEYWORDS[word];
+    const re = new RegExp('\\b' + word + '\\b', 'g');
+    html = html.replace(re, '<a href="' + url + '">' + word + '</a>');
+  });
+  return html.replace(/\n/g, '<br>');
+}
+
+function openEmailOverlay(type){
+  const tpl = EMAIL_TEMPLATES[type];
+  if(!tpl) return;
+  const email = gv('email');
+  if(!email){
+    setSt('❌ Impossible d\'envoyer : aucune adresse email enregistrée pour ce prof.');
+    return;
+  }
+  _emailType = type;
+  document.getElementById('email-titre').textContent = tpl.titre;
+  document.getElementById('email-to').value = email;
+  document.getElementById('email-subject').value = tpl.subject;
+  document.getElementById('email-body').value = tpl.body();
+  document.getElementById('email-status').textContent = '';
+  document.getElementById('email-status').className = 'email-status';
+  document.getElementById('btn-email-send').disabled = false;
+  document.getElementById('overlay-email').classList.remove('hidden');
+}
+function closeEmailOverlay(){
+  document.getElementById('overlay-email').classList.add('hidden');
+  _emailType = null;
+}
+
+async function sendEmailNow(){
+  const to = document.getElementById('email-to').value;
+  const subject = document.getElementById('email-subject').value;
+  const body = document.getElementById('email-body').value;
+  const statusEl = document.getElementById('email-status');
+  if(!to || !subject || !body){
+    statusEl.textContent = '❌ Destinataire, objet et message sont obligatoires.';
+    statusEl.className = 'email-status err';
+    return;
+  }
+  document.getElementById('btn-email-send').disabled = true;
+  statusEl.textContent = '⏳ Envoi en cours...';
+  statusEl.className = 'email-status';
+  try{
+    const html = bodyToHtml(body);
+    const r = await fetch(EMAIL_API, {
+      method: 'POST',
+      headers: HDRS,
+      body: JSON.stringify({ type: _emailType, to, subject, body, html, recordId: curId })
+    });
+    const data = await r.json().catch(()=>({}));
+    if(!r.ok || data.ok === false){
+      throw new Error(data.error || ('Erreur '+r.status));
+    }
+    statusEl.textContent = '✅ Email envoyé à ' + to + '.';
+    statusEl.className = 'email-status ok';
+    setTimeout(closeEmailOverlay, 1400);
+  }catch(e){
+    statusEl.textContent = '❌ ' + e.message;
+    statusEl.className = 'email-status err';
+    document.getElementById('btn-email-send').disabled = false;
+  }
+}
+
+function buildResaForm(){
+  const wrap = document.getElementById('resa-fields');
+  wrap.innerHTML = '';
+  RESA_SECTIONS.forEach(([fid,key,label,type])=>{
+    const item = document.createElement('div'); item.className='fitem';
+    const lab = document.createElement('label'); lab.textContent = label; item.appendChild(lab);
+    let input;
+    if(type.startsWith('select:')){
+      const ck = type.split(':')[1];
+      input = document.createElement('select');
+      const empty=document.createElement('option'); empty.value=''; empty.textContent='—'; input.appendChild(empty);
+      RESA_CHOICES[ck].forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; input.appendChild(o); });
+    } else if(type==='textarea'){
+      input = document.createElement('textarea');
+    } else {
+      input = document.createElement('input');
+      input.type = (type==='number') ? 'number' : (type==='date' ? 'date' : 'text');
+    }
+    input.id = 'fr-'+key;
+    input.dataset.fieldId = fid;
+    item.appendChild(input);
+    wrap.appendChild(item);
+  });
+}
+
+function grv(key){ const el=document.getElementById('fr-'+key); return el ? el.value : ''; }
+function srv(key, v){
+  const el = document.getElementById('fr-'+key); if(!el) return;
+  if(v && typeof v==='object' && v.name) v = v.name;
+  el.value = (v==null) ? '' : v;
+}
+
+function coordProfText(){
+  const prenom=gv('prenom')||'', nom=gv('nom')||'', rue=gv('rue')||'', nmaison=gv('nmaison')||'', cp=gv('cp')||'', ville=gv('ville')||'';
+  return (prenom+' '+nom).trim()+' — '+(rue+' '+nmaison).trim()+', '+(cp+' '+ville).trim();
+}
+
+async function refreshResaSelect(fields){
+  resaLinkedIds = (fields['Réservations & Confirmations'] || []).slice();
+  const sel = document.getElementById('resa-select');
+  sel.innerHTML = '<option value="">— Sélectionnez —</option>';
+  const optNew = document.createElement('option'); optNew.value='__new__'; optNew.textContent='+ Nouvelle réservation'; sel.appendChild(optNew);
+  document.getElementById('resa-panel').classList.add('hidden');
+  curResaId = null;
+  if(!resaLinkedIds.length) return;
+  try{
+    const recs = await Promise.all(resaLinkedIds.map(id=>atFetch(RESA_API+'/'+id)));
+    recs.forEach(r=>{
+      const o=document.createElement('option');
+      o.value=r.id;
+      const type=(r.fields['Type']&&r.fields['Type'].name)||'';
+      o.textContent=(r.fields['Référence']||'(sans référence)')+(type?' — '+type:'');
+      sel.appendChild(o);
+    });
+  }catch(e){ setSt('❌ Réservations : '+e.message); }
+}
+
+async function onResaSelect(){
+  const val = document.getElementById('resa-select').value;
+  const panel = document.getElementById('resa-panel');
+  if(!val){ panel.classList.add('hidden'); curResaId=null; return; }
+  buildResaForm();
+  document.getElementById('resa-prof-coord').textContent = coordProfText();
+  if(val==='__new__'){
+    curResaId = null;
+    panel.classList.remove('hidden');
+    return;
+  }
+  curResaId = val;
+  setSt('⏳ Chargement de la réservation...');
+  try{
+    const data = await atFetch(RESA_API+'/'+val);
+    RESA_SECTIONS.forEach(([fid,key,label])=> srv(key, data.fields[label]));
+    panel.classList.remove('hidden');
+    setSt('');
+  }catch(e){ setSt('❌ '+e.message); }
+}
+
+function closeResaPanel(){
+  const ref = grv('referenceresa');
+  if(!ref || !ref.trim()){
+    if(!confirm('⚠️ Le N° de réservation (Référence) est vide. Cette réservation ne sera pas enregistrée si tu fermes maintenant. Fermer quand même ?')) return;
+  }
+  document.getElementById('resa-panel').classList.add('hidden');
+  document.getElementById('resa-select').value = '';
+  curResaId = null;
+}
+
+async function saveResa(){
+  if(!curId){ setSt('❌ Enregistre d\'abord la fiche du prof avant d\'ajouter une réservation.'); return; }
+  const ref = grv('referenceresa');
+  if(!ref || !ref.trim()){
+    alert('⚠️ Le N° de réservation (Référence) est obligatoire — il ne peut pas être vide.');
+    return;
+  }
+  const fields = {};
+  RESA_SECTIONS.forEach(([fid,key,label,type])=>{
+    let v = grv(key);
+    if(v==='') return;
+    if(type==='number') v = Number(v);
+    fields[label] = v;
+  });
+  document.getElementById('sync-pending').classList.add('show');
+  try{
+    if(curResaId){
+      await atFetch(RESA_API+'/'+curResaId, {method:'PATCH', body: JSON.stringify({fields})});
+      setSt('✅ Réservation enregistrée.');
+    } else {
+      fields['Prof'] = [curId];
+      const res = await atFetch(RESA_API, {method:'POST', body: JSON.stringify({records:[{fields}]})});
+      curResaId = res.records[0].id;
+      setSt('✅ Nouvelle réservation créée et liée au prof.');
+      const updated = await atFetch(API+'/'+curId);
+      await refreshResaSelect(updated.fields);
+      document.getElementById('resa-select').value = curResaId;
+      document.getElementById('resa-panel').classList.remove('hidden');
+    }
+  }catch(e){ setSt('❌ '+e.message); }
+  finally{ document.getElementById('sync-pending').classList.remove('show'); }
+}
+
+// ══════════════════════════════════════════════════════════
+//  SYSTÈME PIN — AUTHENTIFICATION (identique au site Attractions)
+//  Valeurs par défaut au 1er déploiement — MARC peut les changer via 🔑
+// ══════════════════════════════════════════════════════════
+const AGENT_PINS_DEFAULT = { 'MARC':'1111', 'MAÏTE':'2222', 'PASCAL':'3333', 'VANESSA':'4444' };
+let AGENT_PINS = (function(){
+  try{
+    const stored = localStorage.getItem('educpass_profs_pins');
+    if(stored){ const p=JSON.parse(stored); if(p&&p.MARC) return p; }
+  }catch(e){}
+  return Object.assign({}, AGENT_PINS_DEFAULT);
+})();
+
+function _setAgentSession(agent){
+  sessionStorage.setItem('auth_agent', agent);
+  document.getElementById('header-agent').textContent = agent;
+  document.getElementById('btn-pin-mgr').style.display = (agent==='MARC') ? '' : 'none';
+  setDeleteVisible(agent==='MARC');
+  updateMatriculeEditable();
+}
+
+// Matricule modifiable uniquement par MARC et VANESSA (demande de Marc, 2026-08-21).
+function updateMatriculeEditable(){
+  const agent = sessionStorage.getItem('auth_agent');
+  const canEdit = (agent==='MARC' || agent==='VANESSA');
+  const el = document.getElementById('f-matricule');
+  if(el) el.disabled = !canEdit;
+}
+function loginPin(){
+  const agent = document.getElementById('pin-agent').value;
+  const pin = document.getElementById('pin-code').value;
+  const err = document.getElementById('pin-error');
+  err.textContent='';
+  if(!agent){ err.textContent='Sélectionnez votre nom.'; return; }
+  if(pin.length!==4){ err.textContent='Le code doit contenir 4 chiffres.'; return; }
+  if(AGENT_PINS[agent]!==pin){
+    err.textContent='❌ Code incorrect — réessayez.';
+    document.getElementById('pin-code').value=''; document.getElementById('pin-code').focus();
+    return;
+  }
+  document.getElementById('overlay-pin').classList.add('hidden');
+  _setAgentSession(agent);
+  init();
+}
+function logoutPin(){
+  if(!confirm('Se déconnecter ?')) return;
+  sessionStorage.removeItem('auth_agent');
+  location.reload();
+}
+function showGestionPins(){
+  if(sessionStorage.getItem('auth_agent')!=='MARC') return;
+  document.getElementById('pm-marc').value = AGENT_PINS['MARC']||'';
+  document.getElementById('pm-maite').value = AGENT_PINS['MAÏTE']||'';
+  document.getElementById('pm-pascal').value = AGENT_PINS['PASCAL']||'';
+  document.getElementById('pm-vanessa').value = AGENT_PINS['VANESSA']||'';
+  document.getElementById('pm-msg').textContent='';
+  document.getElementById('overlay-pin-mgr').classList.remove('hidden');
+}
+function closeGestionPins(){ document.getElementById('overlay-pin-mgr').classList.add('hidden'); }
+function saveGestionPins(){
+  const pins = {
+    MARC: document.getElementById('pm-marc').value.trim(),
+    'MAÏTE': document.getElementById('pm-maite').value.trim(),
+    PASCAL: document.getElementById('pm-pascal').value.trim(),
+    VANESSA: document.getElementById('pm-vanessa').value.trim(),
+  };
+  for(const [agent,pin] of Object.entries(pins)){
+    if(pin && !/^\d{4}$/.test(pin)){
+      document.getElementById('pm-msg').style.color='#c0392b';
+      document.getElementById('pm-msg').textContent='❌ PIN de '+agent+' invalide — 4 chiffres requis.';
+      return;
+    }
+    if(!pin) pins[agent]=AGENT_PINS[agent];
+  }
+  try{
+    localStorage.setItem('educpass_profs_pins', JSON.stringify(pins));
+    Object.assign(AGENT_PINS, pins);
+    document.getElementById('pm-msg').style.color='#27ae60';
+    document.getElementById('pm-msg').textContent='✅ Codes PIN enregistrés !';
+    setTimeout(closeGestionPins, 1200);
+  }catch(e){
+    document.getElementById('pm-msg').style.color='#c0392b';
+    document.getElementById('pm-msg').textContent='❌ Erreur : '+e.message;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════
+function init(){
+  buildFicheForm();
+  populateFilterSelects();
+  showView('liste');
+  setSt('Tape un nom, une ville ou un N° de membre ci-dessus pour commencer une recherche.');
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  const saved = sessionStorage.getItem('auth_agent');
+  if(saved && AGENT_PINS[saved]){
+    _setAgentSession(saved);
+    init();
+  } else {
+    document.getElementById('overlay-pin').classList.remove('hidden');
+  }
+});
+</script>
 </body>
 </html>

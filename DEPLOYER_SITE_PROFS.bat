@@ -16,8 +16,13 @@ if not exist ".git" (
 )
 
 echo.
+echo Copie de FICHIER PROFS 2026.html (dossier parent) vers index.html...
+copy /Y "..\FICHIER PROFS 2026.html" "index.html" >nul
+
+echo.
 echo Ajout du fichier...
-git add index.html "FICHIER PROFS 2026.html"
+git rm --cached "FICHIER PROFS 2026.html" >nul 2>nul
+git add index.html
 git status
 
 echo.
