@@ -54,6 +54,15 @@ legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
 .fitem input.fld-green{background:#e6f9e6;}
 .fitem input.fld-matricule{background:#fde3cc;}
 .fitem input.fld-matricule:disabled{background:#f5d8bb;color:#7a4a1f;cursor:not-allowed;}
+/* Fond du champ "Problème" selon la valeur choisie (2026-08-25) */
+.fitem select.probleme-vert{background:#d9f2d9;}
+.fitem select.probleme-rouge{background:#f8d3d3;}
+.fitem select.probleme-bleu{background:#dceefa;}
+.fitem select.probleme-jaune{background:#fff2b8;}
+/* Supprime les flèches (spinner) du champ Code (2026-08-25) */
+.fitem input#f-code::-webkit-outer-spin-button,
+.fitem input#f-code::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.fitem input#f-code{-moz-appearance:textfield;}
 .hidden{display:none !important;}
 .pin-box,.pin-mgr-box{background:#fff;border-radius:8px;padding:32px 40px;box-shadow:0 2px 20px rgba(0,0,0,.25);text-align:center;min-width:320px;}
 #overlay-pin,#overlay-pin-mgr,#overlay-resa,#overlay-email{position:fixed;inset:0;background:rgba(20,30,50,.55);display:flex;align-items:center;justify-content:center;z-index:999;}
@@ -127,12 +136,15 @@ legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
       <input type="text" id="flt-tri2" placeholder="Tri 2" title="Clé de tri 2" style="max-width:80px;" oninput="onSearchInput()">
       <input type="text" id="flt-tri3" placeholder="Tri 3" title="Clé de tri 3" style="max-width:80px;" oninput="onSearchInput()">
     </div>
+    <div style="font-size:11.5px;color:#999;margin:-6px 0 8px 2px;">
+      💡 Ces cases se combinent entre elles (ex. Année=26 + Newsletter=1 = tous les profs de l'année 26 inscrits à la newsletter) — pas besoin de remplir la barre de recherche du haut.
+    </div>
     <div style="max-height:65vh;overflow:auto;">
       <table class="results" id="tbl-results">
         <thead><tr>
-          <th>N° membre</th><th>Nom</th><th>Prénom</th><th>Ville</th><th>CP</th>
-          <th>Statut</th><th>Code</th><th>Année</th><th>Niveau</th><th>Branche</th>
-          <th>Email</th><th>GSM</th>
+          <th id="th-membre" onclick="sortTable('membre')">N° membre</th><th id="th-nom" onclick="sortTable('nom')">Nom</th><th id="th-prenom" onclick="sortTable('prenom')">Prénom</th><th id="th-ville" onclick="sortTable('ville')">Ville</th><th id="th-cp" onclick="sortTable('cp')">CP</th>
+          <th id="th-statut" onclick="sortTable('statut')">Statut</th><th id="th-code" onclick="sortTable('code')">Code</th><th id="th-annee" onclick="sortTable('annee')">Année</th><th id="th-niveau" onclick="sortTable('niveau')">Niveau</th><th id="th-branche" onclick="sortTable('branche')">Branche</th>
+          <th id="th-email" onclick="sortTable('email')">Email</th><th id="th-gsm" onclick="sortTable('gsm')">GSM</th>
         </tr></thead>
         <tbody id="tbl-body"></tbody>
       </table>
@@ -152,6 +164,7 @@ legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
         <button class="btn btn-yellow" id="btn-email-adresse" onclick="openEmailOverlay('adresse')">📮 RETOUR POSTAL</button>
         <button class="btn btn-green" id="btn-email-paiement" onclick="openEmailOverlay('paiement')">💰 Paiement reçu</button>
         <button class="btn btn-warn" id="btn-email-rappel" onclick="openEmailOverlay('rappel')">⚠️ Rappel paiement</button>
+        <button class="btn btn-blue" id="btn-email-france" onclick="openEmailOverlay('franceRenouv')">🇫🇷 Paiement FRANCE</button>
       </div>
 
       <div id="fiche-sections"></div>
@@ -555,6 +568,55 @@ function valueForKey(fields, key){
   return v==null ? '' : String(v);
 }
 
+// Tri cliquable des colonnes du tableau de résultats (2026-08-24).
+// sortState.col = clé de la colonne triée (ou null = ordre naturel du fetch),
+// sortState.dir = 1 (croissant) ou -1 (décroissant).
+let sortState = { col: null, dir: 1 };
+const SORT_KEYS = ['membre','nom','prenom','ville','cp','statut','code','annee','niveau','branche','email','gsm'];
+
+function getSortValue(f, key){
+  switch(key){
+    case 'membre': return f['N° membre'];
+    case 'nom': return f['Nom'];
+    case 'prenom': return f['Prénom'];
+    case 'ville': return f['Ville'];
+    case 'cp': return f['CP'];
+    case 'statut': return (f['Statut']&&f['Statut'].name)||'';
+    case 'code': return f['Code'];
+    case 'annee': return f['Année'];
+    case 'niveau': return f['Niveau'];
+    case 'branche': return f['Branche'];
+    case 'email': return f['Email'];
+    case 'gsm': return f['GSM'];
+    default: return '';
+  }
+}
+
+// Compare deux valeurs : numériquement si les deux ressemblent à des nombres
+// (N° membre, Année…), sinon alphabétiquement (accents/casse ignorés).
+function compareValues(a,b){
+  const sa = a==null?'':String(a), sb = b==null?'':String(b);
+  const na = Number(sa), nb = Number(sb);
+  const bothNumeric = sa.trim()!=='' && sb.trim()!=='' && !isNaN(na) && !isNaN(nb);
+  if(bothNumeric) return na-nb;
+  return sa.localeCompare(sb, 'fr', {sensitivity:'base', numeric:true});
+}
+
+function sortTable(key){
+  if(sortState.col === key) sortState.dir = -sortState.dir;
+  else { sortState.col = key; sortState.dir = 1; }
+  renderTable();
+}
+
+function updateSortIndicators(){
+  SORT_KEYS.forEach(k=>{
+    const th = document.getElementById('th-'+k);
+    if(!th) return;
+    if(!th.dataset.label) th.dataset.label = th.textContent.trim();
+    th.textContent = th.dataset.label + (sortState.col===k ? (sortState.dir===1?' ▲':' ▼') : '');
+  });
+}
+
 function renderTable(){
   // Note : Code/Année/Newsletter/Code SMS/Code NEWS/Tri 2/Tri 3 sont désormais
   // des critères exacts appliqués directement dans la requête Airtable (voir
@@ -565,6 +627,10 @@ function renderTable(){
   let rows = lastResults;
   if(c1 && v1) rows = rows.filter(r=>valueForKey(r.fields,c1).toLowerCase().includes(v1));
   if(c2 && v2) rows = rows.filter(r=>valueForKey(r.fields,c2).toLowerCase().includes(v2));
+  if(sortState.col){
+    rows = rows.slice().sort((a,b)=>sortState.dir*compareValues(getSortValue(a.fields,sortState.col), getSortValue(b.fields,sortState.col)));
+  }
+  updateSortIndicators();
 
   const tbody = document.getElementById('tbl-body');
   tbody.innerHTML = '';
@@ -648,6 +714,7 @@ function buildFicheForm(){
       if(FLD_YELLOW.includes(key)) input.classList.add('fld-yellow');
       if(FLD_GREEN.includes(key)) input.classList.add('fld-green');
       if(key==='matricule') input.classList.add('fld-matricule');
+      if(key==='probleme') input.addEventListener('change', updateProblemeColor);
       const tabPos = FLD_TABORDER.indexOf(key);
       if(tabPos !== -1) input.tabIndex = tabPos + 1;
       item.appendChild(input);
@@ -666,6 +733,25 @@ function buildFicheForm(){
 }
 
 function markDirty(){ _dirty = true; }
+
+// Fond coloré du champ "Problème" selon sa valeur (2026-08-25, demande de Marc) :
+// rouge = un problème (Problème, PROBLEME code 900/999...), vert = PAS DE PROBLEME,
+// bleu léger = DESINSCRIPTION, jaune = à vérifier. Comparaison insensible aux
+// accents/majuscules pour couvrir toutes les variantes présentes dans CHOICES.probleme.
+function normalizeProbleme(v){
+  return (v||'').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim();
+}
+function updateProblemeColor(){
+  const el = document.getElementById('f-probleme');
+  if(!el) return;
+  el.classList.remove('probleme-vert','probleme-rouge','probleme-bleu','probleme-jaune');
+  const n = normalizeProbleme(el.value);
+  if(!n) return;
+  if(n === 'PAS DE PROBLEME') el.classList.add('probleme-vert');
+  else if(n === 'DESINSCRIPTION') el.classList.add('probleme-bleu');
+  else if(n.includes('VERIFIER')) el.classList.add('probleme-jaune');
+  else if(n.includes('PROBLEME')) el.classList.add('probleme-rouge');
+}
 
 function gv(key){ const el=fld(null,key); if(!el) return null; const v=el.value; return v===''?null:v; }
 function sv(key, v){
@@ -708,6 +794,7 @@ async function loadMember(id){
     document.getElementById('f-nmembre-disp').textContent = data.fields['N° membre']!=null ? data.fields['N° membre'] : '—';
     document.getElementById('f-nommaj-disp').textContent = data.fields['Nom (majuscules)'] || '—';
     fillForm(data.fields);
+    updateProblemeColor();
     await refreshResaSelect(data.fields);
     showView('fiche');
     setSt('');
@@ -857,6 +944,30 @@ const EMAIL_TEMPLATES = {
       'Une fois connecté, il suffit d\'aller sur COTISATION et effectuer le paiement avec la banque de votre choix ou un virement bancaire. Vous serez activé directement sauf avec les virements bancaires. Il faudra attendre 24 à 48h.\n\n' +
       'En cas de soucis, nous assurons une permanence 7 jours sur 7 de 10h à 18h au 0474/966.968. N\'hésitez pas à nous contacter par GSM ou par mail à info@educpass.eu.\n\n' +
       'L\'équipe d\'Educpass.'
+  },
+  franceRenouv: {
+    titre: '🇫🇷 Aperçu — Paiement FRANCE (renouvellement cotisation 2027)',
+    subject: 'Educpass France — Renouvellement de cotisation 2027 — Procédure',
+    body: () => 'Bonjour ' + (gv('prenom')||'') + ' ' + (gv('nom')||'') + ',\n\n' +
+      'EDUCPASS-FRANCE — RENOUVELLEMENT POUR 2027 – PROCEDURE\n\n' +
+      'Si vous avez reçu un code par SMS, c\'est bien nous qui l\'avons envoyé !\n' +
+      'Il faut d\'abord se connecter à votre compte avant de mettre le code « RENTREE » !!!\n' +
+      'Vous paierez 25 € au lieu de 45 €.\n\n' +
+      'Plusieurs cas de figure peuvent se présenter :\n\n' +
+      '1. Si vous avez reçu ce SMS, c\'est que vous êtes bien membre. La cotisation fonctionne toujours par année civile.\n' +
+      '2. Si vous avez payé et que dans le message de confirmation on parle des coupons 2026, c\'est normal. La carte sera activée au 1er septembre et les coupons seront activés en janvier 2027.\n' +
+      '3. Il n\'y aura pas de décompte de coupons 2026 par rapport à ceux de 2027.\n' +
+      '4. Pour ceux qui utilisent APPLE-MAC, il y a souvent un problème de navigateur avec SAFARI. Vous devez aller sur GOOGLE CHROME ou Microsoft EDGE pour faire afficher le code.\n' +
+      '5. Pour ceux qui ont un iPhone, si le code ne s\'affiche pas, vous devez redémarrer votre GSM et/ou vérifier vos paramètres de sécurité pour accepter notre site www.educpass.eu.\n' +
+      '6. Pour ceux qui ont un smartphone et que le code n\'apparaît pas, il suffit de redémarrer le GSM pour que les paramètres se mettent à jour.\n' +
+      '7. Si après toutes ces tentatives cela ne fonctionne toujours pas, il vous reste la solution du virement bancaire sur notre compte du Crédit Mutuel :\n\n' +
+      '[LOGO_CM]\n\n' +
+      'IBAN : FR 76 107 8027 2100 0443 9580 186\n' +
+      'Titulaire du compte : EDUCPASS-FRANCE\n' +
+      'Communication : votre n° de matricule + le code promo\n\n' +
+      '8. Si vous ne voyez pas votre code PROMO, le voici : RENTREE.\n\n' +
+      'Bonne chance à tous.\n\n' +
+      '[SIGNATURE_EDUCPASS]'
   }
 };
 
@@ -869,6 +980,16 @@ const EMAIL_LINK_KEYWORDS = {
   'COTISATION': 'https://www.educpass.eu/FR/Produits.awp'
 };
 
+// Mots-clés entre crochets, ex. "[LOGO_CM]", transformés en image insérée dans
+// la version HTML de l'email (la zone de texte de l'aperçu garde le mot-clé
+// brut, modifiable normalement — seule la conversion à l'envoi insère l'image).
+// Images hébergées sur le site GitHub Pages déjà utilisé pour FICHIER PROFS
+// (dossier DOSSIER TECHNIQUE PROFS/assets, publié avec DEPLOYER_SITE_PROFS.bat).
+const EMAIL_IMAGE_KEYWORDS = {
+  'LOGO_CM': { url: 'https://flasschoen.github.io/fiches-profs-2026/assets/logo-credit-mutuel.png', alt: 'Crédit Mutuel', maxWidth: 260 },
+  'SIGNATURE_EDUCPASS': { url: 'https://flasschoen.github.io/fiches-profs-2026/assets/entete-educpass-france.jpg', alt: 'Educpass France', maxWidth: 380 }
+};
+
 function escapeHtml(s){
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
@@ -879,6 +1000,11 @@ function bodyToHtml(text){
     const url = EMAIL_LINK_KEYWORDS[word];
     const re = new RegExp('\\b' + word + '\\b', 'g');
     html = html.replace(re, '<a href="' + url + '">' + word + '</a>');
+  });
+  Object.keys(EMAIL_IMAGE_KEYWORDS).forEach(function(key){
+    const img = EMAIL_IMAGE_KEYWORDS[key];
+    const re = new RegExp('\\[' + key + '\\]', 'g');
+    html = html.replace(re, '<img src="' + img.url + '" alt="' + img.alt + '" style="max-width:' + img.maxWidth + 'px;width:100%;height:auto;display:block;margin:8px 0;">');
   });
   return html.replace(/\n/g, '<br>');
 }
