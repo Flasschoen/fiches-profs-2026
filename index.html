@@ -129,7 +129,18 @@ legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
     <div class="filters-row" style="margin-top:-4px;">
       <span style="font-size:12px;color:#777;align-self:center;">Critères exacts (combinables, interrogent toute la base) :</span>
       <input type="text" id="flt-code" placeholder="Code" title="Code" style="max-width:80px;" oninput="onSearchInput()">
-      <input type="text" id="flt-annee" placeholder="Année" title="Année" style="max-width:80px;" oninput="onSearchInput()">
+      <select id="flt-annee-op" title="Comparaison Année" onchange="onSearchInput()" style="max-width:48px;">
+        <option value="=">=</option><option value=">">&gt;</option><option value=">=">&ge;</option><option value="<">&lt;</option><option value="<=">&le;</option>
+      </select>
+      <input type="text" id="flt-annee" placeholder="Année" title="Année" style="max-width:70px;" oninput="onSearchInput()">
+      <select id="flt-matricule-op" title="Comparaison N° matricule" onchange="onSearchInput()" style="max-width:48px;">
+        <option value="=">=</option><option value=">">&gt;</option><option value=">=">&ge;</option><option value="<">&lt;</option><option value="<=">&le;</option>
+      </select>
+      <input type="text" id="flt-matricule" placeholder="N° matricule" title="N° matricule" style="max-width:105px;" oninput="onSearchInput()">
+      <select id="flt-membre-op" title="Comparaison N° membre" onchange="onSearchInput()" style="max-width:48px;">
+        <option value="=">=</option><option value=">">&gt;</option><option value=">=">&ge;</option><option value="<">&lt;</option><option value="<=">&le;</option>
+      </select>
+      <input type="text" id="flt-membre" placeholder="N° membre" title="N° membre" style="max-width:95px;" oninput="onSearchInput()">
       <input type="text" id="flt-newsletter" placeholder="Newsletter" title="Newsletter (0 ou 1)" style="max-width:90px;" oninput="onSearchInput()">
       <input type="text" id="flt-codesms" placeholder="Code SMS" title="Code SMS (0 ou 1) — GSM valide" style="max-width:90px;" oninput="onSearchInput()">
       <input type="text" id="flt-codenews" placeholder="Code NEWS" title="Code NEWS (0 ou 1) — Non Educ News" style="max-width:95px;" oninput="onSearchInput()">
@@ -137,7 +148,7 @@ legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
       <input type="text" id="flt-tri3" placeholder="Tri 3" title="Clé de tri 3" style="max-width:80px;" oninput="onSearchInput()">
     </div>
     <div style="font-size:11.5px;color:#999;margin:-6px 0 8px 2px;">
-      💡 Ces cases se combinent entre elles (ex. Année=26 + Newsletter=1 = tous les profs de l'année 26 inscrits à la newsletter) — pas besoin de remplir la barre de recherche du haut.
+      💡 Ces cases se combinent entre elles (ex. Année=26 + Newsletter=1 = tous les profs de l'année 26 inscrits à la newsletter) — pas besoin de remplir la barre de recherche du haut. Pour Année / N° matricule / N° membre, le menu déroulant juste avant permet aussi &gt;, &ge;, &lt; ou &le; (ex. N° membre &gt; 400000).
     </div>
     <div style="max-height:65vh;overflow:auto;">
       <table class="results" id="tbl-results">
@@ -473,12 +484,14 @@ function onSearchInput(){
 }
 
 // Critères exacts combinables (interrogent Airtable directement, pas seulement
-// les résultats déjà chargés) : Code, Année, Newsletter, Code SMS, Code NEWS
-// (= champ "Non Educ News"), Clé de tri 2 (numériques) et Clé de tri 3 (texte).
+// les résultats déjà chargés) : Code, Newsletter, Code SMS, Code NEWS
+// (= champ "Non Educ News"), Clé de tri 2 (numériques, égalité) et Clé de tri 3
+// (texte, égalité). Année / N° matricule / N° membre supportent en plus un
+// opérateur de comparaison (=, >, >=, <, <=) via un menu déroulant dédié.
 function buildStructuredConditions(){
   const conds = [];
   const numericMap = [
-    ['flt-code','Code'], ['flt-annee','Année'], ['flt-newsletter','Newsletter'],
+    ['flt-code','Code'], ['flt-newsletter','Newsletter'],
     ['flt-codesms','Code SMS'], ['flt-codenews','Non Educ News'], ['flt-tri2','Clé de tri 2'],
   ];
   numericMap.forEach(([id,fieldName])=>{
@@ -493,6 +506,30 @@ function buildStructuredConditions(){
   if(tri3 && tri3.value.trim()!==''){
     conds.push(`{Clé de tri 3}="${esc(tri3.value.trim())}"`);
   }
+  // Critères avec opérateur de comparaison choisi par Marc (=, >, >=, <, <=).
+  const ALLOWED_OPS = ['=','>','>=','<','<='];
+  const rangeMap = [
+    ['flt-annee','flt-annee-op','Année'],
+    ['flt-matricule','flt-matricule-op','N° matricule'],
+    ['flt-membre','flt-membre-op','N° membre'],
+  ];
+  rangeMap.forEach(([valId,opId,fieldName])=>{
+    const valEl = document.getElementById(valId);
+    if(!valEl) return;
+    const v = valEl.value.trim();
+    if(v==='') return;
+    const opEl = document.getElementById(opId);
+    let op = opEl ? opEl.value : '=';
+    if(!ALLOWED_OPS.includes(op)) op = '=';
+    const n = Number(v);
+    if(isNaN(n)){
+      // Valeur non numérique saisie : seule l'égalité texte a un sens, quel
+      // que soit l'opérateur choisi dans le menu.
+      conds.push(`{${fieldName}}="${esc(v)}"`);
+    } else {
+      conds.push(`{${fieldName}}${op}${n}`);
+    }
+  });
   return conds;
 }
 
@@ -986,8 +1023,8 @@ const EMAIL_LINK_KEYWORDS = {
 // Images hébergées sur le site GitHub Pages déjà utilisé pour FICHIER PROFS
 // (dossier DOSSIER TECHNIQUE PROFS/assets, publié avec DEPLOYER_SITE_PROFS.bat).
 const EMAIL_IMAGE_KEYWORDS = {
-  'LOGO_CM': { url: 'https://flasschoen.github.io/fiches-profs-2026/assets/logo-credit-mutuel.png', alt: 'Crédit Mutuel', maxWidth: 260 },
-  'SIGNATURE_EDUCPASS': { url: 'https://flasschoen.github.io/fiches-profs-2026/assets/entete-educpass-france.jpg', alt: 'Educpass France', maxWidth: 380 }
+  'LOGO_CM': { url: 'https://flasschoen.github.io/fiches-profs-2026/assets/logo-credit-mutuel.png', alt: 'Crédit Mutuel', width: 180, height: 100 },
+  'SIGNATURE_EDUCPASS': { url: 'https://flasschoen.github.io/fiches-profs-2026/assets/entete-educpass-france.jpg', alt: 'Educpass France', width: 260, height: 62 }
 };
 
 function escapeHtml(s){
@@ -1004,7 +1041,11 @@ function bodyToHtml(text){
   Object.keys(EMAIL_IMAGE_KEYWORDS).forEach(function(key){
     const img = EMAIL_IMAGE_KEYWORDS[key];
     const re = new RegExp('\\[' + key + '\\]', 'g');
-    html = html.replace(re, '<img src="' + img.url + '" alt="' + img.alt + '" style="max-width:' + img.maxWidth + 'px;width:100%;height:auto;display:block;margin:8px 0;">');
+    // Largeur/hauteur fixées via les attributs HTML width/height (et non seulement en CSS) :
+    // Outlook (moteur Word) ignore souvent max-width/width:100% en CSS et affiche alors
+    // l'image à sa taille réelle en pixels — d'où le logo bien trop grand constaté par Marc.
+    // Les attributs HTML width/height sont respectés de façon fiable par Outlook.
+    html = html.replace(re, '<img src="' + img.url + '" alt="' + img.alt + '" width="' + img.width + '" height="' + img.height + '" style="width:' + img.width + 'px;height:' + img.height + 'px;display:block;margin:8px 0;border:0;">');
   });
   return html.replace(/\n/g, '<br>');
 }
