@@ -986,24 +986,18 @@ const EMAIL_TEMPLATES = {
     titre: '🇫🇷 Aperçu — Paiement FRANCE (renouvellement cotisation 2027)',
     subject: 'Educpass France — Renouvellement de cotisation 2027 — Procédure',
     body: () => 'Bonjour ' + (gv('prenom')||'') + ' ' + (gv('nom')||'') + ',\n\n' +
-      'EDUCPASS-FRANCE — RENOUVELLEMENT POUR 2027 – PROCEDURE\n\n' +
+      'EDUCPASS-FRANCE… RENOUVELLEMENT POUR 2027\n\n' +
       'Si vous avez reçu un code par SMS, c\'est bien nous qui l\'avons envoyé !\n' +
       'Il faut d\'abord se connecter à votre compte avant de mettre le code « RENTREE » !!!\n' +
-      'Vous paierez 25 € au lieu de 45 €.\n\n' +
-      'Plusieurs cas de figure peuvent se présenter :\n\n' +
-      '1. Si vous avez reçu ce SMS, c\'est que vous êtes bien membre. La cotisation fonctionne toujours par année civile.\n' +
-      '2. Si vous avez payé et que dans le message de confirmation on parle des coupons 2026, c\'est normal. La carte sera activée au 1er septembre et les coupons seront activés en janvier 2027.\n' +
-      '3. Il n\'y aura pas de décompte de coupons 2026 par rapport à ceux de 2027.\n' +
-      '4. Pour ceux qui utilisent APPLE-MAC, il y a souvent un problème de navigateur avec SAFARI. Vous devez aller sur GOOGLE CHROME ou Microsoft EDGE pour faire afficher le code.\n' +
-      '5. Pour ceux qui ont un iPhone, si le code ne s\'affiche pas, vous devez redémarrer votre GSM et/ou vérifier vos paramètres de sécurité pour accepter notre site www.educpass.eu.\n' +
-      '6. Pour ceux qui ont un smartphone et que le code n\'apparaît pas, il suffit de redémarrer le GSM pour que les paramètres se mettent à jour.\n' +
-      '7. Si après toutes ces tentatives cela ne fonctionne toujours pas, il vous reste la solution du virement bancaire sur notre compte du Crédit Mutuel :\n\n' +
+      'Vous paierez 25 € au lieu de 45 €…\n\n' +
+      'Pour rappel :\n' +
+      'Si vous avez reçu ce SMS, c\'est que vous êtes bien membre. La cotisation fonctionne toujours par année civile.\n' +
+      'Si vous avez payé et que dans le message de confirmation on parle des coupons 2026, c\'est normal. La carte sera activée au 1er septembre et les coupons seront activés en janvier 2027.\n' +
+      'Pour effectuer votre paiement nous avons ouvert un compte avec un IBAN FR. Vous pouvez effectuer votre paiement via un virement bancaire sur notre compte du Crédit Mutuel FR 76 107 8027 2100 0443 9580 186 au nom de EDUCPASS-FRANCE en mentionnant votre n° de matricule + le code promo.\n\n' +
       '[LOGO_CM]\n\n' +
-      'IBAN : FR 76 107 8027 2100 0443 9580 186\n' +
-      'Titulaire du compte : EDUCPASS-FRANCE\n' +
-      'Communication : votre n° de matricule + le code promo\n\n' +
-      '8. Si vous ne voyez pas votre code PROMO, le voici : RENTREE.\n\n' +
-      'Bonne chance à tous.\n\n' +
+      'Si vous ne voyez pas votre code PROMO, le voici : RENTREE.\n\n' +
+      'Pour janvier 2027, nous sommes en train d\'élaborer une brochure SORTIES SCOLAIRES France. Elle comprendra plus d\'une quarantaine de prestataires touristiques français. La liste sera publiée fin décembre 2026.\n\n' +
+      'Bonne rentrée à toutes et à tous.\n\n' +
       '[SIGNATURE_EDUCPASS]'
   }
 };
