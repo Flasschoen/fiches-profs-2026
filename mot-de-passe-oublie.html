@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mot de passe oublié — Educpass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --paper:#faf5e8;
+  --paper-2:#f1e9d6;
+  --page-bg:#e9dcb8;
+  --teal:#0f3d3e;
+  --teal-dark:#0a2b2c;
+  --green-dark:#164a2e;
+  --gold:#c89b3c;
+  --gold-light:#e6c878;
+  --line:#d8cca4;
+  --text:#2a2118;
+  --text-soft:#5c5344;
+  --off:#8a7f6a;
+  --ok:#2f7d4f;
+  --err:#a5432a;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;background:var(--page-bg);color:var(--text);
+  font-family:'Work Sans',Arial,sans-serif;min-height:100vh;
+}
+.site-header{background:var(--green-dark);box-shadow:0 2px 12px rgba(10,20,18,.28);}
+.site-header-inner{max-width:460px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:12px;}
+.site-logo{font-family:'Fraunces',serif;font-weight:700;font-size:17px;color:var(--paper);letter-spacing:.5px;}
+.site-logo b{color:var(--gold-light);}
+.back-link{margin-left:auto;color:var(--paper-2);font-size:12.5px;text-decoration:none;opacity:.85;}
+.back-link:hover{opacity:1;text-decoration:underline;}
+
+.wrap{max-width:460px;margin:0 auto;padding:26px 20px 60px;}
+h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:24px;color:var(--teal-dark);margin:0 0 6px;text-wrap:balance;}
+.subtitle{color:var(--text-soft);font-size:13.5px;margin:0 0 22px;line-height:1.5;}
+
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:26px;box-shadow:0 6px 24px rgba(19,36,32,.10);}
+
+.fitem{margin-bottom:16px;}
+.fitem label{display:block;font-size:12px;color:var(--text-soft);margin-bottom:5px;font-weight:600;}
+.fitem input{
+  width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8px;
+  font-size:15px;font-family:inherit;background:#fff;color:var(--text);
+}
+.fitem input:focus{outline:2px solid var(--teal);outline-offset:1px;}
+
+.btn-submit{
+  display:block;width:100%;padding:14px;margin-top:6px;border:none;border-radius:9px;
+  background:var(--teal-dark);color:#fff;font-size:15.5px;font-weight:700;cursor:pointer;
+  font-family:inherit;
+}
+.btn-submit:hover{filter:brightness(1.08);}
+.btn-submit:disabled{opacity:.55;cursor:not-allowed;}
+
+.msg-box{border-radius:9px;padding:12px 16px;font-size:13.5px;line-height:1.5;margin-bottom:16px;display:none;}
+.msg-box.show{display:block;}
+.msg-err{background:#fbe6e0;border:1px solid #e3a48f;color:#7a2c17;}
+.msg-ok{background:#e7f2ea;border:1px solid #a9d3b8;color:#1d5c37;}
+
+.retour-connexion{text-align:center;margin-top:16px;font-size:12.5px;color:var(--off);}
+.retour-connexion a{color:var(--teal-dark);font-weight:600;text-decoration:none;}
+.retour-connexion a:hover{text-decoration:underline;}
+
+.result-panel{display:none;text-align:center;padding:6px 4px 4px;}
+.result-panel.show{display:block;}
+.result-panel .big{font-family:'Fraunces',serif;font-size:19px;font-weight:700;color:var(--teal-dark);margin-bottom:10px;}
+.result-panel .detail{font-size:13.5px;color:var(--text-soft);line-height:1.6;}
+.hidden{display:none !important;}
+</style>
+</head>
+<body>
+
+<div class="site-header">
+  <div class="site-header-inner">
+    <div class="site-logo">EDUCPASS<b> ·</b> Mot de passe oublié</div>
+    <a class="back-link" href="ACCUEIL.html">← Retour à l'accueil</a>
+  </div>
+</div>
+
+<div class="wrap">
+  <h1 class="title">Mot de passe oublié</h1>
+  <p class="subtitle">Indiquez votre email ou votre n° de matricule : si un compte existe, vous recevrez un lien pour choisir un nouveau mot de passe (valable 1 heure).</p>
+
+  <div class="card">
+
+    <div class="msg-box" id="msg-box"></div>
+
+    <form id="forgot-form" novalidate>
+      <div class="fitem">
+        <label>Email ou N° matricule</label>
+        <input type="text" id="f-identifiant" autocomplete="username" autocapitalize="off" autocorrect="off">
+      </div>
+      <button type="submit" class="btn-submit" id="btn-envoyer">Recevoir le lien par email</button>
+    </form>
+
+    <div class="result-panel" id="result-panel">
+      <div class="big">📧 Email envoyé (si un compte existe)</div>
+      <div class="detail" id="result-detail"></div>
+    </div>
+
+    <p class="retour-connexion"><a href="connexion-fr.html">← Retour à la page de connexion</a></p>
+
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  MOT DE PASSE OUBLIÉ — demande de réinitialisation
+//  ------------------------------------------------------------
+//  Cette page n'affiche jamais si un compte existe ou non : le message
+//  est toujours le même, que l'identifiant corresponde à un enseignant
+//  ou non (protection contre l'énumération de comptes). L'envoi réel de
+//  l'email (et la génération du lien) se fait entièrement côté Worker
+//  Cloudflare (POST /auth/forgot).
+// ══════════════════════════════════════════════════════════
+const PROXY = 'https://educpass-profs-proxy.marc-flasschoen.workers.dev';
+
+const form = document.getElementById('forgot-form');
+const btn = document.getElementById('btn-envoyer');
+const msgBox = document.getElementById('msg-box');
+const resultPanel = document.getElementById('result-panel');
+
+function afficherMessage(texte, type){
+  msgBox.textContent = texte;
+  msgBox.className = 'msg-box show msg-' + type;
+}
+function cacherMessage(){
+  msgBox.className = 'msg-box';
+}
+
+form.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  cacherMessage();
+
+  const identifiant = document.getElementById('f-identifiant').value.trim();
+  if(!identifiant){
+    afficherMessage('Merci de renseigner votre email ou votre n° de matricule.', 'err');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Envoi en cours…';
+
+  try{
+    const r = await fetch(`${PROXY}/auth/forgot`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ identifiant })
+    });
+    const data = await r.json().catch(()=> ({}));
+
+    // On affiche toujours le panneau de succès générique, quel que soit le résultat réel
+    // (sauf erreur réseau/serveur, gérée dans le catch) — c'est voulu, pas un bug.
+    form.classList.add('hidden');
+    document.getElementById('result-detail').textContent = data.message || 'Si un compte existe avec cet identifiant, vous recevrez un email avec un lien de réinitialisation.';
+    resultPanel.classList.add('show');
+
+  }catch(e){
+    afficherMessage('Impossible de contacter le serveur. Vérifiez votre connexion et réessayez.', 'err');
+    btn.disabled = false;
+    btn.textContent = 'Recevoir le lien par email';
+  }
+});
+</script>
+
+</body>
+</html>
