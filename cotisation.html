@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ma cotisation — Educpass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --paper:#faf5e8;
+  --paper-2:#f1e9d6;
+  --page-bg:#e9dcb8;
+  --teal:#0f3d3e;
+  --teal-dark:#0a2b2c;
+  --green-dark:#164a2e;
+  --gold:#c89b3c;
+  --gold-light:#e6c878;
+  --line:#d8cca4;
+  --text:#2a2118;
+  --text-soft:#5c5344;
+  --off:#8a7f6a;
+  --ok:#2f7d4f;
+  --err:#a5432a;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--page-bg);color:var(--text);font-family:'Work Sans',Arial,sans-serif;min-height:100vh;}
+.site-header{background:var(--green-dark);box-shadow:0 2px 12px rgba(10,20,18,.28);}
+.site-header-inner{max-width:720px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.site-logo{font-family:'Fraunces',serif;font-weight:700;font-size:17px;color:var(--paper);letter-spacing:.5px;}
+.site-logo b{color:var(--gold-light);}
+.compte-nav{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap;}
+.compte-nav a,.compte-nav span{
+  font-size:12.5px;padding:7px 12px;border-radius:7px;text-decoration:none;color:var(--paper-2);
+  font-weight:600;white-space:nowrap;
+}
+.compte-nav a:hover{background:rgba(255,255,255,.1);}
+.compte-nav a.actif{background:var(--gold);color:var(--teal-dark);}
+.compte-nav a.deconnexion{color:#f0c9bc;}
+
+.wrap{max-width:640px;margin:0 auto;padding:26px 20px 60px;}
+h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:24px;color:var(--teal-dark);margin:0 0 6px;text-wrap:balance;}
+.subtitle{color:var(--text-soft);font-size:13.5px;margin:0 0 22px;line-height:1.5;}
+
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:26px;box-shadow:0 6px 24px rgba(19,36,32,.10);margin-bottom:20px;}
+
+.statut-badge{
+  display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:999px;
+  font-size:14px;font-weight:700;margin-bottom:14px;
+}
+.statut-ok{background:#e4f2e8;color:var(--ok);border:1px solid #a9d3b6;}
+.statut-non{background:#fdf3d9;color:#8a6400;border:1px solid #e6c878;}
+
+.statut-detail{font-size:13.5px;color:var(--text-soft);line-height:1.6;margin:0 0 18px;}
+.statut-detail b{color:var(--text);}
+
+.btn-principal{
+  display:inline-block;padding:13px 24px;border:none;border-radius:9px;
+  background:var(--teal-dark);color:#fff;font-size:14.5px;font-weight:700;cursor:pointer;
+  font-family:inherit;text-decoration:none;
+}
+.btn-principal:hover{filter:brightness(1.08);}
+.btn-principal[disabled],.btn-principal.desactive{
+  background:var(--off);cursor:not-allowed;pointer-events:none;opacity:.7;
+}
+.btn-secondaire{
+  display:inline-block;padding:13px 24px;border:1px solid var(--line);border-radius:9px;
+  background:var(--paper-2);color:var(--teal-dark);font-size:14.5px;font-weight:700;
+  text-decoration:none;font-family:inherit;
+}
+.btn-secondaire:hover{background:var(--gold-light);}
+
+.reference-box{
+  background:var(--paper-2);border:1px dashed var(--line);border-radius:9px;
+  padding:12px 16px;font-size:12.5px;color:var(--text-soft);line-height:1.6;margin:16px 0;
+}
+.reference-box b{color:var(--text);font-family:'Work Sans',monospace;}
+
+/* ===== Choix du produit de cotisation ===== */
+.produits-titre{font-size:13px;font-weight:700;color:var(--teal-dark);margin:4px 0 10px;text-transform:uppercase;letter-spacing:.4px;}
+.produits-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:18px;}
+.produit-carte{
+  background:var(--paper-2);border:2px solid var(--line);border-radius:10px;padding:14px 12px;
+  cursor:pointer;text-align:left;font-family:inherit;
+}
+.produit-carte:hover{border-color:var(--gold);}
+.produit-carte.selectionne{border-color:var(--teal-dark);background:#eef4ef;}
+.produit-nom{font-size:12.5px;font-weight:700;color:var(--text);line-height:1.35;margin-bottom:6px;}
+.produit-prix{font-size:18px;font-weight:800;color:var(--teal-dark);}
+.produit-desc{font-size:11px;color:var(--text-soft);margin-top:6px;line-height:1.5;white-space:pre-line;}
+
+.promo-ligne{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 6px;}
+.promo-ligne input[type=text]{
+  flex:1;min-width:140px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;
+  font-family:inherit;font-size:13.5px;text-transform:uppercase;
+}
+.promo-ligne button{
+  padding:10px 16px;border:1px solid var(--teal-dark);border-radius:8px;background:var(--paper);
+  color:var(--teal-dark);font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;
+}
+.promo-ligne button:hover{background:var(--gold-light);}
+.promo-msg{font-size:12.5px;margin:4px 0 14px;min-height:16px;}
+.promo-msg.ok{color:var(--ok);}
+.promo-msg.err{color:var(--err);}
+
+.recap-prix{
+  display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px;
+  background:var(--paper-2);border-radius:9px;padding:12px 16px;margin:6px 0 4px;
+}
+.recap-prix .lbl{font-size:12.5px;color:var(--text-soft);}
+.recap-prix .val-barre{font-size:13px;color:var(--off);text-decoration:line-through;margin-right:8px;}
+.recap-prix .val-final{font-size:21px;font-weight:800;color:var(--teal-dark);}
+
+.hidden{display:none !important;}
+.msg-box{border-radius:9px;padding:12px 16px;font-size:13.5px;line-height:1.5;margin-bottom:16px;background:#fbe6e0;border:1px solid #e3a48f;color:#7a2c17;}
+
+#overlay-loading{position:fixed;inset:0;background:rgba(15,61,62,.35);display:flex;align-items:center;justify-content:center;z-index:1000;}
+.loading-box{background:var(--paper);border-radius:12px;padding:22px 34px;box-shadow:0 4px 28px rgba(0,0,0,.3);font-size:16px;font-weight:700;color:var(--teal-dark);text-align:center;min-width:260px;}
+</style>
+</head>
+<body>
+
+<div class="site-header">
+  <div class="site-header-inner">
+    <div class="site-logo">EDUCPASS<b> ·</b> Mon compte</div>
+    <nav class="compte-nav">
+      <a href="gerer-mon-compte.html">Gérer mon compte</a>
+      <a href="ma-carte.html">Afficher ma carte</a>
+      <a href="cotisation.html" class="actif">Cotisation</a>
+      <a href="APERCU-PARTENAIRES-V2.html">Afficher mes coupons</a>
+      <a href="#" id="lien-deconnexion" class="deconnexion">Déconnexion</a>
+    </nav>
+  </div>
+</div>
+
+<div id="overlay-loading" class="hidden"><div class="loading-box" id="loading-msg"></div></div>
+
+<div class="wrap">
+  <h1 class="title">Ma cotisation</h1>
+  <p class="subtitle">Votre cotisation doit être en ordre pour l'année en cours (ou déjà réglée pour l'année suivante) afin de profiter des coupons de nos partenaires.</p>
+
+  <div class="msg-box hidden" id="msg-erreur"></div>
+  <div class="card hidden" id="retour-paiement-msg" style="text-align:center;font-weight:700;color:var(--teal-dark);"></div>
+
+  <div id="contenu" class="hidden">
+
+    <!-- ===== Cas : cotisation en ordre ===== -->
+    <div class="card hidden" id="bloc-en-ordre">
+      <div class="statut-badge statut-ok">✅ Cotisation en ordre <span id="annee-en-ordre"></span></div>
+      <p class="statut-detail">Merci ! Votre cotisation est à jour. Vous avez accès aux coupons de tous nos partenaires.</p>
+      <a href="APERCU-PARTENAIRES-V2.html" class="btn-principal">🎟️ Voir mes coupons</a>
+    </div>
+
+    <!-- ===== Cas : cotisation pas en ordre ===== -->
+    <div class="card hidden" id="bloc-pas-en-ordre">
+      <div class="statut-badge statut-non">⚠️ Cotisation non à jour</div>
+      <p class="statut-detail" id="statut-non-detail"></p>
+
+      <div class="produits-titre">1. Choisissez votre formule</div>
+      <div class="produits-grid" id="produits-grid"></div>
+
+      <div class="produits-titre">2. Code promo (si vous en avez un)</div>
+      <div class="promo-ligne">
+        <input type="text" id="promo-code" placeholder="Ex: RENTREE" autocomplete="off">
+        <button type="button" id="btn-appliquer-promo" onclick="appliquerPromo()">Appliquer</button>
+      </div>
+      <div class="promo-msg" id="promo-msg"></div>
+
+      <div class="recap-prix hidden" id="recap-prix">
+        <span class="lbl">Total à payer</span>
+        <span><span class="val-barre hidden" id="prix-barre"></span><span class="val-final" id="prix-final"></span></span>
+      </div>
+
+      <div style="margin-top:16px;">
+        <a href="#" class="btn-principal desactive" id="btn-payer" onclick="payerCotisation(event)">💳 Payer ma cotisation</a>
+      </div>
+      <div class="reference-box" id="reference-box"></div>
+      <p style="font-size:12px;color:var(--off);margin:14px 0 0;">Vous serez redirigé vers Mollie pour le paiement sécurisé. Votre accès aux coupons se débloque automatiquement dès le paiement confirmé.</p>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  MA COTISATION — statut + lien de paiement
+//  ------------------------------------------------------------
+//  "En ordre" = champ "Année" de la fiche Prof égal à l'année en cours (2026)
+//  ou à l'année suivante (2027, ceux qui ont déjà payé d'avance) — règle
+//  validée avec Marc. Réutilise /account/me (aucune nouvelle route Worker
+//  nécessaire, ce champ est déjà renvoyé pour ma-carte.html).
+//
+//  Paiement Mollie (2026-09-14) : le clic sur "Payer ma cotisation" appelle
+//  /cotisation/initier-paiement (educpass-profs-proxy), qui recalcule le
+//  prix côté serveur et crée un vrai paiement Mollie via le Worker dédié
+//  educpass-paiements-proxy. Le navigateur est alors redirigé vers Mollie ;
+//  une fois payé, Mollie prévient nos serveurs (webhook) qui mettent à jour
+//  Airtable automatiquement — voir payerCotisation() et
+//  verifierRetourPaiement() plus bas.
+// ══════════════════════════════════════════════════════════
+const ANNEES_EN_ORDRE = ['2026', '2027'];
+
+const PROXY = 'https://educpass-profs-proxy.marc-flasschoen.workers.dev';
+
+// ── Session : stockage en double (localStorage + cookie) ──────────────
+// Voir connexion-fr.html pour l'explication complète : un cookie longue
+// durée prend le relais si le localStorage venait à disparaître (Safari
+// iOS notamment), pour éviter les reconnexions intempestives.
+const SESSION_COOKIE_MAX_AGE_S = 180 * 24 * 60 * 60;
+function setCookie(nom, valeur, maxAgeS){
+  try{
+    document.cookie = nom + '=' + encodeURIComponent(valeur) + '; path=/; max-age=' + maxAgeS + '; SameSite=Lax' + (location.protocol === 'https:' ? '; Secure' : '');
+  }catch(e){}
+}
+function getCookie(nom){
+  try{
+    const m = document.cookie.match(new RegExp('(?:^|; )' + nom.replace(/([.$?*|{}()\[\]\\\/+^])/g, '\\$1') + '=([^;]*)'));
+    return m ? decodeURIComponent(m[1]) : null;
+  }catch(e){ return null; }
+}
+function removeCookie(nom){
+  try{ document.cookie = nom + '=; path=/; max-age=0'; }catch(e){}
+}
+function clearSession(){
+  try{ localStorage.removeItem('educpass_session'); }catch(e){}
+  removeCookie('educpass_session');
+}
+const BASE = 'appWCfo8WBkMGUuc2';
+const PRODUITS_TBL = 'tblnEHRqjZ3XjW6vV';
+const PROMOS_TBL = 'tblxFU8yFFDPNSXSO';
+const PRODUITS_API = `${PROXY}/v0/${BASE}/${PRODUITS_TBL}`;
+const PROMOS_API = `${PROXY}/v0/${BASE}/${PROMOS_TBL}`;
+
+// ══════════════════════════════════════════════════════════
+//  Correspondance "Fédération" (libellé complet stocké sur la fiche Prof,
+//  ex: "Enseignant français") <-> code brut à 2 chiffres utilisé dans la
+//  table Promos (ex: "07"). Cette correspondance vient de l'écran WinDev
+//  "Table des Promos" (montré par Marc le 14/09/26). Si la fédération du
+//  prof n'est pas dans cette liste (ex: "Enseignant germanophone", pas
+//  encore de code connu), on reste permissif : on n'utilise PAS ce champ
+//  pour bloquer un code promo, on l'ignore simplement pour ce prof.
+// ══════════════════════════════════════════════════════════
+const FEDERATION_VERS_CODE = {
+  'Fédération Wallonie-Bruxelles': '01',
+  'Federation Wallonie-Bruxelles': '01',
+  'Communauté Flamande': '02',
+  'Vlaamse gemeenschap': '02',
+  'Enseignant luxembourgeois': '03',
+  'Fédération Wallonie-Bruxelles sans Matricule': '04',
+  'Communauté Flamande sans Matricule': '05',
+  'Enseignant germanophone': '06',
+  'Enseignant français': '07',
+};
+
+let produits = [];       // catalogue des 3 produits (chargé une fois)
+let promoValidee = null; // enregistrement Promo actif après "Appliquer" (ou null)
+let produitChoisiId = null;
+let compteActuel = null; // compte du prof, rempli par chargerCotisation()
+
+function formatEuros(n){
+  return n.toFixed(2).replace(/\.00$/, '').replace('.', ',') + ' €';
+}
+
+function getSession(){
+  try{
+    const brut = localStorage.getItem('educpass_session');
+    if(brut) return JSON.parse(brut);
+  }catch(e){}
+  const brutCookie = getCookie('educpass_session');
+  if(brutCookie){
+    try{ localStorage.setItem('educpass_session', brutCookie); }catch(e){}
+    try{ return JSON.parse(brutCookie); }catch(e){ return null; }
+  }
+  return null;
+}
+const session = getSession();
+if(!session || !session.token){
+  location.href = 'connexion-fr.html';
+}
+
+document.getElementById('lien-deconnexion').addEventListener('click', (e)=>{
+  e.preventDefault();
+  clearSession();
+  location.href = 'ACCUEIL.html';
+});
+
+function setSt(msg){
+  document.getElementById('loading-msg').textContent = msg || '';
+  document.getElementById('overlay-loading').classList.toggle('hidden', !msg);
+}
+
+// ══════════════════════════════════════════════════════════
+//  PRODUITS — les 3 formules de cotisation (catalogue Airtable, lecture
+//  seule ici — la gestion se fait dans PRODUITS.html)
+// ══════════════════════════════════════════════════════════
+async function chargerProduits(){
+  const r = await fetch(PRODUITS_API + '?pageSize=100');
+  if(!r.ok) throw new Error('Impossible de charger les formules de cotisation.');
+  const data = await r.json();
+  produits = (data.records || []).map(rec => ({
+    id: rec.id,
+    reference: rec.fields['Référence'] || '',
+    libelle: rec.fields['Libellé FR'] || rec.fields['Référence'] || '',
+    description: rec.fields['Description FR'] || '',
+    prix: Number(rec.fields['Prix']) || 0,
+  }));
+}
+
+function afficherProduits(){
+  const grid = document.getElementById('produits-grid');
+  grid.innerHTML = '';
+  produits.forEach(p => {
+    const carte = document.createElement('button');
+    carte.type = 'button';
+    carte.className = 'produit-carte';
+    carte.dataset.produitId = p.id;
+    carte.innerHTML = '<div class="produit-nom">' + escHtml(p.libelle) + '</div>'
+      + '<div class="produit-prix">' + formatEuros(p.prix) + '</div>'
+      + (p.description ? '<div class="produit-desc">' + escHtml(p.description.split('\n')[0]) + '</div>' : '');
+    carte.onclick = () => choisirProduit(p.id);
+    grid.appendChild(carte);
+  });
+}
+
+function choisirProduit(id){
+  produitChoisiId = id;
+  document.querySelectorAll('.produit-carte').forEach(el => {
+    el.classList.toggle('selectionne', el.dataset.produitId === id);
+  });
+  recalculerPrix();
+}
+
+function escHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ══════════════════════════════════════════════════════════
+//  CODE PROMO — validation manuelle (le prof tape un seul code à la fois,
+//  pas de recherche automatique de "la meilleure promo du moment")
+// ══════════════════════════════════════════════════════════
+function parseDateFr(iso){
+  // Les dates Airtable arrivent au format ISO "AAAA-MM-JJ" (ou vides).
+  if(!iso) return null;
+  const d = new Date(iso + 'T00:00:00');
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function validerPromo(rec, compte){
+  const f = rec.fields;
+  const aujourdhui = new Date(); aujourdhui.setHours(0,0,0,0);
+  const debut = parseDateFr(f['Date début']);
+  const fin = parseDateFr(f['Date Fin']);
+  if(debut && aujourdhui < debut) return { ok:false, raison: 'Ce code n\'est pas encore actif (valable à partir du ' + f['Date début'].split('-').reverse().join('/') + ').' };
+  if(fin && aujourdhui > fin) return { ok:false, raison: 'Ce code a expiré (valable jusqu\'au ' + f['Date Fin'].split('-').reverse().join('/') + ').' };
+
+  const eligibilite = f['Éligibilité'] || 'Tous les membres';
+  if(eligibilite === 'Membres en ordre de cotisation'){
+    const anneeActuelle = String((compte && compte.anneeCotisation) || '').trim();
+    if(!ANNEES_EN_ORDRE.includes(anneeActuelle)){
+      return { ok:false, raison: 'Ce code est réservé aux membres déjà en ordre de cotisation.' };
+    }
+  }
+
+  // Codes Fédération : filtre seulement si on sait traduire la fédération
+  // du prof en code brut (voir FEDERATION_VERS_CODE ci-dessus). Sinon, on
+  // reste permissif plutôt que de bloquer un prof à tort.
+  const codesAutorises = f['Codes Fédération'];
+  if(Array.isArray(codesAutorises) && codesAutorises.length){
+    const monCode = FEDERATION_VERS_CODE[(compte && compte.federation) || ''];
+    if(monCode && !codesAutorises.includes(monCode)){
+      return { ok:false, raison: 'Ce code promo n\'est pas disponible pour votre fédération.' };
+    }
+  }
+
+  return { ok:true };
+}
+
+async function appliquerPromo(){
+  const input = document.getElementById('promo-code');
+  const msg = document.getElementById('promo-msg');
+  const code = input.value.trim().toUpperCase();
+  msg.className = 'promo-msg';
+  msg.textContent = '';
+  if(!code){ promoValidee = null; recalculerPrix(); return; }
+
+  document.getElementById('btn-appliquer-promo').disabled = true;
+  try{
+    const params = new URLSearchParams({ pageSize: '100' });
+    const r = await fetch(PROMOS_API + '?' + params.toString());
+    if(!r.ok) throw new Error('Erreur de connexion.');
+    const data = await r.json();
+    const rec = (data.records || []).find(x => String(x.fields['CodePromo'] || '').trim().toUpperCase() === code);
+    if(!rec){
+      promoValidee = null;
+      msg.classList.add('err');
+      msg.textContent = '❌ Code promo inconnu.';
+      recalculerPrix();
+      return;
+    }
+    const verdict = validerPromo(rec, compteActuel);
+    if(!verdict.ok){
+      promoValidee = null;
+      msg.classList.add('err');
+      msg.textContent = '❌ ' + verdict.raison;
+      recalculerPrix();
+      return;
+    }
+    promoValidee = rec;
+    msg.classList.add('ok');
+    const type = rec.fields['Type'];
+    const valeur = rec.fields['Valeur'];
+    msg.textContent = '✅ Code "' + rec.fields['CodePromo'] + '" appliqué (-' + valeur + (type === 'Pourcentage' ? '%' : ' €') + ').';
+    recalculerPrix();
+  }catch(e){
+    promoValidee = null;
+    msg.classList.add('err');
+    msg.textContent = '❌ ' + e.message;
+    recalculerPrix();
+  }finally{
+    document.getElementById('btn-appliquer-promo').disabled = false;
+  }
+}
+
+function calculerPrixFinal(prixBase, promo){
+  if(!promo) return prixBase;
+  const type = promo.fields['Type'];
+  const valeur = Number(promo.fields['Valeur']) || 0;
+  let final = (type === 'Pourcentage') ? prixBase * (1 - valeur/100) : prixBase - valeur;
+  if(final < 0) final = 0;
+  return Math.round(final * 100) / 100;
+}
+
+function recalculerPrix(){
+  const recap = document.getElementById('recap-prix');
+  const produit = produits.find(p => p.id === produitChoisiId);
+  if(!produit){ recap.classList.add('hidden'); majReferenceEtBouton(null, null); return; }
+
+  const prixFinal = calculerPrixFinal(produit.prix, promoValidee);
+  const barre = document.getElementById('prix-barre');
+  const final = document.getElementById('prix-final');
+  if(prixFinal < produit.prix){
+    barre.textContent = formatEuros(produit.prix);
+    barre.classList.remove('hidden');
+  } else {
+    barre.classList.add('hidden');
+  }
+  final.textContent = formatEuros(prixFinal);
+  recap.classList.remove('hidden');
+
+  majReferenceEtBouton(produit, prixFinal);
+}
+
+function majReferenceEtBouton(produit, prixFinal){
+  const c = compteActuel || {};
+  const identite = (c.membre || '') + ' - ' + (c.prenom||'') + ' ' + (c.nom||'') + ' (' + (c.matricule||'') + ')';
+  let html = 'Merci d\'indiquer cette référence lors du paiement, pour que nous puissions le rapprocher de votre dossier :<br><b>' + escHtml(identite) + '</b>';
+  if(produit){
+    html += '<br>Formule choisie : <b>' + escHtml(produit.libelle) + '</b> — total : <b>' + formatEuros(prixFinal) + '</b>'
+      + (promoValidee ? ' (code ' + escHtml(promoValidee.fields['CodePromo']) + ')' : '');
+  }
+  document.getElementById('reference-box').innerHTML = html;
+
+  const btn = document.getElementById('btn-payer');
+  if(produit){
+    btn.classList.remove('desactive');
+    btn.removeAttribute('aria-disabled');
+    if(!btn.dataset.enCours) btn.textContent = '💳 Payer ma cotisation';
+  } else {
+    btn.classList.add('desactive');
+    btn.setAttribute('aria-disabled', 'true');
+    btn.textContent = '💳 Choisissez une formule ci-dessus';
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  Création du paiement Mollie : le prix n'est JAMAIS envoyé par le
+//  navigateur — seuls l'id du produit et le code promo saisi le sont ;
+//  le serveur (educpass-profs-proxy) recalcule le montant exact lui-même.
+// ══════════════════════════════════════════════════════════
+async function payerCotisation(e){
+  e.preventDefault();
+  const btn = document.getElementById('btn-payer');
+  if(btn.classList.contains('desactive') || btn.dataset.enCours) return;
+
+  btn.dataset.enCours = '1';
+  btn.textContent = '⏳ Préparation du paiement...';
+  const msg = document.getElementById('promo-msg');
+
+  try{
+    const r = await fetch(`${PROXY}/cotisation/initier-paiement`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        token: session.token,
+        produitId: produitChoisiId,
+        promoCode: promoValidee ? promoValidee.fields['CodePromo'] : '',
+      }),
+    });
+    const data = await r.json().catch(()=> ({}));
+    if(!r.ok || !data.ok || !data.checkoutUrl){
+      throw new Error(data.error || 'Impossible de créer le paiement pour le moment.');
+    }
+    location.href = data.checkoutUrl;
+  }catch(err){
+    delete btn.dataset.enCours;
+    btn.textContent = '💳 Payer ma cotisation';
+    msg.className = 'promo-msg err';
+    msg.textContent = '❌ ' + err.message;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  Retour depuis Mollie (?retour=1) : le paiement peut avoir été confirmé
+//  quelques secondes avant que le webhook Mollie ne mette Airtable à jour
+//  — on vérifie donc /account/me à plusieurs reprises avant de conclure.
+// ══════════════════════════════════════════════════════════
+async function verifierRetourPaiement(){
+  if(new URLSearchParams(location.search).get('retour') !== '1') return;
+
+  const box = document.getElementById('retour-paiement-msg');
+  box.classList.remove('hidden');
+  box.textContent = '⏳ Merci ! Nous vérifions la confirmation de votre paiement...';
+
+  const TENTATIVES = 8;
+  const DELAI_MS = 3000;
+  for(let i = 0; i < TENTATIVES; i++){
+    await new Promise(res => setTimeout(res, DELAI_MS));
+    try{
+      const r = await fetch(`${PROXY}/account/me`, {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ token: session.token }),
+      });
+      const data = await r.json().catch(()=> ({}));
+      if(r.ok && data.ok){
+        const annee = String(data.compte.anneeCotisation || '').trim();
+        if(ANNEES_EN_ORDRE.includes(annee)){
+          box.textContent = '✅ Paiement confirmé, votre cotisation est en ordre !';
+          history.replaceState(null, '', location.pathname);
+          setTimeout(() => location.reload(), 1500);
+          return;
+        }
+      }
+    }catch(e){ /* on retente simplement au tour suivant */ }
+  }
+  box.textContent = 'Votre paiement est en cours de traitement. Cela peut prendre quelques minutes — rechargez cette page dans un instant.';
+}
+
+async function chargerCotisation(){
+  setSt('⏳ Chargement de votre cotisation...');
+  try{
+    const r = await fetch(`${PROXY}/account/me`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ token: session.token }),
+    });
+    const data = await r.json().catch(()=> ({}));
+    if(!r.ok || !data.ok){
+      if(r.status === 401){
+        clearSession();
+        location.href = 'connexion-fr.html';
+        return;
+      }
+      throw new Error(data.error || 'Erreur inconnue');
+    }
+    const c = data.compte;
+    compteActuel = c;
+    const annee = String(c.anneeCotisation || '').trim();
+    const enOrdre = ANNEES_EN_ORDRE.includes(annee);
+
+    if(enOrdre){
+      document.getElementById('annee-en-ordre').textContent = annee ? ('pour ' + annee) : '';
+      document.getElementById('bloc-en-ordre').classList.remove('hidden');
+    } else {
+      document.getElementById('statut-non-detail').textContent = annee
+        ? ('Votre dernière cotisation enregistrée concerne l\'année ' + annee + '. Renouvelez-la pour ' + ANNEES_EN_ORDRE[0] + ' afin de retrouver l\'accès à vos coupons.')
+        : 'Nous n\'avons pas encore enregistré de cotisation pour vous. Réglez-la pour accéder à vos coupons partenaires.';
+
+      try{
+        await chargerProduits();
+        afficherProduits();
+      }catch(e){
+        document.getElementById('produits-grid').innerHTML = '<p style="font-size:12.5px;color:var(--err);">' + e.message + '</p>';
+      }
+      majReferenceEtBouton(null, null);
+      document.getElementById('bloc-pas-en-ordre').classList.remove('hidden');
+    }
+
+    document.getElementById('contenu').classList.remove('hidden');
+  }catch(e){
+    const box = document.getElementById('msg-erreur');
+    box.textContent = "Impossible de charger votre cotisation : " + e.message + ". Rechargez la page ou reconnectez-vous.";
+    box.classList.remove('hidden');
+  }finally{
+    setSt('');
+  }
+}
+chargerCotisation().then(verifierRetourPaiement);
+</script>
+
+</body>
+</html>
