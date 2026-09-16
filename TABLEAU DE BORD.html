@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TABLEAU DE BORD — EDUCPASS 2026</title>
+<style>
+:root{
+  --navy:#1e3a6e; --navy-dark:#152a52; --bg:#f0f4fa; --line:#d7e0ee;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:Calibri,Arial,sans-serif;background:var(--bg);color:#222;}
+.hdr-bar{background:var(--navy);color:#fff;padding:14px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.hdr-bar .logo{font-weight:900;letter-spacing:1px;font-size:15px;}
+.hdr-bar .title{font-weight:700;font-size:17px;flex:1;}
+.hdr-bar .sub{font-size:12px;opacity:.85;}
+.wrap{padding:24px;max-width:1200px;margin:0 auto;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px;}
+a.tile{
+  display:flex;flex-direction:column;justify-content:space-between;
+  border-radius:10px;padding:18px 18px 16px;min-height:130px;
+  text-decoration:none;color:#fff;box-shadow:0 2px 10px rgba(20,30,60,.15);
+  position:relative;overflow:hidden;transition:transform .12s ease, box-shadow .12s ease;
+}
+a.tile:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(20,30,60,.25);}
+.tile .letter{font-size:11px;font-weight:800;opacity:.7;letter-spacing:1px;}
+.tile .name{font-size:19px;font-weight:800;line-height:1.15;margin:6px 0 4px;}
+.tile .desc{font-size:12.5px;opacity:.92;line-height:1.35;}
+.tile.disabled{
+  color:#556;box-shadow:none;cursor:not-allowed;pointer-events:none;
+  filter:grayscale(.35) brightness(1.02);opacity:.72;
+}
+.tile.disabled .name{color:#3a4a63;}
+.badge{
+  position:absolute;top:10px;right:10px;background:rgba(255,255,255,.85);
+  color:#6b5900;font-size:10.5px;font-weight:800;padding:3px 8px;border-radius:20px;
+  letter-spacing:.3px;
+}
+.footer-note{margin-top:26px;font-size:12px;color:#667;line-height:1.5;background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px 16px;}
+</style>
+</head>
+<body>
+
+<div class="hdr-bar">
+  <div class="logo">EDUCPASS</div>
+  <div class="title">🗂️ TABLEAU DE BORD — SOUTIENS (ENSEIGNANTS)</div>
+  <div class="sub">Point d'entrée vers tous les outils enseignants</div>
+</div>
+
+<div class="wrap">
+  <div class="grid">
+
+    <!-- A) FICHIER PROFS -->
+    <a class="tile" style="background:linear-gradient(155deg,#1e3a6e,#152a52);" href="DOSSIER TECHNIQUE PROFS/FICHIER PROFS 2026.html">
+      <div class="letter">A</div>
+      <div>
+        <div class="name">📋 FICHIER ENSEIGNANTS</div>
+        <div class="desc">Recherche, fiches, envois de mails individuels</div>
+      </div>
+    </a>
+
+    <!-- B) INSCRIPTIONS A VALIDER -->
+    <a class="tile" style="background:linear-gradient(155deg,#2a8f8a,#1d6b66);" href="DOSSIER TECHNIQUE PROFS/INSCRIPTIONS A VALIDER.html">
+      <div class="letter">B</div>
+      <div>
+        <div class="name">✅ INSCRIPTIONS À VALIDER</div>
+        <div class="desc">Back-office des inscriptions (matricule, justificatifs)</div>
+      </div>
+    </a>
+
+    <!-- C) PARTENAIRES -->
+    <a class="tile" style="background:linear-gradient(155deg,#1e8a4a,#146334);" href="DOSSIER TECHNIQUE PROFS/CARTES-VISITE.html">
+      <div class="letter">C</div>
+      <div>
+        <div class="name">🎫 PARTENAIRES</div>
+        <div class="desc">Liste des cartes de visite, cliquable par attraction</div>
+      </div>
+    </a>
+
+    <!-- D) PRODUITS -->
+    <a class="tile" style="background:linear-gradient(155deg,#c55a11,#9c460c);" href="DOSSIER TECHNIQUE PROFS/PRODUITS.html">
+      <div class="letter">D</div>
+      <div>
+        <div class="name">📦 PRODUITS</div>
+        <div class="desc">Cotisations, VIP avec ou sans carte PVC</div>
+      </div>
+    </a>
+
+    <!-- E) PROMOS -->
+    <a class="tile" style="background:linear-gradient(155deg,#7a4bb0,#5b3688);" href="DOSSIER TECHNIQUE PROFS/PROMOS.html">
+      <div class="letter">E</div>
+      <div>
+        <div class="name">🏷️ PROMOS</div>
+        <div class="desc">Codes promotionnels sur les produits</div>
+      </div>
+    </a>
+
+    <!-- F) PAIEMENTS -->
+    <a class="tile" style="background:linear-gradient(155deg,#2f6fb0,#1f4f82);" href="DOSSIER TECHNIQUE PROFS/PAIEMENTS.html">
+      <div class="letter">F</div>
+      <div>
+        <div class="name">💳 PAIEMENTS</div>
+        <div class="desc">Rapport journalier des paiements + ajout manuel (synchro Mollie à venir)</div>
+      </div>
+    </a>
+
+    <!-- G) COUPONS -->
+    <a class="tile" style="background:linear-gradient(155deg,#c0396b,#8f2a50);" href="DOSSIER TECHNIQUE PROFS/COUPONS.html">
+      <div class="letter">G</div>
+      <div>
+        <div class="name">🎟️ COUPONS</div>
+        <div class="desc">Coupons par partenaire/année, crédits d'insertion</div>
+      </div>
+    </a>
+
+    <!-- H) BANNIERES SITE -->
+    <a class="tile" style="background:linear-gradient(155deg,#c78a1a,#9c6a12);" href="DOSSIER TECHNIQUE PROFS/BANNIERES.html">
+      <div class="letter">H</div>
+      <div>
+        <div class="name">🖼️ BANNIÈRES SITE</div>
+        <div class="desc">Bannières du carrousel de la page d'accueil du nouveau site public</div>
+      </div>
+    </a>
+
+    <!-- I) MAILS STANDARDS -->
+    <a class="tile" style="background:linear-gradient(155deg,#546a8a,#3c4d68);" href="DOSSIER TECHNIQUE PROFS/MAILS STANDARDS.html">
+      <div class="letter">I</div>
+      <div>
+        <div class="name">✉️ MAILS STANDARDS</div>
+        <div class="desc">Modèles de mails (5 catégories) + pieds de page, mise en forme gérée par vous-même</div>
+      </div>
+    </a>
+
+    <!-- J) TABLEAU PROFS RELAIS -->
+    <a class="tile" style="background:linear-gradient(155deg,#c78a1a,#9c6a12);" href="DOSSIER TECHNIQUE PROFS/PROFS RELAIS.html">
+      <div class="letter">J</div>
+      <div>
+        <div class="name">🧭 PROFS RELAIS</div>
+        <div class="desc">Inscriptions groupées d'écoles via un prof relais</div>
+      </div>
+    </a>
+
+    <!-- K) NIVEAUX -->
+    <a class="tile" style="background:linear-gradient(155deg,#5b3fa0,#402b73);" href="DOSSIER TECHNIQUE PROFS/NIVEAUX.html">
+      <div class="letter">K</div>
+      <div>
+        <div class="name">📶 NIVEAUX</div>
+        <div class="desc">Paramètres : niveaux d'enseignement (Fondamental, Secondaire...)</div>
+      </div>
+    </a>
+
+    <!-- L) BRANCHES -->
+    <a class="tile" style="background:linear-gradient(155deg,#6b7a1f,#4d5716);" href="DOSSIER TECHNIQUE PROFS/BRANCHES.html">
+      <div class="letter">L</div>
+      <div>
+        <div class="name">🌿 BRANCHES</div>
+        <div class="desc">Paramètres : branches enseignées (Maternelle, Sciences, Administration...)</div>
+      </div>
+    </a>
+
+    <!-- M) RESERVATIONS -->
+    <a class="tile" style="background:linear-gradient(155deg,#c0396b,#8f2a50);" href="DOSSIER TECHNIQUE PROFS/RESERVATIONS.html">
+      <div class="letter">M</div>
+      <div>
+        <div class="name">🧳 RÉSERVATIONS</div>
+        <div class="desc">Bon de réservation, Confirmation, Relevé de compte (par prof, imprimable en PDF)</div>
+      </div>
+    </a>
+
+    <!-- N) MOYENS DE PAIEMENT -->
+    <a class="tile" style="background:linear-gradient(155deg,#1d7a8c,#125566);" href="DOSSIER TECHNIQUE PROFS/MOYENS DE PAIEMENT.html">
+      <div class="letter">N</div>
+      <div>
+        <div class="name">💳 MOYENS DE PAIEMENT</div>
+        <div class="desc">Activer/désactiver l'affichage des logos (PayPal, Crédit Mutuel...) sur la page de cotisation</div>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="footer-note">
+    💡 Toutes les cases (A à L) sont actives et ouvrent l'outil correspondant. La case <b>C — PARTENAIRES</b> ouvre la liste des cartes de visite (consultation) ; l'édition complète d'une carte reste dans l'outil Attractions. La case <b>H — BANNIÈRES SITE</b> gère les visuels du carrousel de la page d'accueil du nouveau site public (projet distinct, en construction). La case <b>B — INSCRIPTIONS À VALIDER</b> permet de vérifier un dossier (matricule, justificatif) et de le basculer manuellement vers FICHIER ENSEIGNANTS avec un vrai N° membre. La case <b>I — MAILS STANDARDS</b> gère les modèles de mails (5 catégories : Belge FR, NL, France, LUX, DE) et leurs pieds de page communs, avec mise en forme (gras/italique/couleurs) éditable directement dans l'outil.
+  </div>
+</div>
+
+</body>
+</html>
