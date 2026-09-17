@@ -56,7 +56,7 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:24px;color:var(-
 
 .btn-principal{
   display:inline-block;padding:13px 24px;border:none;border-radius:9px;
-  background:var(--teal-dark);color:#fff;font-size:14.5px;font-weight:700;cursor:pointer;
+  background:var(--green-dark);color:#fff;font-size:14.5px;font-weight:700;cursor:pointer;
   font-family:inherit;text-decoration:none;
 }
 .btn-principal:hover{filter:brightness(1.08);}
@@ -82,6 +82,10 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:24px;color:var(-
 }
 .virement-box b{color:var(--text);}
 .virement-box p{margin:8px 0 0;}
+/* Le QR est généré en mode "scalable" (viewBox seul, sans largeur/hauteur
+   fixes) par la bibliothèque : c'est cette règle CSS qui lui donne sa taille
+   réelle à l'affichage — sans elle le <svg> injecté s'affiche à 0x0. */
+#virement-qr-svg svg{width:100%;height:100%;display:block;}
 
 /* ===== Logos moyens de paiement (pilotés depuis le back-office Airtable) ===== */
 .ligne-moyen-paiement{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
@@ -194,19 +198,9 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:24px;color:var(-
         <p style="font-size:12px;color:var(--off);margin:14px 0 0;">Vous serez redirigé vers Mollie pour le paiement sécurisé. Votre accès aux coupons se débloque automatiquement dès le paiement confirmé.</p>
       </div>
 
-      <!-- Paiement en ligne via PayPal — actif indépendamment de Mollie/virement,
-           voir PAYPAL_DISPONIBLE plus bas. Le logo n'apparaît que si activé dans
-           la table Airtable "Moyens de paiement" (back-office). -->
-      <div id="bloc-paiement-paypal" class="hidden" style="margin-top:16px;">
-        <div class="ligne-moyen-paiement">
-          <a href="#" class="btn-principal desactive" id="btn-payer-paypal" onclick="payerParPaypal(event)">🅿️ Payer par PayPal</a>
-          <img id="logo-paypal" class="logo-moyen-paiement hidden" alt="PayPal">
-        </div>
-        <p style="font-size:12px;color:var(--off);margin:14px 0 0;">Vous serez redirigé vers PayPal pour le paiement sécurisé. Votre accès aux coupons se débloque automatiquement dès le paiement confirmé.</p>
-      </div>
-
       <!-- Paiement par virement bancaire (manuel) — actif tant que Mollie
-           est masqué ci-dessus. -->
+           est masqué ci-dessus. Affiché en premier (avant PayPal), à la
+           demande de Marc. -->
       <div id="bloc-paiement-virement" class="virement-box hidden">
         <div class="ligne-moyen-paiement">
           <button type="button" class="btn-principal" id="btn-virement-toggle" onclick="toggleVirementDetails()">Payer par virement bancaire</button>
@@ -223,11 +217,23 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:24px;color:var(-
                bas : masqué par défaut pour ne jamais risquer d'afficher un mauvais
                IBAN (ex: fédérations Belge/NL/LUX/DE, pas encore concernées). -->
           <div id="virement-qr-zone" class="hidden" style="margin-top:18px;text-align:center;border-top:1px dashed var(--line);padding-top:14px;">
-            <p style="font-size:12px;font-weight:700;color:var(--teal-dark);margin:0 0 8px;text-transform:uppercase;letter-spacing:.3px;">Solution 2 — Scanner le QR code</p>
-            <div id="virement-qr-svg" style="display:inline-block;max-width:180px;"></div>
+            <p style="font-size:12px;font-weight:700;color:var(--teal-dark);margin:0 0 8px;text-transform:uppercase;letter-spacing:.3px;text-align:left;">Solution 2 — Scanner le QR code</p>
+            <div id="virement-qr-svg" style="display:inline-block;width:160px;height:160px;"></div>
             <p style="font-size:12px;color:var(--off);margin:8px 0 0;">📱 Scannez ce QR code avec l'appli de votre banque : IBAN, montant et référence sont remplis automatiquement.</p>
           </div>
         </div>
+      </div>
+
+      <!-- Paiement en ligne via PayPal — actif indépendamment de Mollie/virement,
+           voir PAYPAL_DISPONIBLE plus bas. Le logo n'apparaît que si activé dans
+           la table Airtable "Moyens de paiement" (back-office). Affiché en
+           second (après le virement), à la demande de Marc. -->
+      <div id="bloc-paiement-paypal" class="hidden" style="margin-top:16px;">
+        <div class="ligne-moyen-paiement">
+          <a href="#" class="btn-principal desactive" id="btn-payer-paypal" onclick="payerParPaypal(event)">🅿️ Payer par PayPal</a>
+          <img id="logo-paypal" class="logo-moyen-paiement hidden" alt="PayPal">
+        </div>
+        <p style="font-size:12px;color:var(--off);margin:14px 0 0;">Vous serez redirigé vers PayPal pour le paiement sécurisé. Votre accès aux coupons se débloque automatiquement dès le paiement confirmé.</p>
       </div>
     </div>
 
@@ -654,7 +660,7 @@ function majQrVirement(){
   }
   try{
     const c = compteActuel || {};
-    const reference = (c.membre || '') + ' - ' + (c.prenom||'') + ' ' + (c.nom||'') + ' (' + (c.matricule||'') + ')';
+    const reference = 'Membre ' + (c.membre || '') + ' / Matricule ' + (c.matricule || '');
     const donnees = construireDonneesSepaQr(virementSepa, prixFinal, reference);
     const qr = qrcode(0, 'M');
     qr.addData(donnees);
@@ -698,7 +704,7 @@ function afficherLogoMoyen(records, nom, idImg){
 
 function majReferenceEtBouton(produit, prixFinal){
   const c = compteActuel || {};
-  const identite = (c.membre || '') + ' - ' + (c.prenom||'') + ' ' + (c.nom||'') + ' (' + (c.matricule||'') + ')';
+  const identite = 'N° de membre : ' + (c.membre || '') + ' — N° de matricule : ' + (c.matricule || '') + ' — ' + (c.prenom||'') + ' ' + (c.nom||'');
   let html = 'Merci d\'indiquer cette référence lors du paiement, pour que nous puissions le rapprocher de votre dossier :<br><b>' + escHtml(identite) + '</b>';
   if(produit){
     html += '<br>Formule choisie : <b>' + escHtml(produit.libelle) + '</b> — total : <b>' + formatEuros(prixFinal) + '</b>'
