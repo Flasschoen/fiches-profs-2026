@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MAILS STANDARDS — EDUCPASS 2026</title>
+<style>
+:root{
+  --navy:#1e3a6e; --navy-dark:#152a52; --orange:#2a8f8a; --bg:#f0f4fa;
+  --line:#d7e0ee; --ok:#27ae60; --err:#c0392b;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:Calibri,Arial,sans-serif;background:var(--bg);color:#222;}
+.hdr-bar{background:var(--navy);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.hdr-bar .logo{font-weight:900;letter-spacing:1px;}
+.hdr-bar .title{font-weight:700;flex:1;}
+.btn{border:none;border-radius:4px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;background:#eee;color:#222;}
+.btn:hover{filter:brightness(0.95);}
+.btn-save{background:var(--ok);color:#fff;}
+.btn-cancel{background:#888;color:#fff;}
+.btn-blue{background:#d4e6f9;color:#1a4d80;}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+.tabs{background:#fff;border-bottom:1px solid var(--line);padding:0 16px;display:flex;gap:4px;}
+.tab-btn{border:none;background:none;padding:12px 18px;font-size:13.5px;font-weight:700;color:#666;cursor:pointer;border-bottom:3px solid transparent;}
+.tab-btn.active{color:var(--navy);border-bottom-color:var(--orange);}
+.toolbar{background:#fff;border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.toolbar input[type=text],.toolbar select{padding:6px 8px;border:1px solid #bbb;border-radius:4px;font-size:13px;}
+#st-bar{padding:4px 16px;font-size:12px;color:#555;min-height:18px;}
+#sync-pending{display:none;background:#f39c12;color:#fff;text-align:center;padding:4px;font-weight:700;font-size:12px;}
+#sync-pending.show{display:block;animation:pulse 1s infinite alternate;}
+@keyframes pulse{from{opacity:.6}to{opacity:1}}
+.wrap{padding:14px 16px;}
+table.results{border-collapse:collapse;width:100%;background:#fff;font-size:12.5px;}
+table.results th{background:var(--navy);color:#fff;padding:6px 8px;text-align:left;position:sticky;top:0;white-space:nowrap;}
+table.results td{padding:5px 8px;border-bottom:1px solid var(--line);}
+table.results tr.detail:hover{background:#eaf1ff;cursor:pointer;}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11.5px;font-weight:700;}
+.badge-actif{background:#d4f4d4;color:#1e6b1e;}
+.badge-inactif{background:#e2e2e2;color:#555;}
+.badge-externe{background:#d4e6f9;color:#1a4d80;}
+.badge-interne{background:#fff3b0;color:#6b5900;}
+.fiche-box{background:#fff;border-radius:6px;box-shadow:0 1px 6px rgba(30,58,110,.12);padding:16px 20px;max-width:1100px;}
+.fiche-hdr{font-size:20px;font-weight:900;color:var(--navy);margin-bottom:4px;}
+.fiche-sub{color:#777;font-size:13px;margin-bottom:14px;}
+fieldset{border:1px solid var(--line);border-radius:6px;margin-bottom:14px;padding:10px 14px 14px;}
+legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
+.frow{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px 14px;}
+.fitem label{display:block;font-size:11.5px;color:#555;margin-bottom:2px;font-weight:600;}
+.fitem input,.fitem select,.fitem textarea{width:100%;padding:6px 7px;border:1px solid #bbb;border-radius:4px;font-size:13px;font-family:inherit;}
+.fitem-checkbox{display:flex;align-items:center;gap:8px;margin-top:18px;}
+.fitem-checkbox input{width:auto;}
+.hidden{display:none !important;}
+
+/* ── Éditeur riche (fait maison, sans librairie externe) ── */
+.rte-toolbar{display:flex;flex-wrap:wrap;gap:4px;background:#f4f6fb;border:1px solid #bbb;border-bottom:none;border-radius:4px 4px 0 0;padding:6px;align-items:center;}
+.rte-toolbar button{border:1px solid #ccc;background:#fff;border-radius:3px;padding:5px 9px;font-size:12.5px;cursor:pointer;line-height:1;}
+.rte-toolbar button:hover{background:#eaf1ff;}
+.rte-toolbar button.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+.rte-toolbar .sep{width:1px;background:#ccc;align-self:stretch;margin:0 3px;}
+.rte-toolbar input[type=color]{width:26px;height:26px;padding:0;border:1px solid #ccc;border-radius:3px;cursor:pointer;}
+.rte-toolbar select{padding:4px 6px;border:1px solid #ccc;border-radius:3px;font-size:12px;}
+.rte-editor{min-height:180px;max-height:420px;overflow:auto;border:1px solid #bbb;border-radius:0 0 4px 4px;padding:10px 12px;background:#fff;font-size:14px;line-height:1.5;}
+.rte-editor:focus{outline:2px solid #9db8e8;}
+.rte-label{font-size:11.5px;color:#555;margin-bottom:2px;font-weight:600;}
+
+.preview-box{background:#fdfdf8;border:1px solid #e6dfc2;border-radius:6px;padding:14px 18px;font-size:13.5px;line-height:1.5;max-height:420px;overflow:auto;}
+.preview-title{font-weight:700;color:#6b5900;font-size:12px;margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px;}
+.two-col{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;align-items:start;}
+@media (max-width:900px){.two-col{grid-template-columns:1fr;}}
+
+.pin-box,.pin-mgr-box{background:#fff;border-radius:8px;padding:32px 40px;box-shadow:0 2px 20px rgba(0,0,0,.25);text-align:center;min-width:320px;}
+#overlay-pin,#overlay-pin-mgr,#overlay-link{position:fixed;inset:0;background:rgba(20,30,50,.55);display:flex;align-items:center;justify-content:center;z-index:999;}
+#overlay-loading{position:fixed;inset:0;background:rgba(20,30,50,.35);display:flex;align-items:center;justify-content:center;z-index:1000;pointer-events:none;}
+.loading-box{background:#fff;border-radius:10px;padding:26px 40px;box-shadow:0 4px 28px rgba(0,0,0,.3);font-size:19px;font-weight:700;color:var(--navy);text-align:center;min-width:320px;}
+.pin-logo{font-weight:900;color:var(--navy);letter-spacing:1px;font-size:20px;margin-bottom:6px;}
+.pin-box label,.pin-mgr-box label{display:block;text-align:left;font-size:12.5px;font-weight:600;margin:12px 0 4px;}
+.pin-box select,.pin-box input,.pin-mgr-box input{width:100%;padding:8px;border:1px solid #bbb;border-radius:4px;font-size:14px;}
+.pin-btn{margin-top:18px;width:100%;padding:10px;background:var(--navy);color:#fff;border:none;border-radius:4px;font-weight:700;cursor:pointer;}
+.pin-err{color:var(--err);font-size:12.5px;min-height:18px;margin-top:6px;}
+.pin-row{display:flex;align-items:center;gap:8px;margin:8px 0;text-align:left;}
+.pin-row label{min-width:80px;margin:0;}
+.result-count{display:inline-block;font-size:17px;font-weight:800;color:#5b2c8a;background:#eee0f7;border:2px solid #8e44ad;border-radius:6px;padding:5px 14px;min-width:20px;text-align:center;}
+.result-count:empty{display:none;}
+.note-box{background:#fff8e6;border:1px solid #f0d98a;border-radius:5px;padding:8px 12px;font-size:12px;color:#7a5c00;margin-bottom:12px;}
+.note-box:empty{display:none;}
+.link-box{background:#fff;border-radius:8px;padding:22px 26px;box-shadow:0 2px 20px rgba(0,0,0,.25);width:min(420px,92vw);}
+</style>
+</head>
+<body>
+
+<div class="hdr-bar">
+  <div class="logo">EDUCPASS</div>
+  <div class="title">✉️ MAILS STANDARDS — 2026</div>
+  <button class="btn" id="btn-pin-mgr" onclick="showGestionPins()" style="display:none;">🔑 PINs</button>
+  <a class="btn" href="TABLEAU%20DE%20BORD.html" style="background:var(--navy-dark);color:#fff;text-decoration:none;display:inline-block;" title="Retour au Tableau de Bord">🗂️ Tableau de Bord</a>
+  <button class="btn" onclick="logoutPin()">🔒 <span id="header-agent">—</span></button>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" id="tab-btn-mails" onclick="switchTab('mails')">✉️ Mails standards</button>
+  <button class="tab-btn" id="tab-btn-sig" onclick="switchTab('sig')">🖋️ Pieds de page (Signatures)</button>
+</div>
+
+<div id="sync-pending">⏳ Synchronisation en cours…</div>
+<div id="st-bar"></div>
+<div id="overlay-loading" class="hidden">
+  <div class="loading-box" id="loading-msg"></div>
+</div>
+
+<div class="wrap">
+
+  <!-- ══════════════════════════════ ONGLET MAILS ══════════════════════════════ -->
+  <div id="tab-mails">
+
+    <div id="view-mail-liste">
+      <div class="toolbar">
+        <select id="flt-categorie" onchange="renderMailsTable()">
+          <option value="">Catégorie : toutes</option>
+        </select>
+        <select id="flt-type" onchange="renderMailsTable()">
+          <option value="">Type : tous</option>
+        </select>
+        <select id="flt-actif" onchange="renderMailsTable()">
+          <option value="">Actif : tous</option>
+          <option value="1">✅ Actifs seulement</option>
+          <option value="0">⛔ Inactifs seulement</option>
+        </select>
+        <input type="text" id="flt-recherche-mail" placeholder="Rechercher : Message ID, Sujet, Description..." style="min-width:260px;" oninput="renderMailsTable()">
+        <button class="btn btn-save" onclick="newMail()">➕ Nouveau mail</button>
+        <span id="mail-count" class="result-count"></span>
+        <span style="flex:1;"></span>
+        <span id="mail-tot-count" style="font-size:12.5px;color:#555;"></span>
+      </div>
+
+      <div style="max-height:75vh;overflow:auto;">
+        <table class="results">
+          <thead><tr>
+            <th>Message ID</th><th>Description</th><th>Catégorie</th><th>Langue</th><th>Type</th><th>Sujet</th><th>Actif</th>
+          </tr></thead>
+          <tbody id="tbl-mails-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="view-mail-fiche" class="hidden">
+      <div class="fiche-box">
+        <div class="fiche-hdr" id="mail-titre">—</div>
+        <div class="fiche-sub">Table Airtable « Mails standards ». Le pied de page (signature) est géré séparément par Catégorie dans l'onglet « Pieds de page » et s'ajoute automatiquement à l'envoi — inutile de le recopier ici.</div>
+
+        <div style="margin:14px 0;display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-save" onclick="saveMail()">💾 Enregistrer</button>
+          <button class="btn btn-cancel" onclick="cancelMailAndReset()">↩️ Annuler</button>
+          <button class="btn" id="btn-delete-mail" onclick="deleteMail()" style="display:none;background:var(--err);color:#fff;">🗑️ Supprimer</button>
+        </div>
+
+        <div class="two-col">
+          <div>
+            <fieldset>
+              <legend>Informations générales</legend>
+              <div class="frow">
+                <div class="fitem"><label>Message ID</label><input type="text" id="m-messageid" oninput="onMailFieldChange()" placeholder="Ex : ActivationCompte"></div>
+                <div class="fitem"><label>Description</label><input type="text" id="m-description" oninput="onMailFieldChange()"></div>
+                <div class="fitem"><label>Catégorie</label>
+                  <select id="m-categorie" onchange="onMailFieldChange()"></select>
+                </div>
+                <div class="fitem"><label>Langue</label>
+                  <select id="m-langue" onchange="onMailFieldChange()"></select>
+                </div>
+                <div class="fitem"><label>Type</label>
+                  <select id="m-type" onchange="onMailFieldChange()"></select>
+                </div>
+                <div class="fitem-checkbox"><input type="checkbox" id="m-actif" onchange="onMailFieldChange()"><label style="margin:0;">Actif</label></div>
+              </div>
+              <div class="frow" style="margin-top:10px;">
+                <div class="fitem" style="grid-column:1/-1;"><label>Sujet</label><input type="text" id="m-sujet" oninput="onMailFieldChange()"></div>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Corps du mail</legend>
+              <div class="rte-label">Corps HTML — mise en forme (gras / italique / couleurs), variables et lien insérables ci-dessous.</div>
+              <div id="rte-toolbar-mail"></div>
+              <div class="rte-editor" id="m-corps" contenteditable="true" oninput="onMailFieldChange()"></div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Remarque interne</legend>
+              <div class="frow"><div class="fitem" style="grid-column:1/-1;"><textarea id="m-remarque" rows="2" oninput="onMailFieldChange()"></textarea></div></div>
+            </fieldset>
+          </div>
+
+          <div>
+            <div class="preview-title">👁️ Aperçu (corps + pied de page de la catégorie)</div>
+            <div class="preview-box">
+              <div style="font-weight:700;margin-bottom:8px;" id="prev-sujet"></div>
+              <div id="prev-corps"></div>
+              <hr style="border:none;border-top:1px solid #e6dfc2;margin:12px 0;">
+              <div id="prev-signature" style="color:#555;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-save" onclick="saveMail()">💾 Enregistrer</button>
+          <button class="btn btn-cancel" onclick="cancelMailAndReset()">↩️ Annuler</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════ ONGLET SIGNATURES ══════════════════════════════ -->
+  <div id="tab-sig" class="hidden">
+
+    <div id="view-sig-liste">
+      <div class="toolbar">
+        <select id="sflt-actif" onchange="renderSigTable()">
+          <option value="">Actif : tous</option>
+          <option value="1">✅ Actifs seulement</option>
+          <option value="0">⛔ Inactifs seulement</option>
+        </select>
+        <button class="btn btn-save" onclick="newSig()">➕ Nouveau pied de page</button>
+        <span id="sig-count" class="result-count"></span>
+        <span style="flex:1;"></span>
+        <span id="sig-tot-count" style="font-size:12.5px;color:#555;"></span>
+      </div>
+      <div class="note-box">💡 Une signature par Catégorie (Belge (FR), NL, France, LUX, DE) — elle s'ajoute automatiquement en pied de page de chaque mail de cette catégorie. Évite d'en créer plusieurs actives pour la même catégorie.</div>
+
+      <div style="max-height:75vh;overflow:auto;">
+        <table class="results">
+          <thead><tr><th>Nom</th><th>Catégorie</th><th>Actif</th></tr></thead>
+          <tbody id="tbl-sig-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="view-sig-fiche" class="hidden">
+      <div class="fiche-box">
+        <div class="fiche-hdr" id="sig-titre">—</div>
+        <div class="fiche-sub">Table Airtable « Signatures mails » — pied de page partagé, réutilisé automatiquement par tous les mails de la même Catégorie.</div>
+
+        <div style="margin:14px 0;display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-save" onclick="saveSig()">💾 Enregistrer</button>
+          <button class="btn btn-cancel" onclick="cancelSigAndReset()">↩️ Annuler</button>
+          <button class="btn" id="btn-delete-sig" onclick="deleteSig()" style="display:none;background:var(--err);color:#fff;">🗑️ Supprimer</button>
+        </div>
+
+        <div class="two-col">
+          <div>
+            <fieldset>
+              <legend>Informations générales</legend>
+              <div class="frow">
+                <div class="fitem"><label>Nom</label><input type="text" id="s-nom" oninput="onSigFieldChange()" placeholder="Ex : Signature Belge (FR)"></div>
+                <div class="fitem"><label>Catégorie</label><select id="s-categorie" onchange="onSigFieldChange()"></select></div>
+                <div class="fitem-checkbox"><input type="checkbox" id="s-actif" onchange="onSigFieldChange()"><label style="margin:0;">Actif</label></div>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Corps HTML (pied de page)</legend>
+              <div class="rte-label">Astuce : utilise « Texte réduit » pour le texte légal / avertissement RGPD (police 8-9px), comme sur la fiche n°107.</div>
+              <div id="rte-toolbar-sig"></div>
+              <div class="rte-editor" id="s-corps" contenteditable="true" oninput="onSigFieldChange()"></div>
+            </fieldset>
+          </div>
+          <div>
+            <div class="preview-title">👁️ Aperçu du pied de page</div>
+            <div class="preview-box"><div id="sig-prev-corps"></div></div>
+          </div>
+        </div>
+
+        <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-save" onclick="saveSig()">💾 Enregistrer</button>
+          <button class="btn btn-cancel" onclick="cancelSigAndReset()">↩️ Annuler</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════ OVERLAY INSERTION LIEN ══════════════════════════════ -->
+<div id="overlay-link" class="hidden">
+  <div class="link-box">
+    <h2 style="margin-top:0;font-size:17px;">🔗 Insérer un lien</h2>
+    <label style="display:block;font-size:12.5px;font-weight:600;margin:8px 0 4px;">Texte affiché</label>
+    <input type="text" id="link-text" style="width:100%;padding:8px;border:1px solid #bbb;border-radius:4px;font-size:13.5px;">
+    <label style="display:block;font-size:12.5px;font-weight:600;margin:10px 0 4px;">Adresse (URL)</label>
+    <input type="text" id="link-url" placeholder="https://www.educpass.be/..." style="width:100%;padding:8px;border:1px solid #bbb;border-radius:4px;font-size:13.5px;">
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button class="btn btn-cancel" onclick="closeLinkOverlay()">Annuler</button>
+      <button class="btn btn-save" onclick="confirmLinkInsert()">Insérer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ OVERLAY LOGIN PIN ══════════════════════════════ -->
+<div id="overlay-pin" class="hidden">
+  <div class="pin-box">
+    <div class="pin-logo">EDUCPASS</div>
+    <h2>🔐 Accès sécurisé</h2>
+    <label>Agent :</label>
+    <select id="pin-agent">
+      <option value="">— Sélectionnez —</option>
+      <option>MARC</option>
+      <option>MAÏTE</option>
+      <option>PASCAL</option>
+      <option>VANESSA</option>
+    </select>
+    <label>Code PIN (4 chiffres) :</label>
+    <input type="password" id="pin-code" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" placeholder="••••" autocomplete="off" oninput="if(this.value.length===4)loginPin()">
+    <div id="pin-error" class="pin-err"></div>
+    <button class="pin-btn" onclick="loginPin()">Connexion →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ OVERLAY GESTION PINS (MARC uniquement) ══════════════════════════════ -->
+<div id="overlay-pin-mgr" class="hidden">
+  <div class="pin-mgr-box">
+    <h2>🔑 Gestion des codes PIN</h2>
+    <div class="pin-row"><label>MARC :</label><input type="password" id="pm-marc" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
+    <div class="pin-row"><label>MAÏTE :</label><input type="password" id="pm-maite" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
+    <div class="pin-row"><label>PASCAL :</label><input type="password" id="pm-pascal" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
+    <div class="pin-row"><label>VANESSA :</label><input type="password" id="pm-vanessa" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
+    <div class="pin-err" id="pm-msg"></div>
+    <div style="display:flex;gap:8px;margin-top:14px;">
+      <button class="btn btn-cancel" onclick="closeGestionPins()">Annuler</button>
+      <button class="btn btn-save" onclick="saveGestionPins()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  CONFIG AIRTABLE — même proxy Cloudflare Worker que les autres outils
+//  (jeton Airtable caché côté serveur). Passthrough générique Airtable REST.
+//  Rappel Marc : ne rien envoyer/modifier côté Worker sans son feu vert —
+//  cet outil n'appelle QUE le passthrough générique déjà en place.
+// ══════════════════════════════════════════════════════════
+const PROXY = 'https://educpass-profs-proxy.marc-flasschoen.workers.dev';
+const BASE  = 'appWCfo8WBkMGUuc2';
+const HDRS  = {'Content-Type':'application/json'};
+
+const MAILS_TBL = 'tblAMEhp4oxOO9hja';
+const MAILS_API = `${PROXY}/v0/${BASE}/${MAILS_TBL}`;
+const SIG_TBL = 'tbl1dGRkHE0BLqI5z';
+const SIG_API = `${PROXY}/v0/${BASE}/${SIG_TBL}`;
+
+const CATEGORIES = ['Belge (FR)','NL','France','LUX','DE'];
+const LANGUES = ['FR','NL'];
+const TYPES = ['Externe','Interne'];
+
+// Jetons de fusion [%Mbr:...%] confirmés par Marc à partir des mails existants.
+const VARIABLES = [
+  ['Nom','[%Mbr:Nom%]'],['Prénom','[%Mbr:Prenom%]'],['Matricule','[%Mbr:Matricule%]'],
+  ['Mot de passe','[%Mbr:MotDePasse%]'],['Date de naissance','[%Mbr:DateNaissance%]'],['Adresse','[%Mbr:Adresse%]'],
+  ['Code postal','[%Mbr:CodePostal%]'],['Localité','[%Mbr:Localite%]'],['Téléphone','[%Mbr:Telephone%]'],
+  ['Gsm','[%Mbr:Gsm%]'],['Niveau','[%Mbr:Niveau%]'],['Branche','[%Mbr:Branche%]'],['Email','[%Mbr:Email%]'],
+];
+
+// ══════════════════════════════════════════════════════════
+//  ÉTAT
+// ══════════════════════════════════════════════════════════
+let lastMails = [];
+let curMailId = null;
+let _mailDirty = false;
+let _mailLoading = false;
+
+let lastSigs = [];
+let curSigId = null;
+let _sigDirty = false;
+let _sigLoading = false;
+
+let _linkTargetEditorId = null;
+let _linkSavedRange = null;
+
+function setSt(msg){
+  document.getElementById('st-bar').textContent = msg || '';
+  const box = document.getElementById('overlay-loading');
+  const isLoading = !!msg && (msg.indexOf('🔎')===0 || msg.indexOf('⏳')===0);
+  if(isLoading){
+    document.getElementById('loading-msg').textContent = msg;
+    box.classList.remove('hidden');
+  } else {
+    box.classList.add('hidden');
+  }
+}
+function escHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function normTxt(s){ return (s||'').toString().normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase(); }
+function selName(v){ return (v && typeof v==='object' && v.name) ? v.name : (v||''); }
+
+async function atFetch(url, opts){
+  const r = await fetch(url, Object.assign({headers:HDRS}, opts||{}));
+  if(!r.ok){
+    const t = await r.text().catch(()=> '');
+    throw new Error('Airtable '+r.status+' : '+t.slice(0,200));
+  }
+  return r.json();
+}
+
+// ══════════════════════════════════════════════════════════
+//  ONGLETS
+// ══════════════════════════════════════════════════════════
+function switchTab(name){
+  document.getElementById('tab-mails').classList.toggle('hidden', name!=='mails');
+  document.getElementById('tab-sig').classList.toggle('hidden', name!=='sig');
+  document.getElementById('tab-btn-mails').classList.toggle('active', name==='mails');
+  document.getElementById('tab-btn-sig').classList.toggle('active', name==='sig');
+}
+
+// ══════════════════════════════════════════════════════════
+//  ÉDITEUR RICHE (fait maison — contentEditable + execCommand)
+//  Reconstruit à l'identique pour chaque zone (mail / signature).
+// ══════════════════════════════════════════════════════════
+function buildRteToolbar(hostId, editorId, onChange){
+  const host = document.getElementById(hostId);
+  host.className = 'rte-toolbar';
+  host.innerHTML = '';
+
+  function btn(label, title, action){
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = label; b.title = title;
+    b.onmousedown = function(e){ e.preventDefault(); }; // garde le focus/la sélection dans l'éditeur
+    b.onclick = function(){ document.getElementById(editorId).focus(); action(); if(onChange) onChange(); };
+    host.appendChild(b);
+    return b;
+  }
+  function sep(){ const s=document.createElement('div'); s.className='sep'; host.appendChild(s); }
+
+  btn('B', 'Gras', ()=> document.execCommand('bold')).style.fontWeight='700';
+  btn('I', 'Italique', ()=> document.execCommand('italic')).style.fontStyle='italic';
+  btn('S', 'Barré', ()=> document.execCommand('strikeThrough')).style.textDecoration='line-through';
+  btn('U', 'Souligné', ()=> document.execCommand('underline')).style.textDecoration='underline';
+  sep();
+
+  const colorInput = document.createElement('input');
+  colorInput.type = 'color'; colorInput.title = 'Couleur du texte'; colorInput.value = '#000000';
+  colorInput.onmousedown = e=>e.stopPropagation();
+  colorInput.oninput = function(){ document.getElementById(editorId).focus(); document.execCommand('foreColor', false, this.value); if(onChange) onChange(); };
+  host.appendChild(colorInput);
+
+  const hiliteInput = document.createElement('input');
+  hiliteInput.type = 'color'; hiliteInput.title = 'Surlignage'; hiliteInput.value = '#ffff00';
+  hiliteInput.oninput = function(){ document.getElementById(editorId).focus(); document.execCommand('hiliteColor', false, this.value); if(onChange) onChange(); };
+  host.appendChild(hiliteInput);
+  sep();
+
+  btn('• Liste', 'Liste à puces', ()=> document.execCommand('insertUnorderedList'));
+  btn('🔗 Lien', 'Insérer un lien', ()=> openLinkOverlay(editorId));
+  btn('🔠 Texte réduit', 'Avertissement / mentions légales (police 9px)', ()=> wrapSelectionSmall(editorId));
+  btn('⌫ Effacer forme', 'Effacer la mise en forme', ()=> document.execCommand('removeFormat'));
+  sep();
+
+  const varSelect = document.createElement('select');
+  varSelect.title = 'Insérer une variable';
+  const opt0 = document.createElement('option'); opt0.value=''; opt0.textContent='Insérer une variable…'; varSelect.appendChild(opt0);
+  VARIABLES.forEach(([label, token])=>{ const o=document.createElement('option'); o.value=token; o.textContent=label; varSelect.appendChild(o); });
+  varSelect.onmousedown = e=>e.stopPropagation();
+  varSelect.onchange = function(){
+    if(!this.value) return;
+    document.getElementById(editorId).focus();
+    document.execCommand('insertText', false, this.value);
+    this.value = '';
+    if(onChange) onChange();
+  };
+  host.appendChild(varSelect);
+}
+
+function wrapSelectionSmall(editorId){
+  const editor = document.getElementById(editorId);
+  editor.focus();
+  const sel = window.getSelection();
+  if(!sel || !sel.rangeCount || sel.isCollapsed){
+    setSt("ℹ️ Sélectionne d'abord le texte à réduire (avertissement), puis clique sur « Texte réduit ».");
+    return;
+  }
+  const range = sel.getRangeAt(0);
+  if(!editor.contains(range.commonAncestorContainer)) return;
+  try{
+    const span = document.createElement('span');
+    span.setAttribute('style', 'font-size:9px;color:#666;');
+    range.surroundContents(span);
+    sel.removeAllRanges();
+  }catch(e){
+    // Sélection à cheval sur plusieurs balises : on encapsule via insertHTML en dernier recours.
+    const frag = range.cloneContents();
+    const wrapper = document.createElement('span');
+    wrapper.setAttribute('style', 'font-size:9px;color:#666;');
+    wrapper.appendChild(frag);
+    const tmp = document.createElement('div'); tmp.appendChild(wrapper);
+    document.execCommand('insertHTML', false, tmp.innerHTML);
+  }
+}
+
+function openLinkOverlay(editorId){
+  const editor = document.getElementById(editorId);
+  editor.focus();
+  const sel = window.getSelection();
+  _linkSavedRange = (sel && sel.rangeCount) ? sel.getRangeAt(0).cloneRange() : null;
+  _linkTargetEditorId = editorId;
+  document.getElementById('link-text').value = (sel && !sel.isCollapsed) ? sel.toString() : '';
+  document.getElementById('link-url').value = 'https://www.educpass.be/';
+  document.getElementById('overlay-link').classList.remove('hidden');
+}
+function closeLinkOverlay(){
+  document.getElementById('overlay-link').classList.add('hidden');
+  _linkTargetEditorId = null; _linkSavedRange = null;
+}
+function confirmLinkInsert(){
+  const url = document.getElementById('link-url').value.trim();
+  const text = document.getElementById('link-text').value.trim() || url;
+  if(!url){ setSt('❌ Merci de saisir une adresse (URL).'); return; }
+  const editor = document.getElementById(_linkTargetEditorId);
+  editor.focus();
+  const sel = window.getSelection();
+  if(_linkSavedRange){ sel.removeAllRanges(); sel.addRange(_linkSavedRange); }
+  const safeUrl = escHtml(url);
+  const safeText = escHtml(text);
+  document.execCommand('insertHTML', false, '<a href="'+safeUrl+'" target="_blank" rel="noopener">'+safeText+'</a>');
+  closeLinkOverlay();
+  if(_linkTargetEditorId === 'm-corps') onMailFieldChange(); else if(_linkTargetEditorId === 's-corps') onSigFieldChange();
+}
+
+// ══════════════════════════════════════════════════════════
+//  MAILS STANDARDS — chargement + liste
+// ══════════════════════════════════════════════════════════
+function populateMailSelects(){
+  const catSel = document.getElementById('flt-categorie');
+  CATEGORIES.forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; catSel.appendChild(o); });
+  const typeSel = document.getElementById('flt-type');
+  TYPES.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=t; typeSel.appendChild(o); });
+
+  const mCat = document.getElementById('m-categorie');
+  const mLang = document.getElementById('m-langue');
+  const mType = document.getElementById('m-type');
+  CATEGORIES.forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; mCat.appendChild(o); });
+  LANGUES.forEach(l=>{ const o=document.createElement('option'); o.value=l; o.textContent=l; mLang.appendChild(o); });
+  TYPES.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=t; mType.appendChild(o); });
+
+  const sCat = document.getElementById('s-categorie');
+  CATEGORIES.forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; sCat.appendChild(o); });
+}
+
+async function loadMails(){
+  document.getElementById('mail-count').textContent = '⏳';
+  try{
+    let all = [], offset;
+    do{
+      const params = new URLSearchParams({pageSize:'100'});
+      if(offset) params.set('offset', offset);
+      const data = await atFetch(MAILS_API+'?'+params.toString());
+      all = all.concat(data.records||[]);
+      offset = data.offset;
+    } while(offset);
+    lastMails = all;
+    renderMailsTable();
+    document.getElementById('mail-count').textContent = all.length;
+  }catch(e){ setSt('❌ '+e.message); document.getElementById('mail-count').textContent = ''; }
+}
+
+function filteredMails(){
+  const categorie = document.getElementById('flt-categorie').value;
+  const type = document.getElementById('flt-type').value;
+  const actifFlt = document.getElementById('flt-actif').value;
+  const rch = normTxt(document.getElementById('flt-recherche-mail').value.trim());
+  return lastMails.filter(r=>{
+    const f = r.fields;
+    if(categorie && selName(f['Catégorie'])!==categorie) return false;
+    if(type && selName(f['Type'])!==type) return false;
+    if(actifFlt==='1' && !f['Actif']) return false;
+    if(actifFlt==='0' && f['Actif']) return false;
+    if(rch){
+      const hay = normTxt([f['Message ID'],f['Sujet'],f['Description']].filter(Boolean).join(' '));
+      if(!hay.includes(rch)) return false;
+    }
+    return true;
+  });
+}
+
+function renderMailsTable(){
+  const rows = filteredMails();
+  const tbody = document.getElementById('tbl-mails-body');
+  tbody.innerHTML = '';
+  rows.forEach(r=>{
+    const f = r.fields;
+    const tr = document.createElement('tr');
+    tr.className = 'detail';
+    tr.innerHTML = '<td>'+escHtml(f['Message ID']||'')+'</td>'
+      +'<td>'+escHtml(f['Description']||'')+'</td>'
+      +'<td>'+escHtml(selName(f['Catégorie']))+'</td>'
+      +'<td>'+escHtml(selName(f['Langue']))+'</td>'
+      +'<td><span class="badge '+(selName(f['Type'])==='Interne'?'badge-interne':'badge-externe')+'">'+escHtml(selName(f['Type']))+'</span></td>'
+      +'<td>'+escHtml(f['Sujet']||'')+'</td>'
+      +'<td><span class="badge '+(f['Actif']?'badge-actif':'badge-inactif')+'">'+(f['Actif']?'✅ Actif':'⛔ Inactif')+'</span></td>';
+    tr.onclick = ()=>openMail(r.id);
+    tbody.appendChild(tr);
+  });
+  document.getElementById('mail-tot-count').textContent = rows.length+' mail(s) affiché(s)';
+}
+
+function showMailView(v){
+  document.getElementById('view-mail-liste').classList.toggle('hidden', v==='fiche');
+  document.getElementById('view-mail-fiche').classList.toggle('hidden', v!=='fiche');
+}
+
+function updateMailPreview(){
+  document.getElementById('prev-sujet').textContent = document.getElementById('m-sujet').value || '(sans sujet)';
+  document.getElementById('prev-corps').innerHTML = document.getElementById('m-corps').innerHTML || '<i style="color:#999;">(corps vide)</i>';
+  const cat = document.getElementById('m-categorie').value;
+  const sig = lastSigs.find(r=> selName(r.fields['Catégorie'])===cat && r.fields['Actif']);
+  document.getElementById('prev-signature').innerHTML = sig ? sig.fields['Corps HTML'] : '<i style="color:#999;">(aucun pied de page actif pour cette catégorie)</i>';
+}
+function onMailFieldChange(){ _mailDirty = true; updateMailPreview(); }
+
+function fillMailForm(f){
+  document.getElementById('m-messageid').value = f['Message ID']||'';
+  document.getElementById('m-description').value = f['Description']||'';
+  document.getElementById('m-categorie').value = selName(f['Catégorie'])||'';
+  document.getElementById('m-langue').value = selName(f['Langue'])||'';
+  document.getElementById('m-type').value = selName(f['Type'])||'';
+  document.getElementById('m-actif').checked = !!f['Actif'];
+  document.getElementById('m-sujet').value = f['Sujet']||'';
+  document.getElementById('m-corps').innerHTML = f['Corps HTML']||'';
+  document.getElementById('m-remarque').value = f['Remarque']||'';
+  updateMailPreview();
+}
+function clearMailForm(){
+  ['m-messageid','m-description','m-sujet','m-remarque'].forEach(id=> document.getElementById(id).value='');
+  document.getElementById('m-categorie').value = '';
+  document.getElementById('m-langue').value = '';
+  document.getElementById('m-type').value = 'Externe';
+  document.getElementById('m-actif').checked = true;
+  document.getElementById('m-corps').innerHTML = '';
+  updateMailPreview();
+}
+
+function setDeleteVisibleMail(v){ document.getElementById('btn-delete-mail').style.display = v ? '' : 'none'; }
+
+async function openMail(id){
+  if(_mailDirty && !confirm('Des modifications non enregistrées seront perdues. Continuer ?')) return;
+  _mailLoading = true;
+  setSt('⏳ Chargement du mail...');
+  try{
+    const data = await atFetch(MAILS_API+'/'+id);
+    curMailId = id;
+    _mailDirty = false;
+    document.getElementById('mail-titre').textContent = (data.fields['Message ID']||'—') + ' — ' + selName(data.fields['Catégorie']);
+    fillMailForm(data.fields);
+    setDeleteVisibleMail(true);
+    showMailView('fiche');
+    setSt('');
+  }catch(e){ setSt('❌ '+e.message); }
+  finally{ _mailLoading=false; }
+}
+
+function newMail(){
+  if(_mailDirty && !confirm('Des modifications non enregistrées seront perdues. Continuer ?')) return;
+  curMailId = null; _mailDirty = false;
+  document.getElementById('mail-titre').textContent = 'Nouveau mail';
+  clearMailForm();
+  setDeleteVisibleMail(false);
+  showMailView('fiche');
+}
+
+async function saveMail(){
+  if(_mailLoading){ setSt('⏳ Chargement en cours, réessaie dans un instant.'); return; }
+  const fields = {
+    'Message ID': document.getElementById('m-messageid').value.trim(),
+    'Description': document.getElementById('m-description').value.trim(),
+    'Catégorie': document.getElementById('m-categorie').value,
+    'Langue': document.getElementById('m-langue').value,
+    'Type': document.getElementById('m-type').value,
+    'Sujet': document.getElementById('m-sujet').value.trim(),
+    'Corps HTML': document.getElementById('m-corps').innerHTML,
+    'Actif': document.getElementById('m-actif').checked,
+    'Remarque': document.getElementById('m-remarque').value.trim(),
+  };
+  if(!fields['Message ID']){ setSt('❌ Message ID obligatoire.'); return; }
+  if(!fields['Catégorie']){ setSt('❌ Catégorie obligatoire.'); return; }
+  document.getElementById('sync-pending').classList.add('show');
+  try{
+    if(curMailId){
+      await atFetch(MAILS_API+'/'+curMailId, {method:'PATCH', body: JSON.stringify({fields})});
+      setSt('✅ Mail enregistré.');
+    } else {
+      const res = await atFetch(MAILS_API, {method:'POST', body: JSON.stringify({records:[{fields}]})});
+      curMailId = res.records[0].id;
+      setSt('✅ Nouveau mail créé.');
+    }
+    _mailDirty = false;
+    await loadMails();
+    await openMail(curMailId);
+  }catch(e){ setSt('❌ '+e.message); }
+  finally{ document.getElementById('sync-pending').classList.remove('show'); }
+}
+
+function cancelMailAndReset(){
+  if(_mailDirty && !confirm('Annuler les modifications non enregistrées ?')) return;
+  _mailDirty = false; curMailId = null;
+  showMailView('liste');
+}
+
+async function deleteMail(){
+  if(sessionStorage.getItem('auth_agent')!=='MARC') return;
+  if(!curMailId) return;
+  const titre = document.getElementById('mail-titre').textContent;
+  if(!confirm('⚠️ SUPPRESSION DÉFINITIVE\n\nSupprimer définitivement le mail "'+titre+'" ?\n\nCette action est IRRÉVERSIBLE.')) return;
+  setSt('⏳ Suppression en cours...');
+  try{
+    await atFetch(MAILS_API+'/'+curMailId, {method:'DELETE'});
+    lastMails = lastMails.filter(r=>r.id!==curMailId);
+    curMailId = null; _mailDirty = false;
+    renderMailsTable();
+    showMailView('liste');
+    setSt('✅ Mail supprimé définitivement.');
+  }catch(e){ setSt('❌ '+e.message); }
+}
+
+// ══════════════════════════════════════════════════════════
+//  SIGNATURES MAILS — chargement + liste
+// ══════════════════════════════════════════════════════════
+async function loadSigs(){
+  document.getElementById('sig-count').textContent = '⏳';
+  try{
+    let all = [], offset;
+    do{
+      const params = new URLSearchParams({pageSize:'100'});
+      if(offset) params.set('offset', offset);
+      const data = await atFetch(SIG_API+'?'+params.toString());
+      all = all.concat(data.records||[]);
+      offset = data.offset;
+    } while(offset);
+    lastSigs = all;
+    renderSigTable();
+    document.getElementById('sig-count').textContent = all.length;
+  }catch(e){ setSt('❌ '+e.message); document.getElementById('sig-count').textContent = ''; }
+}
+
+function filteredSigs(){
+  const actifFlt = document.getElementById('sflt-actif').value;
+  return lastSigs.filter(r=>{
+    const f = r.fields;
+    if(actifFlt==='1' && !f['Actif']) return false;
+    if(actifFlt==='0' && f['Actif']) return false;
+    return true;
+  });
+}
+
+function renderSigTable(){
+  const rows = filteredSigs();
+  const tbody = document.getElementById('tbl-sig-body');
+  tbody.innerHTML = '';
+  rows.forEach(r=>{
+    const f = r.fields;
+    const tr = document.createElement('tr');
+    tr.className = 'detail';
+    tr.innerHTML = '<td>'+escHtml(f['Nom']||'')+'</td>'
+      +'<td>'+escHtml(selName(f['Catégorie']))+'</td>'
+      +'<td><span class="badge '+(f['Actif']?'badge-actif':'badge-inactif')+'">'+(f['Actif']?'✅ Actif':'⛔ Inactif')+'</span></td>';
+    tr.onclick = ()=>openSig(r.id);
+    tbody.appendChild(tr);
+  });
+  document.getElementById('sig-tot-count').textContent = rows.length+' pied(s) de page affiché(s)';
+}
+
+function showSigView(v){
+  document.getElementById('view-sig-liste').classList.toggle('hidden', v==='fiche');
+  document.getElementById('view-sig-fiche').classList.toggle('hidden', v!=='fiche');
+}
+
+function updateSigPreview(){
+  document.getElementById('sig-prev-corps').innerHTML = document.getElementById('s-corps').innerHTML || '<i style="color:#999;">(pied de page vide)</i>';
+}
+function onSigFieldChange(){ _sigDirty = true; updateSigPreview(); }
+
+function fillSigForm(f){
+  document.getElementById('s-nom').value = f['Nom']||'';
+  document.getElementById('s-categorie').value = selName(f['Catégorie'])||'';
+  document.getElementById('s-actif').checked = !!f['Actif'];
+  document.getElementById('s-corps').innerHTML = f['Corps HTML']||'';
+  updateSigPreview();
+}
+function clearSigForm(){
+  document.getElementById('s-nom').value = '';
+  document.getElementById('s-categorie').value = '';
+  document.getElementById('s-actif').checked = true;
+  document.getElementById('s-corps').innerHTML = '';
+  updateSigPreview();
+}
+function setDeleteVisibleSig(v){ document.getElementById('btn-delete-sig').style.display = v ? '' : 'none'; }
+
+async function openSig(id){
+  if(_sigDirty && !confirm('Des modifications non enregistrées seront perdues. Continuer ?')) return;
+  _sigLoading = true;
+  setSt('⏳ Chargement du pied de page...');
+  try{
+    const data = await atFetch(SIG_API+'/'+id);
+    curSigId = id; _sigDirty = false;
+    document.getElementById('sig-titre').textContent = data.fields['Nom']||'—';
+    fillSigForm(data.fields);
+    setDeleteVisibleSig(true);
+    showSigView('fiche');
+    setSt('');
+  }catch(e){ setSt('❌ '+e.message); }
+  finally{ _sigLoading=false; }
+}
+
+function newSig(){
+  if(_sigDirty && !confirm('Des modifications non enregistrées seront perdues. Continuer ?')) return;
+  curSigId = null; _sigDirty = false;
+  document.getElementById('sig-titre').textContent = 'Nouveau pied de page';
+  clearSigForm();
+  setDeleteVisibleSig(false);
+  showSigView('fiche');
+}
+
+async function saveSig(){
+  if(_sigLoading){ setSt('⏳ Chargement en cours, réessaie dans un instant.'); return; }
+  const fields = {
+    'Nom': document.getElementById('s-nom').value.trim(),
+    'Catégorie': document.getElementById('s-categorie').value,
+    'Corps HTML': document.getElementById('s-corps').innerHTML,
+    'Actif': document.getElementById('s-actif').checked,
+  };
+  if(!fields['Nom']){ setSt('❌ Nom obligatoire.'); return; }
+  if(!fields['Catégorie']){ setSt('❌ Catégorie obligatoire.'); return; }
+  document.getElementById('sync-pending').classList.add('show');
+  try{
+    if(curSigId){
+      await atFetch(SIG_API+'/'+curSigId, {method:'PATCH', body: JSON.stringify({fields})});
+      setSt('✅ Pied de page enregistré.');
+    } else {
+      const res = await atFetch(SIG_API, {method:'POST', body: JSON.stringify({records:[{fields}]})});
+      curSigId = res.records[0].id;
+      setSt('✅ Nouveau pied de page créé.');
+    }
+    _sigDirty = false;
+    await loadSigs();
+    await openSig(curSigId);
+  }catch(e){ setSt('❌ '+e.message); }
+  finally{ document.getElementById('sync-pending').classList.remove('show'); }
+}
+
+function cancelSigAndReset(){
+  if(_sigDirty && !confirm('Annuler les modifications non enregistrées ?')) return;
+  _sigDirty = false; curSigId = null;
+  showSigView('liste');
+}
+
+async function deleteSig(){
+  if(sessionStorage.getItem('auth_agent')!=='MARC') return;
+  if(!curSigId) return;
+  const titre = document.getElementById('sig-titre').textContent;
+  if(!confirm('⚠️ SUPPRESSION DÉFINITIVE\n\nSupprimer définitivement le pied de page "'+titre+'" ?\n\nCette action est IRRÉVERSIBLE.')) return;
+  setSt('⏳ Suppression en cours...');
+  try{
+    await atFetch(SIG_API+'/'+curSigId, {method:'DELETE'});
+    lastSigs = lastSigs.filter(r=>r.id!==curSigId);
+    curSigId = null; _sigDirty = false;
+    renderSigTable();
+    showSigView('liste');
+    setSt('✅ Pied de page supprimé définitivement.');
+  }catch(e){ setSt('❌ '+e.message); }
+}
+
+// ══════════════════════════════════════════════════════════
+//  SYSTÈME PIN — AUTHENTIFICATION (identique aux autres outils EDUCPASS)
+//  Stockage indépendant, clé localStorage dédiée à ce fichier.
+// ══════════════════════════════════════════════════════════
+const AGENT_PINS_DEFAULT = { 'MARC':'1111', 'MAÏTE':'2222', 'PASCAL':'3333', 'VANESSA':'4444' };
+let AGENT_PINS = (function(){
+  try{
+    const stored = localStorage.getItem('educpass_mails_pins');
+    if(stored){ const p=JSON.parse(stored); if(p&&p.MARC) return p; }
+  }catch(e){}
+  return Object.assign({}, AGENT_PINS_DEFAULT);
+})();
+
+function _setAgentSession(agent){
+  sessionStorage.setItem('auth_agent', agent);
+  document.getElementById('header-agent').textContent = agent;
+  document.getElementById('btn-pin-mgr').style.display = (agent==='MARC') ? '' : 'none';
+  setDeleteVisibleMail(false);
+  setDeleteVisibleSig(false);
+}
+function loginPin(){
+  const agent = document.getElementById('pin-agent').value;
+  const pin = document.getElementById('pin-code').value;
+  const err = document.getElementById('pin-error');
+  err.textContent='';
+  if(!agent){ err.textContent='Sélectionnez votre nom.'; return; }
+  if(pin.length!==4){ err.textContent='Le code doit contenir 4 chiffres.'; return; }
+  if(AGENT_PINS[agent]!==pin){
+    err.textContent='❌ Code incorrect — réessayez.';
+    document.getElementById('pin-code').value=''; document.getElementById('pin-code').focus();
+    return;
+  }
+  document.getElementById('overlay-pin').classList.add('hidden');
+  _setAgentSession(agent);
+  init();
+}
+function logoutPin(){
+  if(!confirm('Se déconnecter ?')) return;
+  sessionStorage.removeItem('auth_agent');
+  location.reload();
+}
+function showGestionPins(){
+  if(sessionStorage.getItem('auth_agent')!=='MARC') return;
+  document.getElementById('pm-marc').value = AGENT_PINS['MARC']||'';
+  document.getElementById('pm-maite').value = AGENT_PINS['MAÏTE']||'';
+  document.getElementById('pm-pascal').value = AGENT_PINS['PASCAL']||'';
+  document.getElementById('pm-vanessa').value = AGENT_PINS['VANESSA']||'';
+  document.getElementById('pm-msg').textContent='';
+  document.getElementById('overlay-pin-mgr').classList.remove('hidden');
+}
+function closeGestionPins(){ document.getElementById('overlay-pin-mgr').classList.add('hidden'); }
+function saveGestionPins(){
+  const pins = {
+    MARC: document.getElementById('pm-marc').value.trim(),
+    'MAÏTE': document.getElementById('pm-maite').value.trim(),
+    PASCAL: document.getElementById('pm-pascal').value.trim(),
+    VANESSA: document.getElementById('pm-vanessa').value.trim(),
+  };
+  for(const [agent,pin] of Object.entries(pins)){
+    if(pin && !/^\d{4}$/.test(pin)){
+      document.getElementById('pm-msg').style.color='#c0392b';
+      document.getElementById('pm-msg').textContent='❌ PIN de '+agent+' invalide — 4 chiffres requis.';
+      return;
+    }
+    if(!pin) pins[agent]=AGENT_PINS[agent];
+  }
+  try{
+    localStorage.setItem('educpass_mails_pins', JSON.stringify(pins));
+    Object.assign(AGENT_PINS, pins);
+    document.getElementById('pm-msg').style.color='#27ae60';
+    document.getElementById('pm-msg').textContent='✅ Codes PIN enregistrés !';
+    setTimeout(closeGestionPins, 1200);
+  }catch(e){
+    document.getElementById('pm-msg').style.color='#c0392b';
+    document.getElementById('pm-msg').textContent='❌ Erreur : '+e.message;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════
+async function init(){
+  populateMailSelects();
+  buildRteToolbar('rte-toolbar-mail', 'm-corps', onMailFieldChange);
+  buildRteToolbar('rte-toolbar-sig', 's-corps', onSigFieldChange);
+  showMailView('liste');
+  showSigView('liste');
+  await loadSigs();
+  await loadMails();
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  const saved = sessionStorage.getItem('auth_agent');
+  if(saved && AGENT_PINS[saved]){
+    _setAgentSession(saved);
+    init();
+  } else {
+    document.getElementById('overlay-pin').classList.remove('hidden');
+  }
+});
+</script>
+</body>
+</html>
