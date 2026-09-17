@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BANNIÈRES — EDUCPASS 2026</title>
+<style>
+:root{
+  --navy:#1e3a6e; --navy-dark:#152a52; --orange:#c78a1a; --bg:#f0f4fa;
+  --line:#d7e0ee; --ok:#27ae60; --err:#c0392b;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:Calibri,Arial,sans-serif;background:var(--bg);color:#222;}
+.hdr-bar{background:var(--navy);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.hdr-bar .logo{font-weight:900;letter-spacing:1px;}
+.hdr-bar .title{font-weight:700;flex:1;}
+.btn{border:none;border-radius:4px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;background:#eee;color:#222;}
+.btn:hover{filter:brightness(0.95);}
+.btn-save{background:var(--ok);color:#fff;}
+.btn-cancel{background:#888;color:#fff;}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+.toolbar{background:#fff;border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+#st-bar{padding:4px 16px;font-size:12px;color:#555;min-height:18px;}
+#sync-pending{display:none;background:#f39c12;color:#fff;text-align:center;padding:4px;font-weight:700;font-size:12px;}
+#sync-pending.show{display:block;animation:pulse 1s infinite alternate;}
+@keyframes pulse{from{opacity:.6}to{opacity:1}}
+.wrap{padding:14px 16px;}
+.toolbar-global{background:#fff;border-radius:6px;box-shadow:0 1px 6px rgba(30,58,110,.12);padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.cadres-wrap{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;margin-bottom:16px;}
+.cadre{flex:1 1 420px;min-width:320px;background:#fff;border-radius:6px;box-shadow:0 1px 6px rgba(30,58,110,.12);padding:12px 14px 14px;}
+.cadre.cadre-texte{flex:1 1 100%;}
+.cadre-hdr{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+.cadre-title{font-weight:800;color:var(--navy);font-size:14.5px;flex:1;white-space:nowrap;}
+table.results{border-collapse:collapse;width:100%;background:#fff;font-size:12.5px;}
+table.results th{background:var(--navy);color:#fff;padding:6px 8px;text-align:left;position:sticky;top:0;white-space:nowrap;}
+table.results td{padding:10px 8px;border-bottom:1px solid var(--line);white-space:nowrap;}
+table.results td.wrap-cell{white-space:normal;max-width:340px;}
+table.results tr:nth-child(even){background:#f7faff;}
+table.results tr:hover{background:#eaf1ff;cursor:pointer;}
+.pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;}
+.pill-ok{background:#e2f6ea;color:#1e8a4a;}
+.pill-off{background:#f0f0f0;color:#888;}
+.fiche-box{background:#fff;border-radius:6px;box-shadow:0 1px 6px rgba(30,58,110,.12);padding:16px 20px;max-width:1100px;}
+.fiche-hdr{font-size:20px;font-weight:900;color:var(--navy);margin-bottom:4px;}
+.fiche-sub{color:#777;font-size:13px;margin-bottom:14px;}
+fieldset{border:1px solid var(--line);border-radius:6px;margin-bottom:14px;padding:10px 14px 14px;}
+legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
+.frow{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px 14px;}
+.fitem label{display:block;font-size:11.5px;color:#555;margin-bottom:2px;font-weight:600;}
+.fitem input,.fitem select,.fitem textarea{width:100%;padding:6px 7px;border:1px solid #bbb;border-radius:4px;font-size:13px;font-family:inherit;}
+.fitem textarea{min-height:52px;resize:vertical;}
+.fitem.chk{display:flex;align-items:center;gap:8px;padding-top:18px;}
+.fitem.chk input{width:auto;}
+.fitem.chk label{margin:0;}
+.hidden{display:none !important;}
+.pin-box,.pin-mgr-box{background:#fff;border-radius:8px;padding:32px 40px;box-shadow:0 2px 20px rgba(0,0,0,.25);text-align:center;min-width:320px;}
+#overlay-pin,#overlay-pin-mgr{position:fixed;inset:0;background:rgba(20,30,50,.55);display:flex;align-items:center;justify-content:center;z-index:999;}
+#overlay-loading{position:fixed;inset:0;background:rgba(20,30,50,.35);display:flex;align-items:center;justify-content:center;z-index:1000;pointer-events:none;}
+.loading-box{background:#fff;border-radius:10px;padding:26px 40px;box-shadow:0 4px 28px rgba(0,0,0,.3);font-size:19px;font-weight:700;color:var(--navy);text-align:center;min-width:320px;}
+.pin-logo{font-weight:900;color:var(--navy);letter-spacing:1px;font-size:20px;margin-bottom:6px;}
+.pin-box label,.pin-mgr-box label{display:block;text-align:left;font-size:12.5px;font-weight:600;margin:12px 0 4px;}
+.pin-box select,.pin-box input,.pin-mgr-box input{width:100%;padding:8px;border:1px solid #bbb;border-radius:4px;font-size:14px;}
+.pin-btn{margin-top:18px;width:100%;padding:10px;background:var(--navy);color:#fff;border:none;border-radius:4px;font-weight:700;cursor:pointer;}
+.pin-err{color:var(--err);font-size:12.5px;min-height:18px;margin-top:6px;}
+.pin-row{display:flex;align-items:center;gap:8px;margin:8px 0;text-align:left;}
+.pin-row label{min-width:80px;margin:0;}
+.result-count{display:inline-block;font-size:17px;font-weight:800;color:#5b2c8a;background:#eee0f7;border:2px solid #8e44ad;border-radius:6px;padding:5px 14px;min-width:20px;text-align:center;}
+.result-count:empty{display:none;}
+select#filtre-langue{padding:6px 10px;border:1px solid #bbb;border-radius:4px;font-size:13px;}
+</style>
+</head>
+<body>
+
+<div class="hdr-bar">
+  <div class="logo">EDUCPASS</div>
+  <div class="title">🖼️ BANNIÈRES SITE — 2026</div>
+  <button class="btn" id="btn-pin-mgr" onclick="showGestionPins()" style="display:none;">🔑 PINs</button>
+  <a class="btn" href="TABLEAU DE BORD.html" style="background:var(--navy-dark);color:#fff;text-decoration:none;display:inline-block;" title="Retour au Tableau de Bord">🗂️ Tableau de Bord</a>
+  <button class="btn" onclick="logoutPin()">🔒 <span id="header-agent">—</span></button>
+</div>
+
+<div id="sync-pending">⏳ Synchronisation en cours…</div>
+<div id="st-bar"></div>
+<div id="overlay-loading" class="hidden">
+  <div class="loading-box" id="loading-msg"></div>
+</div>
+
+<div class="wrap">
+
+  <!-- ====================== SECTION BANNIÈRES ======================
+       Nouveau fichier (2026-09-11). Remplace l'écran WinDev "Table des
+       bannières". Ces bannières alimentent aussi le carrousel de la page
+       d'accueil du nouveau site public (rotation automatique, ordre =
+       champ Ordre). Table Airtable "Bannières" (base Profs), même proxy
+       Cloudflare que les autres outils. -->
+  <div id="section-bannieres">
+    <div class="toolbar-global">
+      <button class="btn" onclick="showBannieresView('liste')">📄 Retour à la liste</button>
+      <span style="flex:1;"></span>
+      <label for="filtre-langue" style="font-size:12.5px;font-weight:600;color:#555;">Langue :</label>
+      <select id="filtre-langue" onchange="renderAllCadres()">
+        <option value="">Toutes</option>
+        <option value="FR">Français</option>
+        <option value="NL">Nederlands</option>
+      </select>
+    </div>
+
+    <!-- ---------------- Vue liste Bannières : 3 cadres distincts ---------------- -->
+    <div id="view-bannieres-liste">
+
+      <div class="cadres-wrap">
+        <!-- Cadre 1 : Photos d'accueil (photo qui change en haut de la page d'accueil) -->
+        <div class="cadre">
+          <div class="cadre-hdr">
+            <span class="cadre-title">📷 Photos d'accueil</span>
+            <span id="count-photos" class="result-count"></span>
+            <button class="btn btn-save" onclick="newBanniere(&quot;Photo d'accueil&quot;)">➕ Nouvelle photo</button>
+          </div>
+          <div style="max-height:60vh;overflow:auto;">
+            <table class="results" id="tbl-photos">
+              <thead><tr>
+                <th>Ordre</th><th>Langue</th><th>Nom</th><th>Description</th><th>Actif</th><th>Image</th>
+              </tr></thead>
+              <tbody id="tbl-photos-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Cadre 2 : Bannières promo (carrousel en bas de la page d'accueil) -->
+        <div class="cadre">
+          <div class="cadre-hdr">
+            <span class="cadre-title">🏷️ Bannières promo</span>
+            <span id="count-promo" class="result-count"></span>
+            <button class="btn btn-save" onclick="newBanniere('Bannière promo')">➕ Nouvelle bannière</button>
+          </div>
+          <div style="max-height:60vh;overflow:auto;">
+            <table class="results" id="tbl-promo">
+              <thead><tr>
+                <th>Ordre</th><th>Langue</th><th>Nom</th><th>Description</th><th>Actif</th><th>Image</th><th>URL cible</th>
+              </tr></thead>
+              <tbody id="tbl-promo-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cadre 3 : Texte d'accueil (slogan à gauche du carrousel photo) -->
+      <div class="cadre cadre-texte">
+        <div class="cadre-hdr">
+          <span class="cadre-title">📝 Texte d'accueil</span>
+          <span id="count-texte" class="result-count"></span>
+          <button class="btn btn-save" onclick="newBanniere(&quot;Texte d'accueil&quot;)">➕ Nouveau texte</button>
+        </div>
+        <div style="max-height:40vh;overflow:auto;">
+          <table class="results" id="tbl-texte">
+            <thead><tr>
+              <th>Ordre</th><th>Langue</th><th>Nom</th><th>Texte affiché</th><th>Actif</th>
+            </tr></thead>
+            <tbody id="tbl-texte-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Cadre 4 : Vidéos (page "Vidéos" du nouveau site — table Airtable séparée,
+           car une vidéo n'a pas les mêmes besoins qu'une image : pas d'upload de
+           fichier, juste un lien YouTube à coller — demande de Marc du 2026-09-11). -->
+      <div class="cadre cadre-texte">
+        <div class="cadre-hdr">
+          <span class="cadre-title">🎬 Vidéos (page « Vidéos » du site)</span>
+          <span id="count-videos" class="result-count"></span>
+          <button class="btn btn-save" onclick="newVideo()">➕ Nouvelle vidéo</button>
+        </div>
+        <div style="max-height:40vh;overflow:auto;">
+          <table class="results" id="tbl-videos">
+            <thead><tr>
+              <th>Ordre</th><th>Langue</th><th>Titre</th><th>Lien YouTube</th><th>Actif</th>
+            </tr></thead>
+            <tbody id="tbl-videos-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ---------------- Vue fiche Bannière ---------------- -->
+    <div id="view-bannieres-fiche" class="hidden">
+      <div class="fiche-box">
+        <div class="fiche-hdr" id="banniere-titre">—</div>
+        <div class="fiche-sub" id="banniere-image-preview">Aucune image pour l'instant.</div>
+
+        <div style="margin:14px 0;">
+          <button class="btn btn-save" id="btn-save-banniere" onclick="saveBanniere()">💾 Enregistrer</button>
+          <button class="btn btn-cancel" onclick="cancelBanniereAndReset()">↩️ Annuler</button>
+          <button class="btn" id="btn-delete-banniere" onclick="deleteBanniere()" style="display:none;background:var(--err);color:#fff;">🗑️ Supprimer</button>
+        </div>
+
+        <div id="banniere-fiche-sections"></div>
+
+        <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line);">
+          <button class="btn btn-save" onclick="saveBanniere()">💾 Enregistrer</button>
+          <button class="btn btn-cancel" onclick="cancelBanniereAndReset()">↩️ Annuler</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---------------- Vue fiche Vidéo ---------------- -->
+    <div id="view-videos-fiche" class="hidden">
+      <div class="fiche-box">
+        <div class="fiche-hdr" id="video-titre">—</div>
+        <div class="fiche-sub">Vidéo hébergée sur YouTube — collez simplement le lien (ex : https://youtu.be/xxxxxxxxxxx). Pas d'upload de fichier vidéo.</div>
+
+        <div style="margin:14px 0;">
+          <button class="btn btn-save" id="btn-save-video" onclick="saveVideo()">💾 Enregistrer</button>
+          <button class="btn btn-cancel" onclick="cancelVideoAndReset()">↩️ Annuler</button>
+          <button class="btn" id="btn-delete-video" onclick="deleteVideo()" style="display:none;background:var(--err);color:#fff;">🗑️ Supprimer</button>
+        </div>
+
+        <fieldset>
+          <legend>Vidéo</legend>
+          <div class="frow">
+            <div class="fitem"><label>Titre</label><input id="v-titre" oninput="markVideoDirty()"></div>
+            <div class="fitem"><label>Langue</label>
+              <select id="v-langue" onchange="markVideoDirty()">
+                <option value="">—</option><option value="FR">FR</option><option value="NL">NL</option>
+              </select>
+            </div>
+            <div class="fitem"><label>Lien YouTube</label><input id="v-lien" oninput="markVideoDirty()" placeholder="https://youtu.be/xxxxxxxxxxx"></div>
+            <div class="fitem"><label>Ordre</label><input id="v-ordre" type="number" oninput="markVideoDirty()"></div>
+            <div class="fitem chk"><input id="v-actif" type="checkbox" onchange="markVideoDirty()"><label for="v-actif">Affichée sur le site</label></div>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Description affichée sous la vidéo</legend>
+          <div class="frow">
+            <div class="fitem" style="grid-column:1/-1;"><textarea id="v-description" oninput="markVideoDirty()" style="min-height:80px;"></textarea></div>
+          </div>
+        </fieldset>
+
+        <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line);">
+          <button class="btn btn-save" onclick="saveVideo()">💾 Enregistrer</button>
+          <button class="btn btn-cancel" onclick="cancelVideoAndReset()">↩️ Annuler</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ====================== OVERLAY LOGIN PIN ====================== -->
+<div id="overlay-pin" class="hidden">
+  <div class="pin-box">
+    <div class="pin-logo">EDUCPASS</div>
+    <h2>🔐 Accès sécurisé</h2>
+    <label>Agent :</label>
+    <select id="pin-agent">
+      <option value="">— Sélectionnez —</option>
+      <option>MARC</option>
+      <option>MAÏTE</option>
+      <option>PASCAL</option>
+      <option>VANESSA</option>
+    </select>
+    <label>Code PIN (4 chiffres) :</label>
+    <input type="password" id="pin-code" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" placeholder="••••" autocomplete="off" oninput="if(this.value.length===4)loginPin()">
+    <div id="pin-error" class="pin-err"></div>
+    <button class="pin-btn" onclick="loginPin()">Connexion →</button>
+  </div>
+</div>
+
+<!-- ====================== OVERLAY GESTION PINS (MARC uniquement) ====================== -->
+<div id="overlay-pin-mgr" class="hidden">
+  <div class="pin-mgr-box">
+    <h2>🔑 Gestion des codes PIN</h2>
+    <div class="pin-row"><label>MARC :</label><input type="password" id="pm-marc" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
+    <div class="pin-row"><label>MAÏTE :</label><input type="password" id="pm-maite" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
+    <div class="pin-row"><label>PASCAL :</label><input type="password" id="pm-pascal" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
+    <div class="pin-row"><label>VANESSA :</label><input type="password" id="pm-vanessa" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
+    <div class="pin-err" id="pm-msg"></div>
+    <div style="display:flex;gap:8px;margin-top:14px;">
+      <button class="btn btn-cancel" onclick="closeGestionPins()">Annuler</button>
+      <button class="btn btn-save" onclick="saveGestionPins()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  CONFIG AIRTABLE — même proxy Cloudflare Worker que les autres outils
+//  (jeton Airtable caché côté serveur, jamais exposé ici).
+// ══════════════════════════════════════════════════════════
+const PROXY = 'https://educpass-profs-proxy.marc-flasschoen.workers.dev';
+const BASE  = 'appWCfo8WBkMGUuc2';
+const HDRS  = {'Content-Type':'application/json'};
+
+// Table "Bannières" — page d'accueil du nouveau site (carrousel tournant).
+const BANNIERES_TBL = 'tblPvu1219W1xUnAY';
+const BANNIERES_API = `${PROXY}/v0/${BASE}/${BANNIERES_TBL}`;
+
+// Table "Vidéos" — page "Vidéos" du nouveau site (table séparée : une vidéo
+// n'a pas les mêmes besoins qu'une image, juste un lien YouTube à coller).
+const VIDEOS_TBL = 'tblzgMkxcoA6DZnDc';
+const VIDEOS_API = `${PROXY}/v0/${BASE}/${VIDEOS_TBL}`;
+
+// ══════════════════════════════════════════════════════════
+//  BANNIÈRES — mapping id Airtable <-> clé DOM <-> libellé <-> type
+// ══════════════════════════════════════════════════════════
+const BANNIERES_CHOICES = {
+  langue: ['FR','NL'],
+  emplacement: ["Photo d'accueil","Bannière promo","Texte d'accueil"],
+  modeaffichage: ['Étiré','Homothétique centré','100%']
+};
+// Format de chaque champ : [fieldId Airtable, clé DOM, libellé affiché, type, nom RÉEL du champ Airtable]
+// (le nom réel peut différer du libellé affiché — ex. libellé "Affichée sur le site" mais champ Airtable "EstActif" —
+// donc les deux sont toujours tenus séparés, jamais déduits l'un de l'autre.)
+const BANNIERES_SECTIONS = [
+  {title:'Bannière / Photo / Texte', fields:[
+    ['fldv2WSJPdzk8lIZD','nom','Nom (interne)','text','Nom'],
+    ['fldHvb8tySRUXgBpf','emplacement','Emplacement sur la page','select:emplacement','Emplacement'],
+    ['flddZky2DYkqgYLMN','langue','Langue','select:langue','Langue'],
+    ['fldbLTEsjj0ZXpzDL','estactif','Affichée sur le site','checkbox','EstActif'],
+    ['fld1cPIJTL8yz8vmh','ordre','Ordre (rotation)','number','Ordre'],
+    ['fldWqtB5F17kOohAU','modeaffichage','Mode d’affichage','select:modeaffichage',"Mode d'affichage"],
+    ['fldRwt4RWBgcWXVHj','urlcible','URL cible (lien au clic)','text','URL cible'],
+  ]},
+  {title:'Texte affiché (uniquement pour le type « Texte d\'accueil »)', fields:[
+    ['fld4ILuAYca7HTRAC','texteaffiche','Texte affiché sur le site (slogan)','textarea','Texte affiché'],
+  ]},
+  {title:'Description', fields:[
+    ['fldfT7VXXg7aBkOSY','description','Description (note interne)','textarea','Description'],
+  ]},
+];
+const FLD_IMAGE = 'fldw6beZ0zacyDpeg'; // champ pièce jointe — aperçu lecture seule, upload géré à part (voir note fiche)
+const BANNIERE_KEY_TO_NAME = {};
+BANNIERES_SECTIONS.forEach(sec=>sec.fields.forEach(([fid,key,label,type,realName])=>{ BANNIERE_KEY_TO_NAME[key]=realName; }));
+
+// ══════════════════════════════════════════════════════════
+//  ÉTAT
+// ══════════════════════════════════════════════════════════
+let lastBannieres = [];
+let curBanniereId = null;
+let _banniereLoading = false;
+let _banniereDirty = false;
+
+let lastVideos = [];
+let curVideoId = null;
+let _videoLoading = false;
+let _videoDirty = false;
+
+function setSt(msg){
+  document.getElementById('st-bar').textContent = msg || '';
+  const box = document.getElementById('overlay-loading');
+  const isLoading = !!msg && (msg.indexOf('🔎')===0 || msg.indexOf('⏳')===0);
+  if(isLoading){
+    document.getElementById('loading-msg').textContent = msg;
+    box.classList.remove('hidden');
+  } else {
+    box.classList.add('hidden');
+  }
+}
+function esc(s){ return String(s).replace(/\\/g,'\\\\').replace(/"/g,'\\"'); }
+
+// ══════════════════════════════════════════════════════════
+//  APPELS AIRTABLE
+// ══════════════════════════════════════════════════════════
+async function atFetch(url, opts){
+  const r = await fetch(url, Object.assign({headers:HDRS}, opts||{}));
+  if(!r.ok){
+    const t = await r.text().catch(()=> '');
+    throw new Error('Airtable '+r.status+' : '+t.slice(0,200));
+  }
+  return r.json();
+}
+
+// ══════════════════════════════════════════════════════════
+//  BANNIÈRES — liste + fiche
+// ══════════════════════════════════════════════════════════
+function fldB(key){ return document.getElementById('b-'+key); }
+function svB(key, v, type){
+  const el = fldB(key); if(!el) return;
+  if(type==='checkbox'){ el.checked = !!v; return; }
+  if(v && typeof v==='object' && v.name) v = v.name;
+  el.value = (v==null) ? '' : v;
+}
+function markBanniereDirty(){ _banniereDirty = true; }
+
+function fieldType(key){
+  for(const sec of BANNIERES_SECTIONS) for(const [fid,k,label,type] of sec.fields) if(k===key) return type;
+  return 'text';
+}
+
+function buildBanniereForm(){
+  const wrap = document.getElementById('banniere-fiche-sections');
+  wrap.innerHTML = '';
+  BANNIERES_SECTIONS.forEach(sec=>{
+    const fs = document.createElement('fieldset');
+    const lg = document.createElement('legend'); lg.textContent = sec.title; fs.appendChild(lg);
+    const row = document.createElement('div'); row.className='frow';
+    sec.fields.forEach(([fid,key,label,type])=>{
+      const item = document.createElement('div'); item.className='fitem'+(type==='checkbox'?' chk':'');
+      let input;
+      if(type.startsWith('select:')){
+        const choiceKey = type.split(':')[1];
+        input = document.createElement('select');
+        const empty=document.createElement('option'); empty.value=''; empty.textContent='—'; input.appendChild(empty);
+        BANNIERES_CHOICES[choiceKey].forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; input.appendChild(o); });
+      } else if(type==='textarea'){
+        input = document.createElement('textarea');
+      } else if(type==='checkbox'){
+        input = document.createElement('input');
+        input.type = 'checkbox';
+      } else {
+        input = document.createElement('input');
+        input.type = (type==='number') ? 'number' : 'text';
+      }
+      input.id = 'b-'+key;
+      input.dataset.fieldId = fid;
+      input.oninput = markBanniereDirty;
+      input.onchange = markBanniereDirty;
+      if(type==='checkbox'){
+        const lab = document.createElement('label'); lab.textContent = label; lab.htmlFor = input.id;
+        item.appendChild(input); item.appendChild(lab);
+      } else {
+        const lab = document.createElement('label'); lab.textContent = label; item.appendChild(lab);
+        item.appendChild(input);
+      }
+      row.appendChild(item);
+    });
+    fs.appendChild(row);
+    wrap.appendChild(fs);
+  });
+}
+
+function fillBanniereForm(fields){
+  BANNIERES_SECTIONS.forEach(sec=>sec.fields.forEach(([fid,key,label,type])=> svB(key, fields[BANNIERE_KEY_TO_NAME[key]], type) ));
+}
+
+// Aperçu de l'image — LECTURE SEULE : l'upload se fait directement dans
+// Airtable (le Worker Cloudflare qui cache le jeton Airtable ne permet pas
+// l'upload de pièce jointe depuis ce fichier). Marc glisse l'image sur le
+// champ "Image" dans Airtable, elle apparaît ici ensuite.
+function renderImagePreview(fields){
+  const box = document.getElementById('banniere-image-preview');
+  const att = fields && fields['Image'];
+  if(att && att.length){
+    const url = (att[0].thumbnails && att[0].thumbnails.large) ? att[0].thumbnails.large.url : att[0].url;
+    box.innerHTML = '<img src="'+esc(url)+'" alt="Image" style="max-height:90px;max-width:360px;border:1px solid var(--line);border-radius:4px;vertical-align:middle;"> <span style="color:#777;">Image gérée directement dans Airtable (glisser-déposer sur le champ « Image », format recommandé 1200x300).</span>';
+  } else {
+    box.innerHTML = '<span style="color:#999;">Aucune image pour l\'instant — à ajouter directement dans Airtable (champ « Image », format recommandé 1200x300).</span>';
+  }
+}
+
+function setSaveDisabledBanniere(v){ document.getElementById('btn-save-banniere').disabled = v; }
+function setDeleteVisibleBanniere(v){ document.getElementById('btn-delete-banniere').style.display = v ? '' : 'none'; }
+
+async function loadBannieres(){
+  document.getElementById('count-photos').textContent = '⏳';
+  document.getElementById('count-promo').textContent = '⏳';
+  document.getElementById('count-texte').textContent = '⏳';
+  try{
+    let all = [], offset;
+    do{
+      const params = new URLSearchParams({pageSize:'100'});
+      if(offset) params.set('offset', offset);
+      const data = await atFetch(BANNIERES_API+'?'+params.toString());
+      all = all.concat(data.records||[]);
+      offset = data.offset;
+    } while(offset);
+    lastBannieres = all;
+    renderAllCadres();
+  }catch(e){
+    setSt('❌ '+e.message);
+    document.getElementById('count-photos').textContent = '';
+    document.getElementById('count-promo').textContent = '';
+    document.getElementById('count-texte').textContent = '';
+  }
+}
+
+// Filtre partagé (Langue) + tri par Ordre, appliqué à un des 3 cadres.
+function filtreEtTrie(emplacement){
+  const filtreLangue = document.getElementById('filtre-langue') ? document.getElementById('filtre-langue').value : '';
+  return lastBannieres
+    .filter(rec=> rec.fields['Emplacement']===emplacement)
+    .filter(rec=> !filtreLangue || (rec.fields['Langue']===filtreLangue))
+    .slice()
+    .sort((a,b)=> (a.fields['Ordre']||0) - (b.fields['Ordre']||0));
+}
+
+function renderAllCadres(){
+  renderPhotosCadre();
+  renderPromoCadre();
+  renderTexteCadre();
+  renderVideosCadre();
+}
+
+// Cadre 1 : Photos d'accueil
+function renderPhotosCadre(){
+  const tbody = document.getElementById('tbl-photos-body');
+  tbody.innerHTML = '';
+  const rows = filtreEtTrie("Photo d'accueil");
+  document.getElementById('count-photos').textContent = rows.length;
+  rows.forEach(rec=>{
+    const f = rec.fields;
+    const tr = document.createElement('tr');
+    const att = f['Image'];
+    const imgCell = (att && att.length) ? '<img src="'+esc((att[0].thumbnails&&att[0].thumbnails.small)?att[0].thumbnails.small.url:att[0].url)+'" style="height:36px;vertical-align:middle;border-radius:3px;">' : '—';
+    const actifCell = f['EstActif'] ? '<span class="pill pill-ok">✓ Actif</span>' : '<span class="pill pill-off">— Inactif</span>';
+    tr.innerHTML = '<td>'+(f['Ordre']!=null?f['Ordre']:'')+'</td><td>'+esc(f['Langue']||'')+'</td><td>'+esc(f['Nom']||'')+'</td>'
+      +'<td class="wrap-cell">'+esc(f['Description']||'')+'</td><td>'+actifCell+'</td><td>'+imgCell+'</td>';
+    tr.onclick = ()=>openBanniere(rec.id);
+    tbody.appendChild(tr);
+  });
+}
+
+// Cadre 2 : Bannières promo
+function renderPromoCadre(){
+  const tbody = document.getElementById('tbl-promo-body');
+  tbody.innerHTML = '';
+  const rows = filtreEtTrie('Bannière promo');
+  document.getElementById('count-promo').textContent = rows.length;
+  rows.forEach(rec=>{
+    const f = rec.fields;
+    const tr = document.createElement('tr');
+    const att = f['Image'];
+    const imgCell = (att && att.length) ? '<img src="'+esc((att[0].thumbnails&&att[0].thumbnails.small)?att[0].thumbnails.small.url:att[0].url)+'" style="height:36px;vertical-align:middle;border-radius:3px;">' : '—';
+    const actifCell = f['EstActif'] ? '<span class="pill pill-ok">✓ Actif</span>' : '<span class="pill pill-off">— Inactif</span>';
+    tr.innerHTML = '<td>'+(f['Ordre']!=null?f['Ordre']:'')+'</td><td>'+esc(f['Langue']||'')+'</td><td>'+esc(f['Nom']||'')+'</td>'
+      +'<td class="wrap-cell">'+esc(f['Description']||'')+'</td><td>'+actifCell+'</td><td>'+imgCell+'</td>'
+      +'<td class="wrap-cell">'+esc(f['URL cible']||'—')+'</td>';
+    tr.onclick = ()=>openBanniere(rec.id);
+    tbody.appendChild(tr);
+  });
+}
+
+// Cadre 3 : Texte d'accueil
+function renderTexteCadre(){
+  const tbody = document.getElementById('tbl-texte-body');
+  tbody.innerHTML = '';
+  const rows = filtreEtTrie("Texte d'accueil");
+  document.getElementById('count-texte').textContent = rows.length;
+  rows.forEach(rec=>{
+    const f = rec.fields;
+    const tr = document.createElement('tr');
+    const actifCell = f['EstActif'] ? '<span class="pill pill-ok">✓ Actif</span>' : '<span class="pill pill-off">— Inactif</span>';
+    tr.innerHTML = '<td>'+(f['Ordre']!=null?f['Ordre']:'')+'</td><td>'+esc(f['Langue']||'')+'</td><td>'+esc(f['Nom']||'')+'</td>'
+      +'<td class="wrap-cell">'+esc(f['Texte affiché']||'—')+'</td><td>'+actifCell+'</td>';
+    tr.onclick = ()=>openBanniere(rec.id);
+    tbody.appendChild(tr);
+  });
+}
+
+async function openBanniere(id){
+  if(_banniereDirty && !confirm('Des modifications non enregistrées seront perdues. Continuer ?')) return;
+  _banniereLoading = true;
+  setSaveDisabledBanniere(true);
+  setSt('⏳ Chargement de la bannière...');
+  try{
+    const data = await atFetch(BANNIERES_API+'/'+id);
+    curBanniereId = id;
+    _banniereDirty = false;
+    document.getElementById('banniere-titre').textContent = data.fields['Nom'] || '—';
+    fillBanniereForm(data.fields);
+    renderImagePreview(data.fields);
+    setDeleteVisibleBanniere(true);
+    showBannieresView('fiche');
+    setSt('');
+  }catch(e){ setSt('❌ '+e.message); }
+  finally{ _banniereLoading=false; setSaveDisabledBanniere(false); }
+}
+
+const NOUVEAU_TITRE_PAR_EMPLACEMENT = {
+  "Photo d'accueil": 'Nouvelle photo d’accueil',
+  'Bannière promo': 'Nouvelle bannière promo',
+  "Texte d'accueil": 'Nouveau texte d’accueil',
+};
+
+function newBanniere(emplacementDefault){
+  if(_banniereDirty && !confirm('Des modifications non enregistrées seront perdues. Continuer ?')) return;
+  curBanniereId = null;
+  _banniereDirty = false;
+  document.getElementById('banniere-titre').textContent = NOUVEAU_TITRE_PAR_EMPLACEMENT[emplacementDefault] || 'Nouvelle fiche';
+  buildBanniereForm();
+  renderImagePreview(null);
+  // Pré-remplit le cadre d'origine (le bouton "+" cliqué) + quelques valeurs par défaut utiles.
+  if(emplacementDefault){
+    svB('emplacement', emplacementDefault, 'select:emplacement');
+    const rangDejaPris = filtreEtTrie(emplacementDefault).map(r=>r.fields['Ordre']||0);
+    svB('ordre', rangDejaPris.length ? Math.max(...rangDejaPris)+1 : 1, 'number');
+  }
+  svB('langue', 'FR', 'select:langue');
+  svB('estactif', true, 'checkbox');
+  _banniereDirty = false; // les valeurs pré-remplies ne comptent pas comme une modification à confirmer
+  setDeleteVisibleBanniere(false);
+  showBannieresView('fiche');
+}
+
+async function saveBanniere(){
+  if(_banniereLoading){ setSt('⏳ Chargement en cours, réessaie dans un instant.'); return; }
+  const fields = {};
+  let numError = null;
+  BANNIERES_SECTIONS.forEach(sec=>sec.fields.forEach(([fid,key,label,type])=>{
+    const el = fldB(key); if(!el) return;
+    const realLabel = BANNIERE_KEY_TO_NAME[key];
+    if(type==='checkbox'){ fields[realLabel] = el.checked; return; }
+    let v = el.value;
+    if(v==='') return; // on n'écrase pas avec du vide
+    if(type==='number'){
+      v = Number(v);
+      if(isNaN(v)){ numError = numError || {label,val:el.value}; return; }
+    }
+    fields[realLabel] = v;
+  }));
+  if(numError){ setSt('❌ Valeur invalide pour « '+numError.label+' » : "'+numError.val+'". Merci de n\'entrer que des chiffres.'); return; }
+  if(!fields['Nom']){ setSt('❌ Le Nom est obligatoire.'); return; }
+  document.getElementById('sync-pending').classList.add('show');
+  setSaveDisabledBanniere(true);
+  try{
+    if(curBanniereId){
+      await atFetch(BANNIERES_API+'/'+curBanniereId, {method:'PATCH', body: JSON.stringify({fields})});
+      setSt('✅ Bannière enregistrée.');
+    } else {
+      const res = await atFetch(BANNIERES_API, {method:'POST', body: JSON.stringify({records:[{fields}]})});
+      curBanniereId = res.records[0].id;
+      setSt('✅ Nouvelle bannière créée.');
+    }
+    _banniereDirty = false;
+    await loadBannieres();
+    await openBanniere(curBanniereId);
+  }catch(e){ setSt('❌ '+e.message); }
+  finally{
+    document.getElementById('sync-pending').classList.remove('show');
+    setSaveDisabledBanniere(false);
+  }
+}
+
+function cancelBanniereAndReset(){
+  if(_banniereDirty && !confirm('Annuler les modifications non enregistrées ?')) return;
+  _banniereDirty = false;
+  curBanniereId = null;
+  showBannieresView('liste');
+}
+
+// Suppression réservée à MARC, même règle que pour les autres outils.
+async function deleteBanniere(){
+  if(sessionStorage.getItem('auth_agent')!=='MARC') return;
+  if(!curBanniereId){ setSt('Aucune bannière chargée à supprimer.'); return; }
+  const idToDelete = curBanniereId;
+  const nom = document.getElementById('banniere-titre').textContent;
+  if(!confirm('⚠️ SUPPRESSION DÉFINITIVE\n\nSupprimer définitivement la bannière "'+nom+'" ?\n\nCette action est IRRÉVERSIBLE.')) return;
+  setSt('⏳ Suppression en cours...');
+  try{
+    await atFetch(BANNIERES_API+'/'+idToDelete, {method:'DELETE'});
+    lastBannieres = lastBannieres.filter(r=>r.id!==idToDelete);
+    curBanniereId = null; _banniereDirty = false;
+    renderAllCadres();
+    showBannieresView('liste');
+    setSt('✅ Bannière supprimée définitivement.');
+  }catch(e){ setSt('❌ '+e.message); }
+}
+
+// ══════════════════════════════════════════════════════════
+//  VIDÉOS — liste + fiche (table Airtable séparée de Bannières)
+// ══════════════════════════════════════════════════════════
+function markVideoDirty(){ _videoDirty = true; }
+function setSaveDisabledVideo(v){ document.getElementById('btn-save-video').disabled = v; }
+function setDeleteVisibleVideo(v){ document.getElementById('btn-delete-video').style.display = v ? '' : 'none'; }
+
+function fillVideoForm(fields){
+  document.getElementById('v-titre').value = fields['Titre'] || '';
+  document.getElementById('v-langue').value = fields['Langue'] || '';
+  document.getElementById('v-lien').value = fields['URL YouTube'] || '';
+  document.getElementById('v-ordre').value = (fields['Ordre']!=null) ? fields['Ordre'] : '';
+  document.getElementById('v-actif').checked = !!fields['EstActif'];
+  document.getElementById('v-description').value = fields['Description'] || '';
+}
+
+async function loadVideos(){
+  document.getElementById('count-videos').textContent = '⏳';
+  try{
+    let all = [], offset;
+    do{
+      const params = new URLSearchParams({pageSize:'100'});
+      if(offset) params.set('offset', offset);
+      const data = await atFetch(VIDEOS_API+'?'+params.toString());
+      all = all.concat(data.records||[]);
+      offset = data.offset;
+    } while(offset);
+    lastVideos = all;
+    renderVideosCadre();
+  }catch(e){
+    setSt('❌ '+e.message);
+    document.getElementById('count-videos').textContent = '';
+  }
+}
+
+function renderVideosCadre(){
+  const tbody = document.getElementById('tbl-videos-body');
+  tbody.innerHTML = '';
+  const filtreLangue = document.getElementById('filtre-langue') ? document.getElementById('filtre-langue').value : '';
+  const rows = lastVideos
+    .filter(rec => !filtreLangue || (rec.fields['Langue']===filtreLangue))
+    .slice()
+    .sort((a,b)=> (a.fields['Ordre']||0) - (b.fields['Ordre']||0));
+  document.getElementById('count-videos').textContent = rows.length;
+  rows.forEach(rec=>{
+    const f = rec.fields;
+    const tr = document.createElement('tr');
+    const actifCell = f['EstActif'] ? '<span class="pill pill-ok">✓ Actif</span>' : '<span class="pill pill-off">— Inactif</span>';
+    tr.innerHTML = '<td>'+(f['Ordre']!=null?f['Ordre']:'')+'</td><td>'+esc(f['Langue']||'')+'</td><td>'+esc(f['Titre']||'')+'</td>'
+      +'<td class="wrap-cell">'+esc(f['URL YouTube']||'—')+'</td><td>'+actifCell+'</td>';
+    tr.onclick = ()=>openVideo(rec.id);
+    tbody.appendChild(tr);
+  });
+}
+
+async function openVideo(id){
+  if(_videoDirty && !confirm('Des modifications non enregistrées seront perdues. Continuer ?')) return;
+  _videoLoading = true;
+  setSaveDisabledVideo(true);
+  setSt('⏳ Chargement de la vidéo...');
+  try{
+    const data = await atFetch(VIDEOS_API+'/'+id);
+    curVideoId = id;
+    _videoDirty = false;
+    document.getElementById('video-titre').textContent = data.fields['Titre'] || '—';
+    fillVideoForm(data.fields);
+    setDeleteVisibleVideo(true);
+    showView('video');
+    setSt('');
+  }catch(e){ setSt('❌ '+e.message); }
+  finally{ _videoLoading=false; setSaveDisabledVideo(false); }
+}
+
+function newVideo(){
+  if(_videoDirty && !confirm('Des modifications non enregistrées seront perdues. Continuer ?')) return;
+  curVideoId = null;
+  _videoDirty = false;
+  document.getElementById('video-titre').textContent = 'Nouvelle vidéo';
+  fillVideoForm({});
+  const rangDejaPris = lastVideos.map(r=>r.fields['Ordre']||0);
+  document.getElementById('v-ordre').value = rangDejaPris.length ? Math.max(...rangDejaPris)+1 : 1;
+  document.getElementById('v-langue').value = 'FR';
+  document.getElementById('v-actif').checked = true;
+  _videoDirty = false; // les valeurs pré-remplies ne comptent pas comme une modification à confirmer
+  setDeleteVisibleVideo(false);
+  showView('video');
+}
+
+async function saveVideo(){
+  if(_videoLoading){ setSt('⏳ Chargement en cours, réessaie dans un instant.'); return; }
+  const fields = {};
+  const titre = document.getElementById('v-titre').value.trim();
+  if(!titre){ setSt('❌ Le Titre est obligatoire.'); return; }
+  fields['Titre'] = titre;
+  const langue = document.getElementById('v-langue').value;
+  if(langue) fields['Langue'] = langue;
+  const lien = document.getElementById('v-lien').value.trim();
+  if(lien) fields['URL YouTube'] = lien;
+  const ordreVal = document.getElementById('v-ordre').value;
+  if(ordreVal!==''){
+    const n = Number(ordreVal);
+    if(isNaN(n)){ setSt('❌ Valeur invalide pour « Ordre » : "'+ordreVal+'". Merci de n\'entrer que des chiffres.'); return; }
+    fields['Ordre'] = n;
+  }
+  fields['EstActif'] = document.getElementById('v-actif').checked;
+  const description = document.getElementById('v-description').value.trim();
+  if(description) fields['Description'] = description;
+
+  document.getElementById('sync-pending').classList.add('show');
+  setSaveDisabledVideo(true);
+  try{
+    if(curVideoId){
+      await atFetch(VIDEOS_API+'/'+curVideoId, {method:'PATCH', body: JSON.stringify({fields})});
+      setSt('✅ Vidéo enregistrée.');
+    } else {
+      const res = await atFetch(VIDEOS_API, {method:'POST', body: JSON.stringify({records:[{fields}]})});
+      curVideoId = res.records[0].id;
+      setSt('✅ Nouvelle vidéo créée.');
+    }
+    _videoDirty = false;
+    await loadVideos();
+    await openVideo(curVideoId);
+  }catch(e){ setSt('❌ '+e.message); }
+  finally{
+    document.getElementById('sync-pending').classList.remove('show');
+    setSaveDisabledVideo(false);
+  }
+}
+
+function cancelVideoAndReset(){
+  if(_videoDirty && !confirm('Annuler les modifications non enregistrées ?')) return;
+  _videoDirty = false;
+  curVideoId = null;
+  showView('liste');
+}
+
+// Suppression réservée à MARC, même règle que pour les autres outils.
+async function deleteVideo(){
+  if(sessionStorage.getItem('auth_agent')!=='MARC') return;
+  if(!curVideoId){ setSt('Aucune vidéo chargée à supprimer.'); return; }
+  const idToDelete = curVideoId;
+  const titre = document.getElementById('video-titre').textContent;
+  if(!confirm('⚠️ SUPPRESSION DÉFINITIVE\n\nSupprimer définitivement la vidéo "'+titre+'" ?\n\nCette action est IRRÉVERSIBLE.')) return;
+  setSt('⏳ Suppression en cours...');
+  try{
+    await atFetch(VIDEOS_API+'/'+idToDelete, {method:'DELETE'});
+    lastVideos = lastVideos.filter(r=>r.id!==idToDelete);
+    curVideoId = null; _videoDirty = false;
+    renderVideosCadre();
+    showView('liste');
+    setSt('✅ Vidéo supprimée définitivement.');
+  }catch(e){ setSt('❌ '+e.message); }
+}
+
+// Vue partagée entre Bannières et Vidéos : la liste (3 cadres Bannières + 1 cadre
+// Vidéos) et les 2 fiches (Bannière / Vidéo) sont mutuellement exclusives.
+function showView(v){
+  document.getElementById('view-bannieres-liste').classList.toggle('hidden', v!=='liste');
+  document.getElementById('view-bannieres-fiche').classList.toggle('hidden', v!=='banniere');
+  document.getElementById('view-videos-fiche').classList.toggle('hidden', v!=='video');
+}
+function showBannieresView(v){ showView(v==='fiche' ? 'banniere' : 'liste'); }
+
+// ══════════════════════════════════════════════════════════
+//  SYSTÈME PIN — AUTHENTIFICATION (identique aux autres outils EDUCPASS)
+//  Stockage indépendant (clé localStorage dédiée), chaque fichier HTML
+//  local ayant sa propre origine de stockage.
+// ══════════════════════════════════════════════════════════
+const AGENT_PINS_DEFAULT = { 'MARC':'1111', 'MAÏTE':'2222', 'PASCAL':'3333', 'VANESSA':'4444' };
+let AGENT_PINS = (function(){
+  try{
+    const stored = localStorage.getItem('educpass_bannieres_pins');
+    if(stored){ const p=JSON.parse(stored); if(p&&p.MARC) return p; }
+  }catch(e){}
+  return Object.assign({}, AGENT_PINS_DEFAULT);
+})();
+
+function _setAgentSession(agent){
+  sessionStorage.setItem('auth_agent', agent);
+  document.getElementById('header-agent').textContent = agent;
+  document.getElementById('btn-pin-mgr').style.display = (agent==='MARC') ? '' : 'none';
+  setDeleteVisibleBanniere(false);
+}
+function loginPin(){
+  const agent = document.getElementById('pin-agent').value;
+  const pin = document.getElementById('pin-code').value;
+  const err = document.getElementById('pin-error');
+  err.textContent='';
+  if(!agent){ err.textContent='Sélectionnez votre nom.'; return; }
+  if(pin.length!==4){ err.textContent='Le code doit contenir 4 chiffres.'; return; }
+  if(AGENT_PINS[agent]!==pin){
+    err.textContent='❌ Code incorrect — réessayez.';
+    document.getElementById('pin-code').value=''; document.getElementById('pin-code').focus();
+    return;
+  }
+  document.getElementById('overlay-pin').classList.add('hidden');
+  _setAgentSession(agent);
+  init();
+}
+function logoutPin(){
+  if(!confirm('Se déconnecter ?')) return;
+  sessionStorage.removeItem('auth_agent');
+  location.reload();
+}
+function showGestionPins(){
+  if(sessionStorage.getItem('auth_agent')!=='MARC') return;
+  document.getElementById('pm-marc').value = AGENT_PINS['MARC']||'';
+  document.getElementById('pm-maite').value = AGENT_PINS['MAÏTE']||'';
+  document.getElementById('pm-pascal').value = AGENT_PINS['PASCAL']||'';
+  document.getElementById('pm-vanessa').value = AGENT_PINS['VANESSA']||'';
+  document.getElementById('pm-msg').textContent='';
+  document.getElementById('overlay-pin-mgr').classList.remove('hidden');
+}
+function closeGestionPins(){ document.getElementById('overlay-pin-mgr').classList.add('hidden'); }
+function saveGestionPins(){
+  const pins = {
+    MARC: document.getElementById('pm-marc').value.trim(),
+    'MAÏTE': document.getElementById('pm-maite').value.trim(),
+    PASCAL: document.getElementById('pm-pascal').value.trim(),
+    VANESSA: document.getElementById('pm-vanessa').value.trim(),
+  };
+  for(const [agent,pin] of Object.entries(pins)){
+    if(pin && !/^\d{4}$/.test(pin)){
+      document.getElementById('pm-msg').style.color='#c0392b';
+      document.getElementById('pm-msg').textContent='❌ PIN de '+agent+' invalide — 4 chiffres requis.';
+      return;
+    }
+    if(!pin) pins[agent]=AGENT_PINS[agent];
+  }
+  try{
+    localStorage.setItem('educpass_bannieres_pins', JSON.stringify(pins));
+    Object.assign(AGENT_PINS, pins);
+    document.getElementById('pm-msg').style.color='#27ae60';
+    document.getElementById('pm-msg').textContent='✅ Codes PIN enregistrés !';
+    setTimeout(closeGestionPins, 1200);
+  }catch(e){
+    document.getElementById('pm-msg').style.color='#c0392b';
+    document.getElementById('pm-msg').textContent='❌ Erreur : '+e.message;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════
+function init(){
+  buildBanniereForm();
+  showView('liste');
+  loadBannieres();
+  loadVideos();
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  const saved = sessionStorage.getItem('auth_agent');
+  if(saved && AGENT_PINS[saved]){
+    _setAgentSession(saved);
+    init();
+  } else {
+    document.getElementById('overlay-pin').classList.remove('hidden');
+  }
+});
+</script>
+</body>
+</html>
