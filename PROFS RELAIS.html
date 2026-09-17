@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ENSEIGNANTS RELAIS — EDUCPASS 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --navy:#1e3a6e; --navy-dark:#152a52; --orange:#c55a11; --bg:#f0f4fa;
+  --line:#d7e0ee; --ok:#27ae60; --err:#c0392b; --gift:#8e44ad;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:Calibri,Arial,sans-serif;background:var(--bg);color:#222;}
+.hdr-bar{background:var(--navy);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.hdr-bar .logo{font-weight:900;letter-spacing:1px;}
+.hdr-bar .title{font-weight:700;flex:1;}
+.btn{border:none;border-radius:4px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;background:#eee;color:#222;}
+.btn:hover{filter:brightness(0.95);}
+.btn-save{background:var(--ok);color:#fff;}
+.btn-cancel{background:#888;color:#fff;}
+.btn-orange{background:var(--orange);color:#fff;}
+.btn-purple{background:var(--gift);color:#fff;}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+.toolbar{background:#fff;border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+#st-bar{padding:4px 16px;font-size:12px;color:#555;min-height:18px;white-space:pre-line;}
+#sync-pending{display:none;background:#f39c12;color:#fff;text-align:center;padding:4px;font-weight:700;font-size:12px;}
+#sync-pending.show{display:block;animation:pulse 1s infinite alternate;}
+@keyframes pulse{from{opacity:.6}to{opacity:1}}
+.wrap{padding:14px 16px;max-width:1200px;margin:0 auto;}
+.fiche-box{background:#fff;border-radius:6px;box-shadow:0 1px 6px rgba(30,58,110,.12);padding:16px 20px;margin-bottom:16px;}
+fieldset{border:1px solid var(--line);border-radius:6px;margin-bottom:14px;padding:10px 14px 14px;}
+legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
+.frow{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px 14px;}
+.fitem label{display:block;font-size:11.5px;color:#555;margin-bottom:2px;font-weight:600;}
+.fitem input,.fitem select{width:100%;padding:6px 7px;border:1px solid #bbb;border-radius:4px;font-size:13px;font-family:inherit;}
+#ec-montant::-webkit-outer-spin-button,#ec-montant::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+#ec-montant{-moz-appearance:textfield;}
+.hidden{display:none !important;}
+.pin-box,.pin-mgr-box{background:#fff;border-radius:8px;padding:32px 40px;box-shadow:0 2px 20px rgba(0,0,0,.25);text-align:center;min-width:320px;}
+#overlay-pin,#overlay-pin-mgr{position:fixed;inset:0;background:rgba(20,30,50,.55);display:flex;align-items:center;justify-content:center;z-index:999;}
+#overlay-loading{position:fixed;inset:0;background:rgba(20,30,50,.35);display:flex;align-items:center;justify-content:center;z-index:1000;pointer-events:none;}
+.loading-box{background:#fff;border-radius:10px;padding:26px 40px;box-shadow:0 4px 28px rgba(0,0,0,.3);font-size:19px;font-weight:700;color:var(--navy);text-align:center;min-width:320px;}
+.pin-logo{font-weight:900;color:var(--navy);letter-spacing:1px;font-size:20px;margin-bottom:6px;}
+.pin-box label,.pin-mgr-box label{display:block;text-align:left;font-size:12.5px;font-weight:600;margin:12px 0 4px;}
+.pin-box select,.pin-box input,.pin-mgr-box input{width:100%;padding:8px;border:1px solid #bbb;border-radius:4px;font-size:14px;}
+.pin-btn{margin-top:18px;width:100%;padding:10px;background:var(--navy);color:#fff;border:none;border-radius:4px;font-weight:700;cursor:pointer;}
+.pin-err{color:var(--err);font-size:12.5px;min-height:18px;margin-top:6px;}
+.pin-row{display:flex;align-items:center;gap:8px;margin:8px 0;text-align:left;}
+.pin-row label{min-width:80px;margin:0;}
+.participant-card{border:1px solid var(--line);border-radius:6px;padding:12px 14px;margin-bottom:12px;background:#fbfcff;}
+.participant-card.gratuit{background:#f5eefc;border-color:var(--gift);}
+.participant-hdr{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;}
+.participant-hdr .num{font-weight:800;color:var(--navy);font-size:13px;}
+.badge-lookup{font-size:11.5px;font-weight:700;padding:3px 8px;border-radius:12px;}
+.badge-lookup.nouveau{background:#e6f9e6;color:#1e6b1e;}
+.badge-lookup.renouv{background:#dceefa;color:#1a4d80;}
+.badge-lookup.checking{background:#eee;color:#777;}
+.badge-lookup.empty{background:transparent;color:#aaa;}
+.gratuit-check{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--gift);margin-left:auto;}
+.result-icon{font-size:15px;margin-left:4px;}
+#resume-bar{background:#fff;border:1px solid var(--line);border-radius:6px;padding:10px 16px;margin-bottom:14px;font-size:13.5px;font-weight:600;color:var(--navy);}
+</style>
+</head>
+<body>
+
+<div class="hdr-bar">
+  <div class="logo">EDUCPASS</div>
+  <div class="title">🧭 ENSEIGNANTS RELAIS — 2026</div>
+  <button class="btn" id="btn-pin-mgr" onclick="showGestionPins()" style="display:none;">🔑 PINs</button>
+  <a class="btn" href="../TABLEAU DE BORD.html" style="background:var(--navy-dark);color:#fff;text-decoration:none;display:inline-block;" title="Retour au Tableau de Bord">🗂️ Tableau de Bord</a>
+  <button class="btn" onclick="logoutPin()">🔒 <span id="header-agent">—</span></button>
+</div>
+
+<div id="sync-pending">⏳ Synchronisation en cours…</div>
+<div id="st-bar"></div>
+<div id="overlay-loading" class="hidden">
+  <div class="loading-box" id="loading-msg"></div>
+</div>
+
+<div class="wrap">
+
+  <div class="fiche-box">
+    <div style="font-size:12.5px;color:#666;margin-bottom:12px;">
+      Grilles reçues (téléchargées puis renvoyées remplies par un prof relais) : tapées à l'ordinateur → importe le fichier Excel reçu ci-dessous. Manuscrites/scannées → envoie le scan à Claude dans une conversation, qui te prépare la liste à coller/vérifier ici.
+    </div>
+    <div class="toolbar" style="padding:0 0 12px;border:none;">
+      <button class="btn btn-orange" onclick="document.getElementById('excel-file-input').click()">📥 Importer un fichier Excel</button>
+      <input type="file" id="excel-file-input" accept=".xlsx,.xls" class="hidden" onchange="handleExcelFile(event)">
+      <button class="btn btn-cancel" onclick="nouveauGroupe()">🔄 Nouveau groupe</button>
+      <span id="import-status" style="font-size:12.5px;color:#555;"></span>
+    </div>
+
+    <fieldset>
+      <legend>École</legend>
+      <div class="frow">
+        <div class="fitem"><label>Montant par participant payant (€)</label><input type="number" step="0.01" min="0" id="ec-montant" placeholder="ex: 20" oninput="updateResume()"></div>
+        <div class="fitem"><label>Année cotisation</label><input type="number" id="ec-annee" value="27"></div>
+        <div class="fitem"><label>Nom école</label><input type="text" id="ec-nomecole"></div>
+        <div class="fitem"><label>Tel école</label><input type="text" id="ec-telecole"></div>
+        <div class="fitem"><label>Personne de contact</label><input type="text" id="ec-contactnom"></div>
+        <div class="fitem"><label>Tel personne de contact</label><input type="text" id="ec-contacttel"></div>
+      </div>
+    </fieldset>
+  </div>
+
+  <div id="resume-bar"></div>
+
+  <div id="participants-list"></div>
+
+  <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+    <button class="btn" onclick="addRow()">➕ Ajouter une ligne</button>
+    <button class="btn btn-save" style="margin-left:auto;" onclick="creerFiches()">✅ Créer / mettre à jour les fiches</button>
+  </div>
+
+</div>
+
+<!-- ====================== OVERLAY PIN ====================== -->
+<div id="overlay-pin" class="hidden">
+  <div class="pin-box">
+    <div class="pin-logo">EDUCPASS</div>
+    <h2>🔐 Accès sécurisé</h2>
+    <label>Agent :</label>
+    <select id="pin-agent">
+      <option value="">— Sélectionnez —</option>
+      <option>MARC</option>
+      <option>MAÏTE</option>
+      <option>PASCAL</option>
+      <option>VANESSA</option>
+    </select>
+    <label>Code PIN (4 chiffres) :</label>
+    <input type="password" id="pin-code" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" placeholder="••••" autocomplete="off" oninput="if(this.value.length===4)loginPin()">
+    <div id="pin-error" class="pin-err"></div>
+    <button class="pin-btn" onclick="loginPin()">Connexion →</button>
+  </div>
+</div>
+
+<!-- ====================== OVERLAY GESTION PINS (MARC uniquement) ====================== -->
+<div id="overlay-pin-mgr" class="hidden">
+  <div class="pin-mgr-box">
+    <h2>🔑 Gestion des codes PIN</h2>
+    <div class="pin-row"><label>MARC :</label><input type="password" id="pm-marc" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
+    <div class="pin-row"><label>MAÏTE :</label><input type="password" id="pm-maite" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
+    <div class="pin-row"><label>PASCAL :</label><input type="password" id="pm-pascal" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
+    <div class="pin-row"><label>VANESSA :</label><input type="password" id="pm-vanessa" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
+    <div class="pin-err" id="pm-msg"></div>
+    <div style="display:flex;gap:8px;margin-top:14px;">
+      <button class="btn btn-cancel" onclick="closeGestionPins()">Annuler</button>
+      <button class="btn btn-save" onclick="saveGestionPins()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  CONFIG AIRTABLE — même proxy Cloudflare Worker que les autres outils
+//  (jeton Airtable caché côté serveur, jamais exposé ici).
+// ══════════════════════════════════════════════════════════
+const PROXY = 'https://educpass-profs-proxy.marc-flasschoen.workers.dev';
+const BASE  = 'appWCfo8WBkMGUuc2';
+const HDRS  = {'Content-Type':'application/json'};
+
+const PROFS_TBL = 'tbl3e83BINBUCkhMH';
+const PROFS_API = `${PROXY}/v0/${BASE}/${PROFS_TBL}`;
+const PAIEMENT_TBL = 'tblphJSzrHNaYPco1';
+const PAIEMENT_API = `${PROXY}/v0/${BASE}/${PAIEMENT_TBL}`;
+
+// Formule proposée aux groupes Profs Relais : une seule formule pour tout le
+// monde — "FORMULE DIGITALE ACTIFS" (réf. PPE01) de la table Produits.
+// Le PRIX N'EST PAS FIXE : il dépend de la promotion en cours (Marc, 2026-09-10 —
+// ex. promo de septembre à 25€, moins 5€ Profs Relais = 20€ payé). On encode donc
+// le montant tel qu'il apparaît réellement sur la grille reçue (case "Montant par
+// participant payant" ci-dessous), pré-rempli automatiquement à l'import Excel
+// (lecture des cases "Base .../Promo :" de la grille) mais toujours modifiable
+// à la main avant de créer les fiches.
+const PRODUIT_DIGITAL_ID = 'recZs18IUYEsgtzjE'; // FORMULE DIGITALE ACTIFS
+
+function getMontantPayant(){
+  const v = Number(document.getElementById('ec-montant').value);
+  return (v>0) ? v : 0;
+}
+
+function setSt(msg){
+  document.getElementById('st-bar').textContent = msg || '';
+  const box = document.getElementById('overlay-loading');
+  const isLoading = !!msg && (msg.indexOf('🔎')===0 || msg.indexOf('⏳')===0);
+  if(isLoading){
+    document.getElementById('loading-msg').textContent = msg;
+    box.classList.remove('hidden');
+  } else {
+    box.classList.add('hidden');
+  }
+}
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+async function atFetch(url, opts){
+  const r = await fetch(url, Object.assign({headers:HDRS}, opts||{}));
+  if(!r.ok){
+    const t = await r.text().catch(()=> '');
+    throw new Error('Airtable '+r.status+' : '+t.slice(0,200));
+  }
+  return r.json();
+}
+
+// ══════════════════════════════════════════════════════════
+//  ÉTAT — liste des participants
+// ══════════════════════════════════════════════════════════
+let rowCounter = 0;
+// rowMatchState[rowid] = {checking:bool, matchedId:string|null, matchedLabel:string}
+const rowMatchState = {};
+
+function participantRowHtml(id){
+  return `
+  <div class="participant-card" id="card-${id}" data-rowid="${id}">
+    <div class="participant-hdr">
+      <span class="num">Participant</span>
+      <span class="badge-lookup empty" id="badge-${id}">—</span>
+      <label class="gratuit-check"><input type="checkbox" id="p${id}-gratuit" onchange="onGratuitChange(${id})"> 🎁 Cotisation offerte (commission prof relais)</label>
+      <label class="gratuit-check" style="color:var(--navy);"><input type="checkbox" id="p${id}-adresse-maj"> 🏠 Mettre à jour l'adresse (renouvellement)</label>
+      <button class="btn btn-cancel" style="padding:4px 10px;" onclick="removeRow(${id})">🗑️</button>
+      <span class="result-icon" id="result-${id}"></span>
+    </div>
+    <div class="frow">
+      <div class="fitem"><label>Nom</label><input type="text" id="p${id}-nom" oninput="updateResume()"></div>
+      <div class="fitem"><label>Prénom</label><input type="text" id="p${id}-prenom" oninput="updateResume()"></div>
+      <div class="fitem"><label>Date de naissance</label><input type="date" id="p${id}-naissance" onchange="onNaissanceChange(${id})"></div>
+      <div class="fitem">
+        <label>Catégorie</label>
+        <select id="p${id}-type" onchange="onTypeChange(${id})">
+          <option value="BE">Enseignant belge</option>
+          <option value="EDU">Éducateur (belge)</option>
+          <option value="LUX">Enseignant luxembourgeois</option>
+          <option value="FRA">Enseignant français</option>
+        </select>
+      </div>
+      <div class="fitem">
+        <label>Communauté</label>
+        <select id="p${id}-communaute" onchange="onTypeChange(${id})">
+          <option value="FR">Francophone</option>
+          <option value="NL">Néerlandophone</option>
+        </select>
+      </div>
+      <div class="fitem">
+        <label>N° de matricule</label>
+        <input type="text" id="p${id}-matricule" onblur="lookupMatricule(${id})">
+        <button class="btn" id="pgen-${id}" style="display:none;margin-top:4px;padding:3px 8px;font-size:11px;" onclick="genererMatricule(${id})" type="button">🔄 Générer</button>
+      </div>
+      <div class="fitem"><label>Rue</label><input type="text" id="p${id}-rue"></div>
+      <div class="fitem"><label>N° maison</label><input type="text" id="p${id}-nmaison"></div>
+      <div class="fitem"><label>CP</label><input type="text" id="p${id}-cp"></div>
+      <div class="fitem"><label>Localité</label><input type="text" id="p${id}-ville"></div>
+      <div class="fitem"><label>Email</label><input type="text" id="p${id}-email"></div>
+      <div class="fitem"><label>Tel (GSM)</label><input type="text" id="p${id}-tel"></div>
+      <div class="fitem"><label>Niveau</label><input type="text" id="p${id}-niveau"></div>
+      <div class="fitem"><label>Branche</label><input type="text" id="p${id}-branche"></div>
+    </div>
+    <div id="matctrl-${id}" style="font-size:11px;margin-top:4px;color:#555;"></div>
+    <div id="knote-${id}" style="font-size:11.5px;color:#8a6d00;margin-top:6px;"></div>
+  </div>`;
+}
+
+function addRow(prefill){
+  prefill = prefill || {};
+  const id = ++rowCounter;
+  rowMatchState[id] = {checking:false, matchedId:null, matchedLabel:null};
+  document.getElementById('participants-list').insertAdjacentHTML('beforeend', participantRowHtml(id));
+  ['nom','prenom','naissance','matricule','rue','nmaison','cp','ville','email','tel','niveau','branche'].forEach(k=>{
+    if(prefill[k]!=null && prefill[k]!==''){
+      const el = document.getElementById('p'+id+'-'+k);
+      if(el) el.value = prefill[k];
+    }
+  });
+  if(prefill.gratuit){
+    const chk = document.getElementById('p'+id+'-gratuit');
+    if(chk){ chk.checked = true; onGratuitChange(id); }
+  }
+  if(prefill.forceAddress){
+    const chk2 = document.getElementById('p'+id+'-adresse-maj');
+    if(chk2) chk2.checked = true;
+  }
+  if(prefill.remarqueK){
+    const note = document.getElementById('knote-'+id);
+    if(note) note.textContent = '📝 Remarque fichier (col. K) : '+prefill.remarqueK;
+  }
+  if(prefill.matricule) lookupMatricule(id);
+  updateResume();
+  return id;
+}
+
+function removeRow(id){
+  const card = document.getElementById('card-'+id);
+  if(card) card.remove();
+  delete rowMatchState[id];
+  updateResume();
+}
+
+function onGratuitChange(id){
+  const card = document.getElementById('card-'+id);
+  const chk = document.getElementById('p'+id+'-gratuit');
+  if(card) card.classList.toggle('gratuit', chk.checked);
+  updateResume();
+}
+
+function allRowIds(){
+  return Array.from(document.querySelectorAll('.participant-card')).map(c=>Number(c.dataset.rowid));
+}
+
+function rowHasContent(id){
+  const nom = document.getElementById('p'+id+'-nom');
+  return !!(nom && nom.value.trim());
+}
+
+function updateResume(){
+  const ids = allRowIds().filter(rowHasContent);
+  let payants = 0, gratuits = 0;
+  ids.forEach(id=>{
+    const chk = document.getElementById('p'+id+'-gratuit');
+    if(chk && chk.checked) gratuits++; else payants++;
+  });
+  const montant = getMontantPayant();
+  const total = payants * montant;
+  const repere = gratuits>0 ? Math.round(payants/gratuits) : null;
+  let msg = `${ids.length} participant(s) — ${payants} payant(s) × ${montant}€ = ${total}€ attendus, ${gratuits} gratuit(e)(s)`;
+  msg += ' (repère : ~1 gratuite pour 10 payantes';
+  if(gratuits>0) msg += `, ici ~1 pour ${repere}`;
+  msg += ')';
+  document.getElementById('resume-bar').textContent = msg;
+}
+
+// ══════════════════════════════════════════════════════════
+//  MATRICULE ENSEIGNANT — vérification (belge) / génération (autres)
+//  Format confirmé par Marc (11 chiffres) : S AAMMJJ NNNN
+//    S = 1 (homme) / 2 (femme) pour un enseignant belge ;
+//        7 (éducateur), 5 (luxembourgeois), 8 (français) pour les autres.
+//    AAMMJJ = date de naissance.
+//    NNNN = 2 chiffres de séquence + 2 chiffres de clé de contrôle.
+//  Clé de contrôle = modulo 97 sur les 9 premiers chiffres (S+AAMMJJ+séquence) :
+//    Francophone    : clé = 97 − (base9 mod 97)
+//    Néerlandophone : clé = base9 mod 97
+//  Formule confirmée par Marc le 2026-09-10 sur 2 matricules réels :
+//  16007170028 (francophone) et 27905110550 (néerlandophone).
+// ══════════════════════════════════════════════════════════
+function typePrefix(type){
+  return {EDU:'7', LUX:'5', FRA:'8'}[type] || null;
+}
+
+function matriculeControlKey(base9, communaute){
+  const r = Number(base9) % 97;
+  return (communaute === 'NL') ? r : (97 - r);
+}
+
+function validateMatriculeBelge(matricule, communaute){
+  const m = String(matricule||'').replace(/\D/g,'');
+  if(m.length !== 11) return {ok:false, msg:'⚠️ Doit contenir 11 chiffres (trouvé '+m.length+').'};
+  const s = m[0];
+  if(s!=='1' && s!=='2') return {ok:false, msg:'⚠️ Devrait commencer par 1 (homme) ou 2 (femme) pour un enseignant belge.'};
+  const base9 = m.slice(0,9);
+  const control = m.slice(9,11);
+  const expected = String(matriculeControlKey(base9, communaute)).padStart(2,'0');
+  if(expected !== control) return {ok:false, msg:'⚠️ Clé de contrôle incorrecte (attendu '+expected+', trouvé '+control+').'};
+  return {ok:true, msg:'✅ Matricule valide'};
+}
+
+function onTypeChange(id){
+  const type = document.getElementById('p'+id+'-type').value;
+  const matInput = document.getElementById('p'+id+'-matricule');
+  const genBtn = document.getElementById('pgen-'+id);
+  const ctrlMsg = document.getElementById('matctrl-'+id);
+  if(!matInput || !genBtn) return;
+  if(type === 'BE'){
+    matInput.readOnly = false;
+    matInput.style.background = '';
+    genBtn.style.display = 'none';
+    if(ctrlMsg) ctrlMsg.textContent = '';
+  } else {
+    matInput.readOnly = true;
+    matInput.style.background = '#eee';
+    genBtn.style.display = '';
+    genererMatricule(id);
+  }
+}
+
+function onNaissanceChange(id){
+  const type = document.getElementById('p'+id+'-type').value;
+  if(type !== 'BE') genererMatricule(id);
+}
+
+async function genererMatricule(id){
+  const typeEl = document.getElementById('p'+id+'-type');
+  const matInput = document.getElementById('p'+id+'-matricule');
+  const ctrlMsg = document.getElementById('matctrl-'+id);
+  if(!typeEl || !matInput) return;
+  const prefix = typePrefix(typeEl.value);
+  if(!prefix) return; // catégorie "Enseignant belge" : rien à générer
+  const naissance = document.getElementById('p'+id+'-naissance').value;
+  if(!naissance){
+    matInput.value = '';
+    if(ctrlMsg) ctrlMsg.textContent = 'ℹ️ Renseigne la date de naissance pour générer le matricule.';
+    return;
+  }
+  const communaute = document.getElementById('p'+id+'-communaute').value;
+  const parts = naissance.split('-');
+  const aammjj = parts[0].slice(2)+parts[1]+parts[2];
+  const base7 = prefix+aammjj;
+  if(ctrlMsg) ctrlMsg.textContent = '⏳ Génération en cours...';
+  try{
+    for(let seq=0; seq<100; seq++){
+      const seqStr = String(seq).padStart(2,'0');
+      const base9 = base7+seqStr;
+      const control = String(matriculeControlKey(base9, communaute)).padStart(2,'0');
+      const candidate = base9+control;
+      const formula = encodeURIComponent(`{N° matricule}="${candidate}"`);
+      const res = await atFetch(PROFS_API+'?maxRecords=1&filterByFormula='+formula);
+      if(!(res.records && res.records.length)){
+        matInput.value = candidate;
+        if(ctrlMsg) ctrlMsg.textContent = '✅ Matricule généré : '+candidate;
+        return candidate;
+      }
+    }
+    if(ctrlMsg) ctrlMsg.textContent = '⚠️ Impossible de générer un matricule libre pour cette date de naissance (100 séquences déjà utilisées).';
+  }catch(e){
+    if(ctrlMsg) ctrlMsg.textContent = '❌ Erreur lors de la génération : '+e.message;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  RECHERCHE AUTOMATIQUE PAR N° DE MATRICULE
+// ══════════════════════════════════════════════════════════
+async function lookupMatricule(id){
+  const el = document.getElementById('p'+id+'-matricule');
+  const badge = document.getElementById('badge-'+id);
+  if(!el || !badge) return;
+  const val = el.value.trim();
+  const typeEl = document.getElementById('p'+id+'-type');
+  const ctrlMsg = document.getElementById('matctrl-'+id);
+  if(ctrlMsg && typeEl && typeEl.value === 'BE'){
+    if(val){
+      const communaute = document.getElementById('p'+id+'-communaute').value;
+      ctrlMsg.textContent = validateMatriculeBelge(val, communaute).msg;
+    } else {
+      ctrlMsg.textContent = '';
+    }
+  }
+  if(!val){
+    rowMatchState[id] = {checking:false, matchedId:null, matchedLabel:null};
+    badge.className = 'badge-lookup empty';
+    badge.textContent = '—';
+    return;
+  }
+  rowMatchState[id].checking = true;
+  badge.className = 'badge-lookup checking';
+  badge.textContent = '⏳ Recherche...';
+  try{
+    const formula = encodeURIComponent(`{N° matricule}="${val.replace(/"/g,'\\"')}"`);
+    const res = await atFetch(PROFS_API+'?maxRecords=1&filterByFormula='+formula);
+    const rec = (res.records && res.records[0]) || null;
+    if(rec){
+      const label = (rec.fields['Nom']||'')+' '+(rec.fields['Prénom']||'');
+      const statut = (rec.fields['Statut'] && rec.fields['Statut'].name) || rec.fields['Statut'] || '';
+      const dejaProfRelais = (statut === 'Prof relais');
+      rowMatchState[id] = {checking:false, matchedId:rec.id, matchedLabel:label.trim(), statut};
+      badge.className = 'badge-lookup renouv';
+      badge.textContent = '🔁 Renouvellement : '+label.trim()+(dejaProfRelais ? ' (déjà Prof relais 🎁)' : '');
+      if(dejaProfRelais){
+        const chk = document.getElementById('p'+id+'-gratuit');
+        if(chk && !chk.checked){ chk.checked = true; onGratuitChange(id); }
+      }
+    } else {
+      rowMatchState[id] = {checking:false, matchedId:null, matchedLabel:null};
+      badge.className = 'badge-lookup nouveau';
+      badge.textContent = '🆕 Nouvelle fiche';
+    }
+  }catch(e){
+    rowMatchState[id] = {checking:false, matchedId:null, matchedLabel:null};
+    badge.className = 'badge-lookup empty';
+    badge.textContent = '❌ Recherche impossible';
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  NOUVEAU GROUPE — réinitialise l'écran
+// ══════════════════════════════════════════════════════════
+function nouveauGroupe(){
+  if(!confirm('Repartir sur un nouveau groupe ? Les données actuellement saisies seront perdues.')) return;
+  document.getElementById('ec-nomecole').value='';
+  document.getElementById('ec-telecole').value='';
+  document.getElementById('ec-contactnom').value='';
+  document.getElementById('ec-contacttel').value='';
+  document.getElementById('ec-annee').value='27';
+  document.getElementById('ec-montant').value='';
+  document.getElementById('participants-list').innerHTML='';
+  document.getElementById('import-status').textContent='';
+  Object.keys(rowMatchState).forEach(k=>delete rowMatchState[k]);
+  addRow();
+  updateResume();
+  setSt('');
+}
+
+// ══════════════════════════════════════════════════════════
+//  IMPORT EXCEL — lit un fichier rempli au format du modèle Educpass
+//  (grille "FORMULAIRE INSCRIPTIONS GROUPEES POUR ECOLES"). Fonctionne
+//  entièrement dans le navigateur (librairie SheetJS), aucun envoi du
+//  fichier à un serveur.
+// ══════════════════════════════════════════════════════════
+function stripLabel(v, ...labels){
+  let s = String(v==null?'':v).trim();
+  labels.forEach(lab=>{
+    const re = new RegExp('^'+lab.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\s*:?\\s*','i');
+    s = s.replace(re,'');
+  });
+  return s.trim();
+}
+
+function cellVal(sheet, addr){
+  const c = sheet[addr];
+  return c ? c.v : '';
+}
+
+function dateCellToISO(v){
+  if(v==null || v==='') return '';
+  if(v instanceof Date){
+    const y=v.getUTCFullYear(), m=String(v.getUTCMonth()+1).padStart(2,'0'), d=String(v.getUTCDate()).padStart(2,'0');
+    return `${y}-${m}-${d}`;
+  }
+  return String(v);
+}
+
+const PLACEHOLDER_WORDS = ['mail','tel','niveau','branche'];
+function isPlaceholder(v){
+  return PLACEHOLDER_WORDS.includes(String(v||'').trim().toLowerCase());
+}
+
+// Cherche dans toutes les cellules le montant à payer : priorité à "Promo : X€"
+// (promotion en cours), sinon "Base ... = X €". Recherche par contenu plutôt que
+// par adresse de cellule fixe, car la ligne récap peut légèrement bouger d'un
+// fichier à l'autre.
+function findMontantPayant(sheet){
+  let base = null, promo = null;
+  Object.keys(sheet).forEach(addr=>{
+    if(addr[0]==='!') return;
+    const v = sheet[addr] && sheet[addr].v;
+    if(typeof v !== 'string') return;
+    let m = v.match(/base[^0-9]*(\d+(?:[.,]\d+)?)\s*€/i);
+    if(m) base = parseFloat(m[1].replace(',','.'));
+    m = v.match(/promo[^0-9]*(\d+(?:[.,]\d+)?)\s*€/i);
+    if(m) promo = parseFloat(m[1].replace(',','.'));
+  });
+  return (promo!=null) ? promo : base;
+}
+
+function parseGrilleSheet(sheet){
+  const out = {ecole:{}, participants:[], montant:findMontantPayant(sheet)};
+  out.ecole.nomecole    = stripLabel(cellVal(sheet,'B3'), 'NOM ECOLE');
+  out.ecole.telecole    = stripLabel(cellVal(sheet,'D3'), 'TEL ECOLE');
+  out.ecole.contactnom  = stripLabel(cellVal(sheet,'F3'), 'PERSONNE DE CONTACT');
+  out.ecole.contacttel  = stripLabel(cellVal(sheet,'I3'), 'TEL');
+
+  // 11 emplacements fixes sur le modèle : paire de lignes (top=identité/adresse,
+  // bottom=email/tel/niveau/branche), à partir de la ligne 7 (participant n°1).
+  for(let slot=0; slot<11; slot++){
+    const topRow = 7 + slot*2;
+    const botRow = topRow + 1;
+    const nom = cellVal(sheet, 'B'+topRow);
+    const emailRaw = cellVal(sheet, 'B'+botRow);
+    if(!nom && (!emailRaw || isPlaceholder(emailRaw))) continue; // emplacement vide, on saute
+    const remarqueK = String(cellVal(sheet,'K'+topRow)||'').trim();
+    out.participants.push({
+      nom: cellVal(sheet,'B'+topRow),
+      prenom: cellVal(sheet,'C'+topRow),
+      naissance: dateCellToISO(cellVal(sheet,'D'+topRow)),
+      matricule: String(cellVal(sheet,'E'+topRow)||'').trim(),
+      rue: cellVal(sheet,'F'+topRow),
+      nmaison: cellVal(sheet,'G'+topRow),
+      cp: cellVal(sheet,'H'+topRow),
+      ville: cellVal(sheet,'I'+topRow),
+      email: isPlaceholder(emailRaw) ? '' : emailRaw,
+      tel: (function(){ const v=cellVal(sheet,'D'+botRow); return isPlaceholder(v)?'':v; })(),
+      niveau: (function(){ const v=cellVal(sheet,'F'+botRow); return isPlaceholder(v)?'':v; })(),
+      branche: (function(){ const v=cellVal(sheet,'G'+botRow); return isPlaceholder(v)?'':v; })(),
+      remarqueK: remarqueK,
+      gratuit: /gratuit/i.test(remarqueK),
+      forceAddress: /adresse/i.test(remarqueK),
+    });
+  }
+  return out;
+}
+
+function handleExcelFile(evt){
+  const file = evt.target.files[0];
+  if(!file) return;
+  if(typeof XLSX === 'undefined'){
+    document.getElementById('import-status').textContent = '❌ La librairie de lecture Excel n\'a pas pu se charger (vérifie ta connexion Internet) — impossible d\'importer.';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const wb = XLSX.read(e.target.result, {type:'array', cellDates:true});
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const parsed = parseGrilleSheet(sheet);
+      if(parsed.ecole.nomecole) document.getElementById('ec-nomecole').value = parsed.ecole.nomecole;
+      if(parsed.ecole.telecole) document.getElementById('ec-telecole').value = parsed.ecole.telecole;
+      if(parsed.ecole.contactnom) document.getElementById('ec-contactnom').value = parsed.ecole.contactnom;
+      if(parsed.ecole.contacttel) document.getElementById('ec-contacttel').value = parsed.ecole.contacttel;
+      if(parsed.montant!=null) document.getElementById('ec-montant').value = parsed.montant;
+      parsed.participants.forEach(p=>addRow(p));
+      document.getElementById('import-status').textContent = `✅ ${parsed.participants.length} participant(s) importé(s) depuis "${file.name}" — vérifie les infos avant de créer les fiches.`;
+      updateResume();
+    }catch(err){
+      document.getElementById('import-status').textContent = '❌ Erreur de lecture du fichier : '+err.message;
+    }
+    evt.target.value = '';
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ══════════════════════════════════════════════════════════
+//  CRÉATION / MISE À JOUR DES FICHES
+// ══════════════════════════════════════════════════════════
+function todayISO(){
+  const d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+function remarqueEcole(){
+  const nomecole = document.getElementById('ec-nomecole').value.trim();
+  const telecole = document.getElementById('ec-telecole').value.trim();
+  const contactnom = document.getElementById('ec-contactnom').value.trim();
+  const contacttel = document.getElementById('ec-contacttel').value.trim();
+  let s = 'Inscription groupée Enseignants Relais, '+todayISO()+'.';
+  if(nomecole) s += ' École : '+nomecole+(telecole?' (Tel : '+telecole+')':'')+'.';
+  if(contactnom) s += ' Personne de contact : '+contactnom+(contacttel?' ('+contacttel+')':'')+'.';
+  return s;
+}
+
+async function creerFiches(){
+  const annee = Number(document.getElementById('ec-annee').value);
+  const montant = getMontantPayant();
+  if(!montant){ setSt('❌ Merci de renseigner le montant par participant payant avant de créer les fiches.'); return; }
+  const ids = allRowIds().filter(rowHasContent);
+  if(!ids.length){ setSt('❌ Aucun participant à créer — ajoute au moins une ligne remplie.'); return; }
+
+  const payants = ids.filter(id=>!document.getElementById('p'+id+'-gratuit').checked).length;
+  const gratuits = ids.length - payants;
+  if(!confirm(`Créer/mettre à jour ${ids.length} fiche(s) (${payants} paiement(s) de ${montant}€, ${gratuits} gratuite(s)) ?`)) return;
+
+  document.getElementById('sync-pending').classList.add('show');
+  const remarque = remarqueEcole();
+  let ok=0, fail=0;
+
+  for(const id of ids){
+    const resultEl = document.getElementById('result-'+id);
+    try{
+      const gratuit = document.getElementById('p'+id+'-gratuit').checked;
+      const majAdresse = document.getElementById('p'+id+'-adresse-maj').checked;
+      const matched = rowMatchState[id] && rowMatchState[id].matchedId;
+      let profId;
+      if(matched){
+        const fields = {'Année': annee};
+        if(gratuit) fields['Statut'] = 'Prof relais';
+        if(majAdresse){
+          // Renouvellement mais adresse à mettre à jour (remarque colonne K du
+          // fichier reçu, ex. "New adresse") — on ne touche que rue/n°/CP/ville.
+          const setIf = (key, elId)=>{ const v=document.getElementById(elId).value.trim(); if(v) fields[key]=v; };
+          setIf('Rue','p'+id+'-rue');
+          setIf('N° maison','p'+id+'-nmaison');
+          setIf('CP','p'+id+'-cp');
+          setIf('Ville','p'+id+'-ville');
+        }
+        await atFetch(PROFS_API+'/'+matched, {method:'PATCH', body: JSON.stringify({fields})});
+        profId = matched;
+      } else {
+        const fields = {
+          'Nom': document.getElementById('p'+id+'-nom').value.trim(),
+          'Prénom': document.getElementById('p'+id+'-prenom').value.trim(),
+          'Statut': gratuit ? 'Prof relais' : 'Actif',
+          'Année': annee,
+          'Remarque': remarque,
+        };
+        const naissance = document.getElementById('p'+id+'-naissance').value;
+        if(naissance) fields['Date de naissance'] = naissance;
+        const setIf = (key, elId)=>{ const v=document.getElementById(elId).value.trim(); if(v) fields[key]=v; };
+        setIf('N° matricule','p'+id+'-matricule');
+        setIf('Rue','p'+id+'-rue');
+        setIf('N° maison','p'+id+'-nmaison');
+        setIf('CP','p'+id+'-cp');
+        setIf('Ville','p'+id+'-ville');
+        setIf('Email','p'+id+'-email');
+        setIf('GSM','p'+id+'-tel');
+        setIf('Niveau','p'+id+'-niveau');
+        setIf('Branche','p'+id+'-branche');
+        const res = await atFetch(PROFS_API, {method:'POST', body: JSON.stringify({records:[{fields}]})});
+        profId = res.records[0].id;
+      }
+      if(!gratuit){
+        const nom = (document.getElementById('p'+id+'-nom').value.trim()+' '+document.getElementById('p'+id+'-prenom').value.trim()).trim();
+        const paiementFields = {
+          'Date': todayISO(),
+          'Montant': montant,
+          'Statut': 'Payé',
+          'Origine': 'Virement manuel',
+          'Membre': [profId],
+          'Article': [PRODUIT_DIGITAL_ID],
+          'Libellé': 'Formule Digitale Actifs (groupe Enseignants Relais)',
+          'Nom': nom,
+          'Remarque': remarque,
+        };
+        const matricule = document.getElementById('p'+id+'-matricule').value.trim();
+        if(matricule) paiementFields['Matricule'] = matricule;
+        await atFetch(PAIEMENT_API, {method:'POST', body: JSON.stringify({records:[{fields:paiementFields}]})});
+      }
+      if(resultEl) resultEl.textContent = '✅';
+      ok++;
+    }catch(e){
+      if(resultEl) resultEl.textContent = '❌';
+      fail++;
+      console.error('Ligne '+id+' :', e);
+    }
+  }
+
+  document.getElementById('sync-pending').classList.remove('show');
+  setSt(`Terminé : ${ok} fiche(s) créée(s)/mise(s) à jour, ${fail} échec(s).`+(fail?' Voir la console pour le détail des erreurs.':''));
+}
+
+// ══════════════════════════════════════════════════════════
+//  PIN / SESSION
+// ══════════════════════════════════════════════════════════
+const AGENT_PINS_DEFAULT = { 'MARC':'1111', 'MAÏTE':'2222', 'PASCAL':'3333', 'VANESSA':'4444' };
+let AGENT_PINS = (function(){
+  try{
+    const stored = localStorage.getItem('educpass_profsrelais_pins');
+    if(stored){ const p=JSON.parse(stored); if(p&&p.MARC) return p; }
+  }catch(e){}
+  return Object.assign({}, AGENT_PINS_DEFAULT);
+})();
+
+function _setAgentSession(agent){
+  sessionStorage.setItem('auth_agent', agent);
+  document.getElementById('header-agent').textContent = agent;
+  document.getElementById('btn-pin-mgr').style.display = (agent==='MARC') ? '' : 'none';
+}
+function loginPin(){
+  const agent = document.getElementById('pin-agent').value;
+  const pin = document.getElementById('pin-code').value;
+  const err = document.getElementById('pin-error');
+  err.textContent='';
+  if(!agent){ err.textContent='Sélectionnez votre nom.'; return; }
+  if(pin.length!==4){ err.textContent='Le code doit contenir 4 chiffres.'; return; }
+  if(AGENT_PINS[agent]!==pin){
+    err.textContent='❌ Code incorrect — réessayez.';
+    document.getElementById('pin-code').value=''; document.getElementById('pin-code').focus();
+    return;
+  }
+  document.getElementById('overlay-pin').classList.add('hidden');
+  _setAgentSession(agent);
+  init();
+}
+function logoutPin(){
+  if(!confirm('Se déconnecter ?')) return;
+  sessionStorage.removeItem('auth_agent');
+  location.reload();
+}
+function showGestionPins(){
+  if(sessionStorage.getItem('auth_agent')!=='MARC') return;
+  document.getElementById('pm-marc').value = AGENT_PINS['MARC']||'';
+  document.getElementById('pm-maite').value = AGENT_PINS['MAÏTE']||'';
+  document.getElementById('pm-pascal').value = AGENT_PINS['PASCAL']||'';
+  document.getElementById('pm-vanessa').value = AGENT_PINS['VANESSA']||'';
+  document.getElementById('pm-msg').textContent='';
+  document.getElementById('overlay-pin-mgr').classList.remove('hidden');
+}
+function closeGestionPins(){ document.getElementById('overlay-pin-mgr').classList.add('hidden'); }
+function saveGestionPins(){
+  const pins = {
+    MARC: document.getElementById('pm-marc').value.trim(),
+    'MAÏTE': document.getElementById('pm-maite').value.trim(),
+    PASCAL: document.getElementById('pm-pascal').value.trim(),
+    VANESSA: document.getElementById('pm-vanessa').value.trim(),
+  };
+  for(const [agent,pin] of Object.entries(pins)){
+    if(pin && !/^\d{4}$/.test(pin)){
+      document.getElementById('pm-msg').style.color='#c0392b';
+      document.getElementById('pm-msg').textContent='❌ PIN de '+agent+' invalide — 4 chiffres requis.';
+      return;
+    }
+    if(!pin) pins[agent]=AGENT_PINS[agent];
+  }
+  try{
+    localStorage.setItem('educpass_profsrelais_pins', JSON.stringify(pins));
+    Object.assign(AGENT_PINS, pins);
+    document.getElementById('pm-msg').style.color='#27ae60';
+    document.getElementById('pm-msg').textContent='✅ Codes PIN enregistrés !';
+    setTimeout(closeGestionPins, 1200);
+  }catch(e){
+    document.getElementById('pm-msg').style.color='#c0392b';
+    document.getElementById('pm-msg').textContent='❌ Erreur : '+e.message;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════
+function init(){
+  addRow();
+  updateResume();
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  const saved = sessionStorage.getItem('auth_agent');
+  if(saved && AGENT_PINS[saved]){
+    _setAgentSession(saved);
+    init();
+  } else {
+    document.getElementById('overlay-pin').classList.remove('hidden');
+  }
+});
+</script>
+</body>
+</html>
