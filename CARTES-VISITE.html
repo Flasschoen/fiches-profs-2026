@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARTES DE VISITE — PARTENAIRES 2026</title>
+<style>
+:root{
+  --navy:#1e3a6e; --navy-dark:#152a52; --purple:#6c3483; --bg:#f0f4fa;
+  --line:#d7e0ee; --ok:#1e8449; --err:#a93226;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:Calibri,Arial,sans-serif;background:var(--bg);color:#222;}
+.hdr-bar{background:var(--navy);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.hdr-bar .logo{font-weight:900;letter-spacing:1px;}
+.hdr-bar .title{font-weight:700;flex:1;}
+.btn{border:none;border-radius:4px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;background:#eee;color:#222;text-decoration:none;display:inline-block;}
+.btn:hover{filter:brightness(0.95);}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+#st-bar{padding:4px 16px;font-size:12px;color:#555;min-height:18px;}
+.wrap{padding:16px;}
+.hidden{display:none !important;}
+.toolbar{background:#fff;border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:-16px -16px 16px -16px;}
+.result-count{display:inline-block;font-size:15px;font-weight:800;color:#5b2c8a;background:#eee0f7;border:2px solid #8e44ad;border-radius:6px;padding:4px 12px;min-width:20px;text-align:center;}
+.result-count:empty{display:none;}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
+.card{background:#fff;border:1px solid var(--line);border-radius:8px;padding:14px;cursor:pointer;box-shadow:0 1px 4px rgba(30,58,110,.08);transition:transform .1s ease, box-shadow .1s ease;display:flex;flex-direction:column;gap:8px;}
+.card:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(30,58,110,.18);}
+.card .logo-box{height:70px;display:flex;align-items:center;justify-content:center;background:#f7f5fb;border-radius:6px;overflow:hidden;}
+.card .logo-box img{max-height:70px;max-width:100%;object-fit:contain;}
+.card .logo-box .no-logo{font-size:11px;color:#aaa;}
+.card .nom{font-weight:800;color:var(--navy);font-size:14px;line-height:1.25;}
+.badge{display:inline-block;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:20px;color:#fff;width:fit-content;}
+.badge-oui{background:var(--ok);}
+.badge-non{background:var(--err);}
+.fiche-box{background:#fff;border-radius:6px;box-shadow:0 1px 6px rgba(30,58,110,.12);padding:18px 22px;max-width:900px;}
+.fiche-hdr{font-size:21px;font-weight:900;color:var(--navy);margin-bottom:6px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.fiche-top{display:flex;gap:18px;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap;}
+.fiche-top .logo-box{width:150px;height:100px;display:flex;align-items:center;justify-content:center;background:#f7f5fb;border-radius:6px;overflow:hidden;flex-shrink:0;}
+.fiche-top .logo-box img{max-width:100%;max-height:100%;object-fit:contain;}
+.badges-row{display:flex;gap:8px;margin:6px 0 2px;}
+fieldset{border:1px solid var(--line);border-radius:6px;margin-bottom:14px;padding:10px 14px 14px;}
+legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
+.ro-text{white-space:pre-wrap;font-size:13.5px;color:#333;line-height:1.5;min-height:20px;}
+.photos-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;}
+.photos-row img{height:70px;border-radius:4px;border:1px solid var(--line);}
+.lang-btn{background:var(--purple);color:#fff;font-size:12px;padding:5px 12px;}
+textarea.edit-input{width:100%;font-family:inherit;font-size:13.5px;padding:6px;border:1px solid var(--line);border-radius:4px;box-sizing:border-box;resize:vertical;}
+.photo-thumb{position:relative;display:inline-block;}
+.photo-thumb img{height:70px;border-radius:4px;border:1px solid var(--line);display:block;}
+.photo-thumb .rm-btn{position:absolute;top:-6px;right:-6px;background:var(--err);color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:11px;line-height:1;cursor:pointer;padding:0;}
+.pending-chip{display:inline-flex;align-items:center;gap:4px;background:#eef4ff;border:1px dashed var(--navy);border-radius:4px;padding:4px 8px;font-size:11px;}
+.pending-chip button{border:none;background:none;color:var(--err);font-weight:800;cursor:pointer;font-size:12px;}
+#overlay-loading{position:fixed;inset:0;background:rgba(20,30,50,.35);display:flex;align-items:center;justify-content:center;z-index:1000;pointer-events:none;}
+.loading-box{background:#fff;border-radius:10px;padding:26px 40px;box-shadow:0 4px 28px rgba(0,0,0,.3);font-size:19px;font-weight:700;color:var(--navy);text-align:center;min-width:320px;}
+</style>
+</head>
+<body>
+
+<div class="hdr-bar">
+  <div class="logo">EDUCPASS</div>
+  <div class="title">🎫 CARTES DE VISITE — PARTENAIRES</div>
+  <a class="btn" href="TABLEAU DE BORD.html" style="background:var(--navy-dark);color:#fff;" title="Retour au Tableau de Bord">🗂️ Tableau de Bord</a>
+  <button class="btn" onclick="logoutPin()" style="background:#555;color:#fff;">🔒 <span id="header-agent">—</span></button>
+</div>
+
+<div id="st-bar"></div>
+<div id="overlay-loading" class="hidden">
+  <div class="loading-box" id="loading-msg"></div>
+</div>
+
+<div class="wrap">
+
+  <!-- ====================== VUE LISTE ====================== -->
+  <div id="view-liste">
+    <div class="toolbar">
+      <span style="font-size:12.5px;color:#666;">Attractions/partenaires ayant une carte de visite — clique sur une case pour la consulter.</span>
+      <span id="cartes-count" class="result-count" style="margin-left:auto;"></span>
+    </div>
+    <div id="card-grid" class="card-grid"></div>
+  </div>
+
+  <!-- ====================== VUE FICHE ====================== -->
+  <div id="view-fiche" class="hidden">
+    <div style="margin-bottom:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <button class="btn" onclick="backToListe()" style="background:#888;color:#fff;">↩️ Retour à la liste</button>
+      <a class="btn" id="btn-fichier-attractions" href="#" style="background:var(--purple);color:#fff;" title="Ouvrir le fichier Attractions (fiche complète du partenaire)" onclick="return guardAttLink(event,'btn-fichier-attractions')">🎪 Fichier Attractions</a>
+      <a class="btn" id="btn-carte-visite-web" href="#" style="background:#2f6fb0;color:#fff;" title="Afficher l'aperçu public de la carte de visite" onclick="return guardAttLink(event,'btn-carte-visite-web')">👁️ Afficher la carte de visite</a>
+      <a class="btn" id="btn-carte-visite-coupon" href="#" style="background:#c0396b;color:#fff;" title="Afficher l'aperçu du coupon" onclick="return guardAttLink(event,'btn-carte-visite-coupon')">🎟️ Afficher le coupon</a>
+      <button class="btn lang-btn" id="lang-btn" onclick="toggleLang()">Version NL</button>
+      <button class="btn" id="edit-btn" onclick="enterEditMode()" style="background:#1e8449;color:#fff;">✏️ Modifier</button>
+      <button class="btn hidden" id="save-btn" onclick="saveFiche()" style="background:var(--navy);color:#fff;">💾 Enregistrer</button>
+      <button class="btn hidden" id="cancel-btn" onclick="cancelEdit()" style="background:var(--err);color:#fff;">✖️ Annuler</button>
+    </div>
+    <div class="fiche-box">
+      <div class="fiche-top">
+        <div>
+          <div class="logo-box" id="cv-logo-box"></div>
+          <div id="cv-logo-edit" class="hidden" style="margin-top:6px;display:flex;flex-direction:column;gap:4px;width:150px;">
+            <input type="file" id="cv-logo-file" accept="image/*" onchange="onLogoFileChosen(event)" style="font-size:11px;">
+            <button type="button" class="btn" onclick="removeLogo()" style="background:var(--err);color:#fff;font-size:11px;padding:4px 8px;">Retirer le logo</button>
+          </div>
+        </div>
+        <div>
+          <div class="fiche-hdr" id="cv-nom">—</div>
+          <div class="badges-row">
+            <span id="cv-badges-ro" style="display:flex;gap:8px;">
+              <span class="badge" id="cv-badge-publie">—</span>
+              <span class="badge" id="cv-badge-coupon">—</span>
+            </span>
+            <span id="cv-badges-edit" class="hidden" style="display:flex;gap:14px;align-items:center;">
+              <label style="font-size:12.5px;display:flex;align-items:center;gap:4px;"><input type="checkbox" id="cv-publie-input"> Publié</label>
+              <label style="font-size:12.5px;display:flex;align-items:center;gap:4px;"><input type="checkbox" id="cv-coupon-input"> Coupon publié</label>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <fieldset>
+        <legend>Description</legend>
+        <div style="font-size:11.5px;font-weight:700;color:#777;margin-bottom:3px;">Description courte</div>
+        <div class="ro-text" id="cv-desc-courte">—</div>
+        <textarea class="hidden edit-input" id="cv-desc-courte-input" rows="2"></textarea>
+        <div style="font-size:11.5px;font-weight:700;color:#777;margin:10px 0 3px;">Description longue</div>
+        <div class="ro-text" id="cv-desc-longue">—</div>
+        <textarea class="hidden edit-input" id="cv-desc-longue-input" rows="5"></textarea>
+      </fieldset>
+
+      <fieldset>
+        <legend>Horaires &amp; tarifs</legend>
+        <div style="font-size:11.5px;font-weight:700;color:#777;margin-bottom:3px;">Horaires et fermetures</div>
+        <div class="ro-text" id="cv-horaires">—</div>
+        <textarea class="hidden edit-input" id="cv-horaires-input" rows="2"></textarea>
+        <div style="font-size:11.5px;font-weight:700;color:#777;margin:10px 0 3px;">Tarifs, réservation et infos pratiques</div>
+        <div class="ro-text" id="cv-tarifs">—</div>
+        <textarea class="hidden edit-input" id="cv-tarifs-input" rows="2"></textarea>
+      </fieldset>
+
+      <fieldset>
+        <legend>Avantage Educpass</legend>
+        <div style="font-size:11.5px;font-weight:700;color:#777;margin-bottom:3px;">Avantage</div>
+        <div class="ro-text" id="cv-avantage">—</div>
+        <textarea class="hidden edit-input" id="cv-avantage-input" rows="2"></textarea>
+        <div style="background:#fff200;border-radius:6px;padding:8px 10px;margin-top:10px;">
+          <div style="font-size:11.5px;font-weight:700;color:#555;margin-bottom:3px;">Avantage (affichage coupon)</div>
+          <div class="ro-text" id="cv-avantage-coupon">—</div>
+          <textarea class="hidden edit-input" id="cv-avantage-coupon-input" rows="2" style="background:#fff;"></textarea>
+        </div>
+      </fieldset>
+
+      <fieldset id="cv-photos-fs">
+        <legend>Photos</legend>
+        <div class="photos-row" id="cv-photos"></div>
+        <div id="cv-photos-edit" class="hidden" style="margin-top:8px;">
+          <input type="file" id="cv-photos-file" accept="image/*" multiple onchange="onPhotosFileChosen(event)" style="font-size:11px;">
+        </div>
+      </fieldset>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  CONFIG — passe par le Worker "educpass-attractions-proxy", qui
+//  détient la clé Airtable côté serveur (jamais ici). Consultation ET
+//  modification des Cartes de visite (demande de Marc, 2026-09-07,
+//  étendue le même jour pour permettre la modification directe des
+//  textes, Publié/Coupon publié, logo et photos).
+//  Corrigé le 2026-09-17/18 : la clé Airtable était auparavant écrite
+//  en clair ici (alerte de sécurité GitHub) — elle est désormais dans
+//  le Worker uniquement, ce fichier n'utilise plus qu'une clé de proxy
+//  qui ne donne accès qu'aux 3 routes exposées par ce Worker.
+// ══════════════════════════════════════════════════════════
+const PROXY_URL='https://educpass-attractions-proxy.marc-flasschoen.workers.dev';
+const PROXY_KEY='s0usEmEVnof0Js74MgIIeSGTD6DY5e4M';
+const CARTE_TBL='tblFn2gRUJOdgdMTZ';
+const CARTE_URL=`${PROXY_URL}/records/${CARTE_TBL}`;
+const CARTE_UPLOAD_URL=`${PROXY_URL}/upload`;
+const hdrs={'X-Proxy-Key':PROXY_KEY};
+
+const CV_TEXT_FIELDS = [
+  ['cv-desc-courte','Description courte'],
+  ['cv-desc-longue','Description longue'],
+  ['cv-horaires','Horaires et fermetures'],
+  ['cv-tarifs','Tarifs, réservation et infos pratiques'],
+  ['cv-avantage','Avantage coupon'],
+  ['cv-avantage-coupon','Avantage coupon (affichage)'],
+];
+
+function setSt(msg){
+  document.getElementById('st-bar').textContent = msg || '';
+  const box = document.getElementById('overlay-loading');
+  const isLoading = !!msg && (msg.indexOf('🔎')===0 || msg.indexOf('⏳')===0);
+  if(isLoading){
+    document.getElementById('loading-msg').textContent = msg;
+    box.classList.remove('hidden');
+  } else {
+    box.classList.add('hidden');
+  }
+}
+function esc(s){ return String(s==null?'':s); }
+
+let lastCartes = [];
+let curCarte = null;
+let lang = 'FR';
+let editMode = false;
+let pendingLogoFile = null;
+let logoRemoved = false;
+let removedPhotoIds = new Set();
+let pendingNewPhotos = [];
+
+function resetEditState(){
+  editMode = false;
+  pendingLogoFile = null;
+  logoRemoved = false;
+  removedPhotoIds = new Set();
+  pendingNewPhotos = [];
+}
+
+async function cvGet(p=''){
+  const r = await fetch(CARTE_URL+p, {headers:hdrs});
+  return r.json();
+}
+
+async function loadCartes(){
+  setSt('⏳ Chargement des cartes de visite...');
+  document.getElementById('cartes-count').textContent = '⏳';
+  try{
+    let all = [], offset;
+    do{
+      const params = new URLSearchParams({pageSize:'100'});
+      if(offset) params.set('offset', offset);
+      const data = await cvGet('?'+params.toString());
+      if(data.error) throw new Error(data.error.message);
+      all = all.concat(data.records||[]);
+      offset = data.offset;
+    } while(offset);
+    lastCartes = all;
+    renderGrid();
+    document.getElementById('cartes-count').textContent = all.length;
+    setSt('');
+  }catch(e){ setSt('❌ '+e.message); document.getElementById('cartes-count').textContent = ''; }
+}
+
+function nomOf(f){ return f['Nom attraction'] || '(sans nom)'; }
+function logoUrl(f, small){
+  const att = f['Logo carte de visite'];
+  if(!att || !att.length) return null;
+  if(small && att[0].thumbnails && att[0].thumbnails.small) return att[0].thumbnails.small.url;
+  if(att[0].thumbnails && att[0].thumbnails.large) return att[0].thumbnails.large.url;
+  return att[0].url;
+}
+
+function renderGrid(){
+  const grid = document.getElementById('card-grid');
+  grid.innerHTML = '';
+  // Tri alphabétique par nom d'attraction, plus pratique pour parcourir la liste.
+  const sorted = lastCartes.slice().sort((a,b)=> nomOf(a.fields).localeCompare(nomOf(b.fields), 'fr', {sensitivity:'base'}));
+  sorted.forEach(rec=>{
+    const f = rec.fields;
+    const card = document.createElement('div');
+    card.className = 'card';
+    const logo = logoUrl(f, true);
+    card.innerHTML = '<div class="logo-box">'+(logo ? '<img src="'+esc(logo)+'" alt="">' : '<span class="no-logo">Pas de logo</span>')+'</div>'
+      + '<div class="nom">'+esc(nomOf(f))+'</div>';
+    card.onclick = ()=>openCarte(rec.id);
+    grid.appendChild(card);
+  });
+}
+
+function guardAttLink(evt, btnId){
+  const btn = document.getElementById(btnId);
+  if(!btn.getAttribute('href') || btn.getAttribute('href')==='#'){
+    evt.preventDefault();
+    setSt('❌ Aucune fiche Attraction liée à cette carte de visite.');
+    return false;
+  }
+  return true;
+}
+
+function badge(el, on){
+  el.textContent = on ? 'OUI' : 'NON';
+  el.className = 'badge ' + (on ? 'badge-oui' : 'badge-non');
+}
+
+function openCarte(id){
+  const rec = lastCartes.find(r=>r.id===id);
+  if(!rec) return;
+  curCarte = rec;
+  lang = 'FR';
+  resetEditState();
+  renderFiche();
+  document.getElementById('view-liste').classList.add('hidden');
+  document.getElementById('view-fiche').classList.remove('hidden');
+}
+
+function backToListe(){
+  resetEditState();
+  document.getElementById('view-fiche').classList.add('hidden');
+  document.getElementById('view-liste').classList.remove('hidden');
+}
+
+function toggleLang(){
+  if(editMode) return; // on ne bascule pas la langue pendant une édition en cours
+  lang = (lang==='FR') ? 'NL' : 'FR';
+  renderFiche();
+}
+
+function suf(){ return lang==='NL' ? ' (NL)' : ''; }
+
+function enterEditMode(){
+  editMode = true;
+  pendingLogoFile = null;
+  logoRemoved = false;
+  removedPhotoIds = new Set();
+  pendingNewPhotos = [];
+  renderFiche();
+}
+
+function cancelEdit(){
+  resetEditState();
+  renderFiche();
+  setSt('');
+}
+
+function renderFiche(){
+  if(!curCarte) return;
+  const f = curCarte.fields;
+
+  // Logo
+  const logoBox = document.getElementById('cv-logo-box');
+  if(!pendingLogoFile){
+    const logo = (editMode && logoRemoved) ? null : logoUrl(f, false);
+    logoBox.innerHTML = logo ? '<img src="'+esc(logo)+'" alt="">' : '<span class="no-logo" style="font-size:11px;color:#aaa;">Pas de logo</span>';
+  }
+
+  document.getElementById('cv-nom').textContent = nomOf(f);
+
+  // Boutons vers l'app Attractions : ouvrent la fiche complète du partenaire, directement sur
+  // un onglet précis (demande de Marc, 2026-09-09 puis 2026-09-09 soir pour les 2 boutons
+  // "Afficher la carte de visite" / "Afficher le coupon", qui réutilisent les onglets aperçu
+  // déjà construits dans index.html : "🌐 Aperçu carte de visite" et "📱 Aperçu coupon").
+  // Lien construit via le champ 'Attraction' (lien vers MEMBRES côté table CARTE DE VISITE)
+  // — désactivés si aucune Attraction n'est liée.
+  // NOTE : chemin ABSOLU (pas relatif) — CARTES-VISITE.html vit dans un dossier différent
+  // de celui de l'app Attractions (index.html) sur l'ordinateur de Marc ; un lien relatif
+  // ne fonctionnerait donc pas, et casserait en plus si CARTES-VISITE.html est déplacé/rangé
+  // dans un autre dossier (ex: DOSSIER TECHNIQUE PROFS).
+  const ATTRACTIONS_APP_PATH = 'file:///C:/Users/Marc/OneDrive - Educpass/Bureau/FICHIERS ATTRACTIONS CLAUDE/index.html';
+  const attLink = f['Attraction'];
+  const attId = (Array.isArray(attLink) && attLink.length) ? attLink[0] : null;
+  const ATT_BUTTONS = [
+    {id:'btn-fichier-attractions', suffix:'', enabledTitle:'Ouvrir le fichier Attractions (fiche complète du partenaire)'},
+    {id:'btn-carte-visite-web', suffix:'&cvtab=web', enabledTitle:"Afficher l'aperçu public de la carte de visite"},
+    {id:'btn-carte-visite-coupon', suffix:'&cvtab=coupon', enabledTitle:"Afficher l'aperçu du coupon"}
+  ];
+  ATT_BUTTONS.forEach(({id, suffix, enabledTitle})=>{
+    const btn = document.getElementById(id);
+    if(attId){
+      btn.href = ATTRACTIONS_APP_PATH + '?id=' + encodeURIComponent(attId) + '&cv=1' + suffix;
+      btn.style.opacity = '';
+      btn.style.cursor = '';
+      btn.title = enabledTitle;
+    } else {
+      btn.href = '#';
+      btn.style.opacity = '.5';
+      btn.style.cursor = 'not-allowed';
+      btn.title = 'Aucune fiche Attraction liée à cette carte de visite';
+    }
+  });
+
+  badge(document.getElementById('cv-badge-publie'), !!f['Publié']);
+  document.getElementById('cv-badge-publie').textContent = 'Publié : ' + (f['Publié'] ? 'OUI' : 'NON');
+  badge(document.getElementById('cv-badge-coupon'), !!f['Coupon publié']);
+  document.getElementById('cv-badge-coupon').textContent = 'Coupon publié : ' + (f['Coupon publié'] ? 'OUI' : 'NON');
+  document.getElementById('cv-publie-input').checked = !!f['Publié'];
+  document.getElementById('cv-coupon-input').checked = !!f['Coupon publié'];
+  document.getElementById('cv-badges-ro').classList.toggle('hidden', editMode);
+  document.getElementById('cv-badges-edit').classList.toggle('hidden', !editMode);
+
+  const s = suf();
+  CV_TEXT_FIELDS.forEach(([domId, base])=>{
+    const val = f[base+s] || '';
+    document.getElementById(domId).textContent = val || '—';
+    document.getElementById(domId+'-input').value = val;
+    document.getElementById(domId).classList.toggle('hidden', editMode);
+    document.getElementById(domId+'-input').classList.toggle('hidden', !editMode);
+  });
+
+  const langBtn = document.getElementById('lang-btn');
+  langBtn.textContent = lang==='NL' ? 'Version FR' : 'Version NL';
+  langBtn.style.background = lang==='NL' ? '#f1c40f' : 'var(--purple)';
+  langBtn.style.color = lang==='NL' ? '#3a2f00' : '#fff';
+  langBtn.disabled = editMode;
+
+  renderPhotosArea();
+
+  document.getElementById('cv-logo-edit').classList.toggle('hidden', !editMode);
+  document.getElementById('cv-photos-edit').classList.toggle('hidden', !editMode);
+  document.getElementById('edit-btn').classList.toggle('hidden', editMode);
+  document.getElementById('save-btn').classList.toggle('hidden', !editMode);
+  document.getElementById('cancel-btn').classList.toggle('hidden', !editMode);
+}
+
+function renderPhotosArea(){
+  const photosBox = document.getElementById('cv-photos');
+  const photosFs = document.getElementById('cv-photos-fs');
+  const f = curCarte.fields;
+  const existing = (f['Photos']||[]).filter(p=>!removedPhotoIds.has(p.id));
+
+  if(editMode){
+    photosFs.classList.remove('hidden');
+    let html = existing.map(p=>{
+      const src = esc((p.thumbnails&&p.thumbnails.small)?p.thumbnails.small.url:p.url);
+      return '<span class="photo-thumb"><img src="'+src+'" alt="">'
+        + '<button type="button" class="rm-btn" data-id="'+esc(p.id)+'" onclick="removeExistingPhoto(this.dataset.id)">×</button></span>';
+    }).join('');
+    html += pendingNewPhotos.map((pf,i)=>
+      '<span class="pending-chip">📎 '+esc(pf.name)
+      + '<button type="button" onclick="removePendingPhoto('+i+')">×</button></span>'
+    ).join('');
+    photosBox.innerHTML = html;
+  } else {
+    const photos = f['Photos']||[];
+    if(photos.length){
+      photosFs.classList.remove('hidden');
+      photosBox.innerHTML = photos.map(p=>'<img src="'+esc((p.thumbnails&&p.thumbnails.small)?p.thumbnails.small.url:p.url)+'" alt="">').join('');
+    } else {
+      photosFs.classList.add('hidden');
+      photosBox.innerHTML = '';
+    }
+  }
+}
+
+function onLogoFileChosen(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  pendingLogoFile = file;
+  logoRemoved = false;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    document.getElementById('cv-logo-box').innerHTML = '<img src="'+reader.result+'" alt="">';
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeLogo(){
+  pendingLogoFile = null;
+  logoRemoved = true;
+  document.getElementById('cv-logo-file').value = '';
+  document.getElementById('cv-logo-box').innerHTML = '<span class="no-logo" style="font-size:11px;color:#aaa;">Pas de logo</span>';
+}
+
+function onPhotosFileChosen(e){
+  const files = Array.from(e.target.files||[]);
+  files.forEach(f=>pendingNewPhotos.push(f));
+  e.target.value = '';
+  renderPhotosArea();
+}
+
+function removeExistingPhoto(photoId){
+  removedPhotoIds.add(photoId);
+  renderPhotosArea();
+}
+
+function removePendingPhoto(idx){
+  pendingNewPhotos.splice(idx,1);
+  renderPhotosArea();
+}
+
+function fileToBase64(file){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      const result = reader.result || '';
+      const comma = result.indexOf(',');
+      resolve(comma>=0 ? result.slice(comma+1) : result);
+    };
+    reader.onerror = ()=>reject(new Error('Erreur de lecture du fichier'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadAttachment(recordId, fieldName, file){
+  const b64 = await fileToBase64(file);
+  const url = `${CARTE_UPLOAD_URL}/${recordId}/${encodeURIComponent(fieldName)}/uploadAttachment`;
+  const r = await fetch(url, {
+    method:'POST',
+    headers: Object.assign({'Content-Type':'application/json'}, hdrs),
+    body: JSON.stringify({contentType: file.type||'application/octet-stream', filename: file.name||'fichier', file: b64})
+  });
+  const data = await r.json();
+  if(data.error) throw new Error(data.error.message || 'Erreur lors de l\'envoi du fichier');
+  return data;
+}
+
+async function saveFiche(){
+  if(!curCarte) return;
+  const saveBtn = document.getElementById('save-btn');
+  const cancelBtn = document.getElementById('cancel-btn');
+  saveBtn.disabled = true; cancelBtn.disabled = true;
+  setSt('⏳ Enregistrement...');
+  try{
+    const s = suf();
+    const fields = {};
+    CV_TEXT_FIELDS.forEach(([domId, base])=>{
+      fields[base+s] = document.getElementById(domId+'-input').value;
+    });
+    fields['Publié'] = document.getElementById('cv-publie-input').checked;
+    fields['Coupon publié'] = document.getElementById('cv-coupon-input').checked;
+
+    const f = curCarte.fields;
+    if(pendingLogoFile || logoRemoved){
+      fields['Logo carte de visite'] = [];
+    }
+    if(removedPhotoIds.size){
+      const kept = (f['Photos']||[]).filter(p=>!removedPhotoIds.has(p.id));
+      fields['Photos'] = kept.map(p=>({id:p.id}));
+    }
+
+    const patchRes = await fetch(CARTE_URL+'/'+curCarte.id, {
+      method:'PATCH',
+      headers: Object.assign({'Content-Type':'application/json'}, hdrs),
+      body: JSON.stringify({fields})
+    });
+    const patchData = await patchRes.json();
+    if(patchData.error) throw new Error(patchData.error.message || 'Erreur Airtable');
+
+    if(pendingLogoFile){
+      await uploadAttachment(curCarte.id, 'Logo carte de visite', pendingLogoFile);
+    }
+    for(const pf of pendingNewPhotos){
+      await uploadAttachment(curCarte.id, 'Photos', pf);
+    }
+
+    const fresh = await cvGet('/'+curCarte.id);
+    if(fresh.error) throw new Error(fresh.error.message);
+    const idx = lastCartes.findIndex(r=>r.id===curCarte.id);
+    if(idx>=0) lastCartes[idx] = fresh;
+    curCarte = fresh;
+
+    resetEditState();
+    renderGrid();
+    renderFiche();
+    setSt('✅ Modifications enregistrées.');
+  }catch(e){
+    setSt('❌ '+e.message);
+  } finally {
+    saveBtn.disabled = false; cancelBtn.disabled = false;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  SYSTÈME PIN — AUTHENTIFICATION (identique aux autres outils EDUCPASS)
+// ══════════════════════════════════════════════════════════
+const AGENT_PINS_DEFAULT = { 'MARC':'1111', 'MAÏTE':'2222', 'PASCAL':'3333', 'VANESSA':'4444' };
+let AGENT_PINS = (function(){
+  try{
+    const stored = localStorage.getItem('educpass_cartes_pins');
+    if(stored){ const p=JSON.parse(stored); if(p&&p.MARC) return p; }
+  }catch(e){}
+  return Object.assign({}, AGENT_PINS_DEFAULT);
+})();
+
+function _setAgentSession(agent){
+  sessionStorage.setItem('auth_agent', agent);
+  document.getElementById('header-agent').textContent = agent;
+}
+function loginPin(){
+  const agent = document.getElementById('pin-agent').value;
+  const pin = document.getElementById('pin-code').value;
+  const err = document.getElementById('pin-error');
+  err.textContent='';
+  if(!agent){ err.textContent='Sélectionnez votre nom.'; return; }
+  if(pin.length!==4){ err.textContent='Le code doit contenir 4 chiffres.'; return; }
+  if(AGENT_PINS[agent]!==pin){
+    err.textContent='❌ Code incorrect — réessayez.';
+    document.getElementById('pin-code').value=''; document.getElementById('pin-code').focus();
+    return;
+  }
+  document.getElementById('overlay-pin').classList.add('hidden');
+  _setAgentSession(agent);
+  init();
+}
+function logoutPin(){
+  if(!confirm('Se déconnecter ?')) return;
+  sessionStorage.removeItem('auth_agent');
+  location.reload();
+}
+
+function init(){
+  loadCartes();
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  const saved = sessionStorage.getItem('auth_agent');
+  if(saved && AGENT_PINS[saved]){
+    _setAgentSession(saved);
+    init();
+  } else {
+    document.getElementById('overlay-pin').classList.remove('hidden');
+  }
+});
+</script>
+
+<!-- ====================== OVERLAY LOGIN PIN ====================== -->
+<div id="overlay-pin" class="hidden" style="position:fixed;inset:0;background:rgba(20,30,50,.55);display:flex;align-items:center;justify-content:center;z-index:999;">
+  <div style="background:#fff;border-radius:8px;padding:32px 40px;box-shadow:0 2px 20px rgba(0,0,0,.25);text-align:center;min-width:320px;">
+    <div style="font-weight:900;color:var(--navy);letter-spacing:1px;font-size:20px;margin-bottom:6px;">EDUCPASS</div>
+    <h2 style="margin:0 0 10px;">🔐 Accès sécurisé</h2>
+    <label style="display:block;text-align:left;font-size:12.5px;font-weight:600;margin:12px 0 4px;">Agent :</label>
+    <select id="pin-agent" style="width:100%;padding:8px;border:1px solid #bbb;border-radius:4px;font-size:14px;">
+      <option value="">— Sélectionnez —</option>
+      <option>MARC</option>
+      <option>MAÏTE</option>
+      <option>PASCAL</option>
+      <option>VANESSA</option>
+    </select>
+    <label style="display:block;text-align:left;font-size:12.5px;font-weight:600;margin:12px 0 4px;">Code PIN (4 chiffres) :</label>
+    <input type="password" id="pin-code" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" placeholder="••••" autocomplete="off" style="width:100%;padding:8px;border:1px solid #bbb;border-radius:4px;font-size:14px;" oninput="if(this.value.length===4)loginPin()">
+    <div id="pin-error" style="color:var(--err);font-size:12.5px;min-height:18px;margin-top:6px;"></div>
+    <button onclick="loginPin()" style="margin-top:18px;width:100%;padding:10px;background:var(--navy);color:#fff;border:none;border-radius:4px;font-weight:700;cursor:pointer;">Connexion →</button>
+  </div>
+</div>
+
+</body>
+</html>
