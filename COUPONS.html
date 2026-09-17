@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>COUPONS — PARTENAIRES 2026</title>
+<style>
+:root{
+  --navy:#1e3a6e; --navy-dark:#152a52; --purple:#6c3483; --orange:#c55a11; --bg:#f0f4fa;
+  --line:#d7e0ee; --ok:#1e8449; --err:#a93226;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:Calibri,Arial,sans-serif;background:var(--bg);color:#222;}
+.hdr-bar{background:var(--navy);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.hdr-bar .logo{font-weight:900;letter-spacing:1px;}
+.hdr-bar .title{font-weight:700;flex:1;}
+.btn{border:none;border-radius:4px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;background:#eee;color:#222;text-decoration:none;display:inline-block;}
+.btn:hover{filter:brightness(0.95);}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+#st-bar{padding:4px 16px;font-size:12px;color:#555;min-height:18px;}
+.wrap{padding:16px;}
+.hidden{display:none !important;}
+.toolbar{background:#fff;border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:-16px -16px 16px -16px;}
+.toolbar label{font-size:12.5px;color:#555;display:flex;align-items:center;gap:5px;}
+.result-count{display:inline-block;font-size:15px;font-weight:800;color:#5b2c8a;background:#eee0f7;border:2px solid #8e44ad;border-radius:6px;padding:4px 12px;min-width:20px;text-align:center;}
+.result-count:empty{display:none;}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
+.card{background:#fff;border:1px solid var(--line);border-radius:8px;padding:14px;cursor:pointer;box-shadow:0 1px 4px rgba(30,58,110,.08);transition:transform .1s ease, box-shadow .1s ease;display:flex;flex-direction:column;gap:8px;}
+.card:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(30,58,110,.18);}
+.card .logo-box{height:70px;display:flex;align-items:center;justify-content:center;background:#fff3e6;border-radius:6px;overflow:hidden;}
+.card .logo-box img{max-height:70px;max-width:100%;object-fit:contain;}
+.card .logo-box .no-logo{font-size:11px;color:#aaa;}
+.card .nom{font-weight:800;color:var(--navy);font-size:14px;line-height:1.25;}
+.badge{display:inline-block;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:20px;color:#fff;width:fit-content;}
+.badge-oui{background:var(--ok);}
+.badge-non{background:var(--err);}
+.fiche-box{background:#fff;border-radius:6px;box-shadow:0 1px 6px rgba(30,58,110,.12);padding:18px 22px;max-width:900px;}
+.fiche-hdr{font-size:21px;font-weight:900;color:var(--navy);margin-bottom:6px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.fiche-top{display:flex;gap:18px;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap;}
+.fiche-top .logo-box{width:150px;height:220px;display:flex;align-items:center;justify-content:center;background:#fff3e6;border-radius:6px;overflow:hidden;flex-shrink:0;}
+.fiche-top .logo-box img{max-width:100%;max-height:100%;object-fit:contain;}
+.badges-row{display:flex;gap:8px;margin:6px 0 2px;}
+fieldset{border:1px solid var(--line);border-radius:6px;margin-bottom:14px;padding:10px 14px 14px;}
+legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
+.ro-text{white-space:pre-wrap;font-size:13.5px;color:#333;line-height:1.5;min-height:20px;}
+.ro-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px 18px;}
+.ro-row .fitem label{display:block;font-size:11.5px;color:#777;font-weight:700;margin-bottom:2px;}
+.lang-btn{background:var(--purple);color:#fff;font-size:12px;padding:5px 12px;}
+.note-empty{color:#888;font-size:12.5px;line-height:1.5;}
+.totaux-table{border-collapse:collapse;width:100%;font-size:13px;}
+.totaux-table th{background:var(--orange);color:#fff;padding:6px 10px;text-align:left;}
+.totaux-table td{padding:6px 10px;border-bottom:1px solid var(--line);}
+.totaux-table tr:nth-child(even){background:#fbf6f0;}
+.totaux-table .nb{font-weight:800;color:var(--orange);}
+#overlay-loading{position:fixed;inset:0;background:rgba(20,30,50,.35);display:flex;align-items:center;justify-content:center;z-index:1000;pointer-events:none;}
+.loading-box{background:#fff;border-radius:10px;padding:26px 40px;box-shadow:0 4px 28px rgba(0,0,0,.3);font-size:19px;font-weight:700;color:var(--navy);text-align:center;min-width:320px;}
+</style>
+</head>
+<body>
+
+<div class="hdr-bar">
+  <div class="logo">EDUCPASS</div>
+  <div class="title">🎟️ COUPONS — PARTENAIRES</div>
+  <a class="btn" href="TABLEAU DE BORD.html" style="background:var(--navy-dark);color:#fff;" title="Retour au Tableau de Bord">🗂️ Tableau de Bord</a>
+  <button class="btn" onclick="logoutPin()" style="background:#555;color:#fff;">🔒 <span id="header-agent">—</span></button>
+</div>
+
+<div id="st-bar"></div>
+<div id="overlay-loading" class="hidden">
+  <div class="loading-box" id="loading-msg"></div>
+</div>
+
+<div class="wrap">
+
+  <!-- ====================== VUE LISTE ======================
+       Base de la liste = table CARTE DE VISITE (même table que
+       CARTES-VISITE.html) : chaque partenaire ayant une carte de visite
+       a un "fichier COUPON" ici (demande de Marc, 2026-09-07). Page de
+       CONSULTATION uniquement (lecture seule) — aucune modification
+       possible depuis cette page ; pour éditer, retourner à l'app
+       Attractions (onglet Carte de visite) comme avant. -->
+  <div id="view-liste">
+    <div class="toolbar">
+      <span style="font-size:12.5px;color:#666;">Partenaires ayant une carte de visite — clique sur une case pour consulter son fichier coupon.</span>
+      <label style="margin-left:auto;"><input type="checkbox" id="filtre-publie" onchange="renderGrid()"> Coupon publié uniquement</label>
+      <span id="coupons-count" class="result-count"></span>
+    </div>
+    <div id="card-grid" class="card-grid"></div>
+  </div>
+
+  <!-- ====================== VUE FICHE (lecture seule) ====================== -->
+  <div id="view-fiche" class="hidden">
+    <div style="margin-bottom:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <button class="btn" onclick="backToListe()" style="background:#888;color:#fff;">↩️ Retour à la liste</button>
+      <button class="btn lang-btn" id="lang-btn" onclick="toggleLang()">Version NL</button>
+    </div>
+    <div class="fiche-box">
+      <div class="fiche-top">
+        <div class="logo-box" id="cp-logo-box"></div>
+        <div>
+          <div class="fiche-hdr" id="cp-nom">—</div>
+          <div class="badges-row">
+            <span class="badge" id="cp-badge-coupon">—</span>
+          </div>
+        </div>
+      </div>
+
+      <fieldset>
+        <legend>Avantage affiché sur le coupon</legend>
+        <div class="ro-text" id="cp-avantage">—</div>
+        <div id="cp-avantage-truncated" class="hidden" style="font-size:11px;color:#999;margin-top:6px;">(texte résumé automatiquement à partir de l'Avantage Educpass complet — version intégrale dans l'app Attractions, onglet Description)</div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Statut &amp; validation du coupon</legend>
+        <div class="ro-row">
+          <div class="fitem"><label>Code de validation</label><div class="ro-text" id="cp-code">—</div></div>
+          <div class="fitem"><label>Email envoi coupon</label><div class="ro-text" id="cp-email">—</div></div>
+        </div>
+        <div style="font-size:11px;color:#888;margin-top:8px;">ℹ️ Ces champs sont configurés depuis l'app Attractions (onglet Carte de visite → Adresses et contacts). Consultation uniquement ici.</div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Coupons validés</legend>
+        <div id="cp-totaux-empty" class="note-empty hidden">📊 Aucun total importé pour ce partenaire pour l'instant. Les totaux proviennent des exports WinDev (Export XLS de la "Table des coupons") que Marc fournit ponctuellement — pas de comptage automatique en continu à ce stade.</div>
+        <table id="cp-totaux-table" class="totaux-table hidden">
+          <thead><tr><th>Année</th><th>Période exportée</th><th>Nombre validé</th><th>Importé le</th></tr></thead>
+          <tbody id="cp-totaux-body"></tbody>
+        </table>
+        <div style="font-size:11px;color:#888;margin-top:8px;">ℹ️ Ces totaux sont des instantanés fournis par Marc (export WinDev), pas une synchronisation en direct — voir la date d'import de chaque ligne.</div>
+      </fieldset>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  CONFIG AIRTABLE — même base/jeton que CARTES-VISITE.html et l'app
+//  Attractions (index.html). Page de CONSULTATION uniquement, construite
+//  à partir de la table CARTE DE VISITE (demande de Marc, 2026-09-07) :
+//  chaque partenaire ayant une carte de visite a ici son "fichier coupon".
+//  Le "Code de validation" (CODE ATTRACTION) et l'"Email envoi coupon"
+//  (ADRESSE MAIL COUPON) vivent sur la table MEMBRES (liée via le champ
+//  "Attraction" de CARTE DE VISITE) — récupérés à la demande à l'ouverture
+//  de chaque fiche.
+// ══════════════════════════════════════════════════════════
+// Corrigé le 2026-09-17/18 : la clé Airtable était auparavant écrite en clair
+// ici (alerte de sécurité GitHub) — elle vit désormais uniquement dans le
+// Worker "educpass-attractions-proxy", ce fichier n'utilise plus qu'une clé
+// de proxy qui ne donne accès qu'aux routes de lecture exposées par ce Worker.
+const PROXY_URL='https://educpass-attractions-proxy.marc-flasschoen.workers.dev';
+const PROXY_KEY='s0usEmEVnof0Js74MgIIeSGTD6DY5e4M';
+const CARTE_TBL='tblFn2gRUJOdgdMTZ';
+const MEMBRES_TBL='tblMiiIYVibfpe0L3';
+// "Coupons — Totaux" : créée le 2026-09-07, alimentée à la main par Marc à partir
+// des exports WinDev ("Table des coupons", Export XLS) — pas de synchro automatique
+// pour l'instant (le champ "Identifiant de Partenaires" de WinDev n'est pas encore
+// renseigné côté Airtable, donc le rapprochement partenaire se fait par nom).
+const TOTAUX_TBL='tblnnuLsmnMzHTkFz';
+const CARTE_URL=`${PROXY_URL}/records/${CARTE_TBL}`;
+const MEMBRES_URL=`${PROXY_URL}/records/${MEMBRES_TBL}`;
+const TOTAUX_URL=`${PROXY_URL}/records/${TOTAUX_TBL}`;
+const hdrs={'X-Proxy-Key':PROXY_KEY};
+
+// Même logique de repli/troncature que l'aperçu "coupon-éclaireur" de l'app
+// Attractions (index.html, fonction truncateForCoupon) — reproduite ici à
+// l'identique pour que le texte affiché corresponde exactement à ce que
+// l'enseignant voit réellement sur son téléphone.
+const AVANTAGE_MAXLEN = 200;
+const AVANTAGE_MAXLINES = 4;
+function truncateForCoupon(txt){
+  txt = txt || '';
+  const allLines = txt.split('\n');
+  const lines = allLines.slice(0, AVANTAGE_MAXLINES);
+  let truncated = lines.length < allLines.length;
+  let joined = lines.join('\n');
+  if(joined.length > AVANTAGE_MAXLEN){
+    joined = joined.slice(0, AVANTAGE_MAXLEN);
+    truncated = true;
+  }
+  if(truncated) joined = joined.replace(/\s+$/, '') + '…';
+  return {text: joined, truncated};
+}
+
+function setSt(msg){
+  document.getElementById('st-bar').textContent = msg || '';
+  const box = document.getElementById('overlay-loading');
+  const isLoading = !!msg && (msg.indexOf('🔎')===0 || msg.indexOf('⏳')===0);
+  if(isLoading){
+    document.getElementById('loading-msg').textContent = msg;
+    box.classList.remove('hidden');
+  } else {
+    box.classList.add('hidden');
+  }
+}
+function esc(s){ return String(s==null?'':s); }
+
+let lastCartes = [];
+let lastTotaux = [];
+let curCarte = null;
+let curMembre = null;
+let membreCache = {};
+let lang = 'FR';
+
+async function cvGet(url){
+  const r = await fetch(url, {headers:hdrs});
+  return r.json();
+}
+
+async function loadCartes(){
+  setSt('⏳ Chargement des cartes de visite...');
+  document.getElementById('coupons-count').textContent = '⏳';
+  try{
+    let all = [], offset;
+    do{
+      const params = new URLSearchParams({pageSize:'100'});
+      if(offset) params.set('offset', offset);
+      const data = await cvGet(CARTE_URL+'?'+params.toString());
+      if(data.error) throw new Error(data.error.message);
+      all = all.concat(data.records||[]);
+      offset = data.offset;
+    } while(offset);
+    lastCartes = all;
+    renderGrid();
+    setSt('');
+  }catch(e){ setSt('❌ '+e.message); document.getElementById('coupons-count').textContent = ''; }
+  loadTotaux(); // en parallèle, non bloquant pour l'affichage de la liste
+}
+
+// "Coupons — Totaux" : peu d'enregistrements attendus (un import ponctuel par
+// partenaire/période) — chargé une fois en entier, filtré côté client par fiche.
+async function loadTotaux(){
+  try{
+    let all = [], offset;
+    do{
+      const params = new URLSearchParams({pageSize:'100'});
+      if(offset) params.set('offset', offset);
+      const data = await cvGet(TOTAUX_URL+'?'+params.toString());
+      if(data.error) throw new Error(data.error.message);
+      all = all.concat(data.records||[]);
+      offset = data.offset;
+    } while(offset);
+    lastTotaux = all;
+    if(curCarte) renderFiche(); // rafraîchit la fiche ouverte si les totaux arrivent après coup
+  }catch(e){ /* silencieux : la fiche affichera juste "aucun total" si l'appel échoue */ }
+}
+
+function renderTotauxPourCarte(carteId){
+  const tbody = document.getElementById('cp-totaux-body');
+  const table = document.getElementById('cp-totaux-table');
+  const empty = document.getElementById('cp-totaux-empty');
+  const rows = lastTotaux.filter(r => (r.fields['Partenaire']||[]).some(l=>l.id===carteId));
+  rows.sort((a,b)=> (b.fields['Année']||0) - (a.fields['Année']||0));
+  if(!rows.length){
+    table.classList.add('hidden');
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+  table.classList.remove('hidden');
+  tbody.innerHTML = rows.map(r=>{
+    const f = r.fields;
+    const periode = (f['Période du']||'—') + ' → ' + (f['Période au']||'—');
+    return '<tr><td>'+esc(f['Année']!=null?f['Année']:'—')+'</td><td>'+esc(periode)+'</td><td class="nb">'+esc(f['Nombre']!=null?f['Nombre']:'—')+'</td><td>'+esc(f["Date d'import"]||'—')+'</td></tr>';
+  }).join('');
+}
+
+function nomOf(f){ return f['Nom attraction'] || '(sans nom)'; }
+
+// Logo coupon en priorité (format dédié au coupon-éclaireur) — repli sur le
+// logo carte de visite si le logo coupon n'a pas encore été fourni.
+function couponLogoUrl(f, small){
+  let att = f['Logo coupon'];
+  if(!att || !att.length) att = f['Logo carte de visite'];
+  if(!att || !att.length) return null;
+  if(small && att[0].thumbnails && att[0].thumbnails.small) return att[0].thumbnails.small.url;
+  if(att[0].thumbnails && att[0].thumbnails.large) return att[0].thumbnails.large.url;
+  return att[0].url;
+}
+
+function renderGrid(){
+  const grid = document.getElementById('card-grid');
+  grid.innerHTML = '';
+  const onlyPublies = document.getElementById('filtre-publie').checked;
+  let list = lastCartes.slice();
+  if(onlyPublies) list = list.filter(r=>!!r.fields['Coupon publié']);
+  list.sort((a,b)=> nomOf(a.fields).localeCompare(nomOf(b.fields), 'fr', {sensitivity:'base'}));
+  list.forEach(rec=>{
+    const f = rec.fields;
+    const card = document.createElement('div');
+    card.className = 'card';
+    const logo = couponLogoUrl(f, true);
+    const publie = !!f['Coupon publié'];
+    card.innerHTML = '<div class="logo-box">'+(logo ? '<img src="'+esc(logo)+'" alt="">' : '<span class="no-logo">Pas de logo</span>')+'</div>'
+      + '<div class="nom">'+esc(nomOf(f))+'</div>'
+      + '<span class="badge '+(publie?'badge-oui':'badge-non')+'">Coupon publié : '+(publie?'OUI':'NON')+'</span>';
+    card.onclick = ()=>openCoupon(rec.id);
+    grid.appendChild(card);
+  });
+  document.getElementById('coupons-count').textContent = list.length;
+}
+
+async function loadMembre(memberId){
+  if(!memberId) return null;
+  if(membreCache[memberId]) return membreCache[memberId];
+  const data = await cvGet(MEMBRES_URL+'/'+memberId);
+  if(data.error) throw new Error(data.error.message);
+  membreCache[memberId] = data;
+  return data;
+}
+
+async function openCoupon(id){
+  const rec = lastCartes.find(r=>r.id===id);
+  if(!rec) return;
+  curCarte = rec;
+  curMembre = null;
+  lang = 'FR';
+  document.getElementById('view-liste').classList.add('hidden');
+  document.getElementById('view-fiche').classList.remove('hidden');
+  renderFiche();
+  setSt('⏳ Chargement des infos partenaire...');
+  try{
+    const attLink = (rec.fields['Attraction']||[])[0];
+    if(attLink){
+      curMembre = await loadMembre(attLink);
+    }
+    setSt('');
+  }catch(e){ setSt('❌ '+e.message); }
+  renderFiche();
+}
+
+function backToListe(){
+  document.getElementById('view-fiche').classList.add('hidden');
+  document.getElementById('view-liste').classList.remove('hidden');
+}
+
+function toggleLang(){
+  lang = (lang==='FR') ? 'NL' : 'FR';
+  renderFiche();
+}
+
+function suf(){ return lang==='NL' ? ' (NL)' : ''; }
+
+function renderFiche(){
+  if(!curCarte) return;
+  const f = curCarte.fields;
+  const s = suf();
+
+  const logo = couponLogoUrl(f, false);
+  document.getElementById('cp-logo-box').innerHTML = logo ? '<img src="'+esc(logo)+'" alt="">' : '<span class="no-logo" style="font-size:11px;color:#aaa;">Pas de logo coupon</span>';
+
+  document.getElementById('cp-nom').textContent = nomOf(f);
+  const publie = !!f['Coupon publié'];
+  const badgeEl = document.getElementById('cp-badge-coupon');
+  badgeEl.textContent = 'Coupon publié : ' + (publie ? 'OUI' : 'NON');
+  badgeEl.className = 'badge ' + (publie ? 'badge-oui' : 'badge-non');
+
+  // Avantage affiché sur le coupon : priorité au texte dédié ("Avantage coupon
+  // (affichage)"), sinon repli automatique sur une version résumée de
+  // l'Avantage Educpass complet ("Avantage coupon") — logique identique à
+  // l'app Attractions (fonction updateCouponPreview).
+  const manualTxt = f['Avantage coupon (affichage)'+s];
+  let dispText = '', isTruncated = false;
+  if(manualTxt){
+    dispText = manualTxt;
+  } else {
+    const txt = f['Avantage coupon'+s];
+    const st = truncateForCoupon(txt);
+    dispText = txt ? st.text : '';
+    isTruncated = !!(txt && st.truncated);
+  }
+  document.getElementById('cp-avantage').textContent = dispText || '—';
+  document.getElementById('cp-avantage-truncated').classList.toggle('hidden', !isTruncated);
+
+  const mf = curMembre ? curMembre.fields : null;
+  document.getElementById('cp-code').textContent = (mf && mf['CODE ATTRACTION']) ? mf['CODE ATTRACTION'] : '—';
+  document.getElementById('cp-email').textContent = (mf && mf['ADRESSE MAIL COUPON']) ? mf['ADRESSE MAIL COUPON'] : '—';
+
+  renderTotauxPourCarte(curCarte.id);
+
+  const langBtn = document.getElementById('lang-btn');
+  langBtn.textContent = lang==='NL' ? 'Version FR' : 'Version NL';
+  langBtn.style.background = lang==='NL' ? '#f1c40f' : 'var(--purple)';
+  langBtn.style.color = lang==='NL' ? '#3a2f00' : '#fff';
+}
+
+// ══════════════════════════════════════════════════════════
+//  SYSTÈME PIN — AUTHENTIFICATION (identique aux autres outils EDUCPASS)
+// ══════════════════════════════════════════════════════════
+const AGENT_PINS_DEFAULT = { 'MARC':'1111', 'MAÏTE':'2222', 'PASCAL':'3333', 'VANESSA':'4444' };
+let AGENT_PINS = (function(){
+  try{
+    const stored = localStorage.getItem('educpass_coupons_pins');
+    if(stored){ const p=JSON.parse(stored); if(p&&p.MARC) return p; }
+  }catch(e){}
+  return Object.assign({}, AGENT_PINS_DEFAULT);
+})();
+
+function _setAgentSession(agent){
+  sessionStorage.setItem('auth_agent', agent);
+  document.getElementById('header-agent').textContent = agent;
+}
+function loginPin(){
+  const agent = document.getElementById('pin-agent').value;
+  const pin = document.getElementById('pin-code').value;
+  const err = document.getElementById('pin-error');
+  err.textContent='';
+  if(!agent){ err.textContent='Sélectionnez votre nom.'; return; }
+  if(pin.length!==4){ err.textContent='Le code doit contenir 4 chiffres.'; return; }
+  if(AGENT_PINS[agent]!==pin){
+    err.textContent='❌ Code incorrect — réessayez.';
+    document.getElementById('pin-code').value=''; document.getElementById('pin-code').focus();
+    return;
+  }
+  document.getElementById('overlay-pin').classList.add('hidden');
+  _setAgentSession(agent);
+  init();
+}
+function logoutPin(){
+  if(!confirm('Se déconnecter ?')) return;
+  sessionStorage.removeItem('auth_agent');
+  location.reload();
+}
+
+function init(){
+  loadCartes();
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  const saved = sessionStorage.getItem('auth_agent');
+  if(saved && AGENT_PINS[saved]){
+    _setAgentSession(saved);
+    init();
+  } else {
+    document.getElementById('overlay-pin').classList.remove('hidden');
+  }
+});
+</script>
+
+<!-- ====================== OVERLAY LOGIN PIN ====================== -->
+<div id="overlay-pin" class="hidden" style="position:fixed;inset:0;background:rgba(20,30,50,.55);display:flex;align-items:center;justify-content:center;z-index:999;">
+  <div style="background:#fff;border-radius:8px;padding:32px 40px;box-shadow:0 2px 20px rgba(0,0,0,.25);text-align:center;min-width:320px;">
+    <div style="font-weight:900;color:var(--navy);letter-spacing:1px;font-size:20px;margin-bottom:6px;">EDUCPASS</div>
+    <h2 style="margin:0 0 10px;">🔐 Accès sécurisé</h2>
+    <label style="display:block;text-align:left;font-size:12.5px;font-weight:600;margin:12px 0 4px;">Agent :</label>
+    <select id="pin-agent" style="width:100%;padding:8px;border:1px solid #bbb;border-radius:4px;font-size:14px;">
+      <option value="">— Sélectionnez —</option>
+      <option>MARC</option>
+      <option>MAÏTE</option>
+      <option>PASCAL</option>
+      <option>VANESSA</option>
+    </select>
+    <label style="display:block;text-align:left;font-size:12.5px;font-weight:600;margin:12px 0 4px;">Code PIN (4 chiffres) :</label>
+    <input type="password" id="pin-code" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" placeholder="••••" autocomplete="off" style="width:100%;padding:8px;border:1px solid #bbb;border-radius:4px;font-size:14px;" oninput="if(this.value.length===4)loginPin()">
+    <div id="pin-error" style="color:var(--err);font-size:12.5px;min-height:18px;margin-top:6px;"></div>
+    <button onclick="loginPin()" style="margin-top:18px;width:100%;padding:10px;background:var(--navy);color:#fff;border:none;border-radius:4px;font-weight:700;cursor:pointer;">Connexion →</button>
+  </div>
+</div>
+
+</body>
+</html>
