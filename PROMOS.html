@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PROMOS — EDUCPASS 2026</title>
+<style>
+:root{
+  --navy:#1e3a6e; --navy-dark:#152a52; --orange:#c55a11; --bg:#f0f4fa;
+  --line:#d7e0ee; --ok:#27ae60; --err:#c0392b;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:Calibri,Arial,sans-serif;background:var(--bg);color:#222;}
+.hdr-bar{background:var(--navy);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.hdr-bar .logo{font-weight:900;letter-spacing:1px;}
+.hdr-bar .title{font-weight:700;flex:1;}
+.btn{border:none;border-radius:4px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;background:#eee;color:#222;}
+.btn:hover{filter:brightness(0.95);}
+.btn-save{background:var(--ok);color:#fff;}
+.btn-cancel{background:#888;color:#fff;}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+.toolbar{background:#fff;border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+#st-bar{padding:4px 16px;font-size:12px;color:#555;min-height:18px;}
+#sync-pending{display:none;background:#f39c12;color:#fff;text-align:center;padding:4px;font-weight:700;font-size:12px;}
+#sync-pending.show{display:block;animation:pulse 1s infinite alternate;}
+@keyframes pulse{from{opacity:.6}to{opacity:1}}
+.wrap{padding:14px 16px;}
+table.results{border-collapse:collapse;width:100%;background:#fff;font-size:12.5px;}
+table.results th{background:var(--navy);color:#fff;padding:6px 8px;text-align:left;position:sticky;top:0;white-space:nowrap;}
+table.results td{padding:10px 8px;border-bottom:1px solid var(--line);white-space:nowrap;}
+table.results tr:nth-child(even){background:#f7faff;}
+table.results tr:hover{background:#eaf1ff;cursor:pointer;}
+.tbl-scroll{max-height:75vh;overflow:auto;}
+.fiche-box{background:#fff;border-radius:6px;box-shadow:0 1px 6px rgba(30,58,110,.12);padding:16px 20px;max-width:1100px;}
+.fiche-hdr{font-size:20px;font-weight:900;color:var(--navy);margin-bottom:4px;}
+.fiche-sub{color:#777;font-size:13px;margin-bottom:14px;}
+fieldset{border:1px solid var(--line);border-radius:6px;margin-bottom:14px;padding:10px 14px 14px;}
+legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
+.frow{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px 14px;}
+.fitem label{display:block;font-size:11.5px;color:#555;margin-bottom:2px;font-weight:600;}
+.fitem input,.fitem select,.fitem textarea{width:100%;padding:6px 7px;border:1px solid #bbb;border-radius:4px;font-size:13px;font-family:inherit;}
+.fitem textarea{min-height:52px;resize:vertical;}
+.fitem input[type=checkbox]{width:auto;margin-top:6px;transform:scale(1.2);}
+/* Champ "Valeur" : pas de flèches +/- (petites, gênantes à l'usage) — reste un champ numérique normalement modifiable. */
+.fitem input[type=number]::-webkit-outer-spin-button,
+.fitem input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.fitem input[type=number]{-moz-appearance:textfield;appearance:textfield;}
+.ms-group{display:flex;flex-wrap:wrap;gap:4px 12px;padding:6px 2px;border:1px solid #bbb;border-radius:4px;background:#fafcff;}
+.ms-group label{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:400;color:#333;margin:0;}
+.ms-group input[type=checkbox]{width:auto;margin:0;}
+.hidden{display:none !important;}
+.pin-box,.pin-mgr-box{background:#fff;border-radius:8px;padding:32px 40px;box-shadow:0 2px 20px rgba(0,0,0,.25);text-align:center;min-width:320px;}
+#overlay-pin,#overlay-pin-mgr{position:fixed;inset:0;background:rgba(20,30,50,.55);display:flex;align-items:center;justify-content:center;z-index:999;}
+#overlay-loading{position:fixed;inset:0;background:rgba(20,30,50,.35);display:flex;align-items:center;justify-content:center;z-index:1000;pointer-events:none;}
+.loading-box{background:#fff;border-radius:10px;padding:26px 40px;box-shadow:0 4px 28px rgba(0,0,0,.3);font-size:19px;font-weight:700;color:var(--navy);text-align:center;min-width:320px;}
+.pin-logo{font-weight:900;color:var(--navy);letter-spacing:1px;font-size:20px;margin-bottom:6px;}
+.pin-box label,.pin-mgr-box label{display:block;text-align:left;font-size:12.5px;font-weight:600;margin:12px 0 4px;}
+.pin-box select,.pin-box input,.pin-mgr-box input{width:100%;padding:8px;border:1px solid #bbb;border-radius:4px;font-size:14px;}
+.pin-btn{margin-top:18px;width:100%;padding:10px;background:var(--navy);color:#fff;border:none;border-radius:4px;font-weight:700;cursor:pointer;}
+.pin-err{color:var(--err);font-size:12.5px;min-height:18px;margin-top:6px;}
+.pin-row{display:flex;align-items:center;gap:8px;margin:8px 0;text-align:left;}
+.pin-row label{min-width:80px;margin:0;}
+.result-count{display:inline-block;font-size:17px;font-weight:800;color:#5b2c8a;background:#eee0f7;border:2px solid #8e44ad;border-radius:6px;padding:5px 14px;min-width:20px;text-align:center;}
+.result-count:empty{display:none;}
+</style>
+</head>
+<body>
+
+<div class="hdr-bar">
+  <div class="logo">EDUCPASS</div>
+  <div class="title">🏷️ PROMOS — 2026</div>
+  <button class="btn" id="btn-pin-mgr" onclick="showGestionPins()" style="display:none;">🔑 PINs</button>
+  <a class="btn" href="TABLEAU DE BORD.html" style="background:var(--navy-dark);color:#fff;text-decoration:none;display:inline-block;" title="Retour au Tableau de Bord">🗂️ Tableau de Bord</a>
+  <button class="btn" onclick="logoutPin()">🔒 <span id="header-agent">—</span></button>
+</div>
+
+<div id="sync-pending">⏳ Synchronisation en cours…</div>
+<div id="st-bar"></div>
+<div id="overlay-loading" class="hidden">
+  <div class="loading-box" id="loading-msg"></div>
+</div>
+
+<div class="wrap">
+
+  <!-- ====================== SECTION PROMOS ======================
+       Fichier séparé (2026-09-07, demande de Marc) : back-office de gestion
+       des codes promo (CRUD uniquement). Les codes s'appliquent globalement à
+       TOUS les produits — pas de lien à un produit précis. L'application
+       effective des codes promo au moment du paiement reste gérée côté
+       WinDev/site (non touché ici). Table Airtable "Promos", même base que
+       Produits/Profs (proxy Worker Cloudflare, jeton caché côté serveur).
+       Les codes fédération (01/02/03/04/05/07) sont affichés bruts pour
+       l'instant — Marc n'a pas encore fourni les libellés humains
+       correspondants (à revoir plus tard). -->
+  <div id="section-promos">
+    <div class="toolbar">
+      <button class="btn btn-save" onclick="newPromo()">➕ Nouveau code promo</button>
+      <button class="btn" onclick="showPromosView('liste')">📄 Liste des codes promo</button>
+      <span id="promos-count" class="result-count"></span>
+    </div>
+
+    <!-- ---------------- Vue liste Promos ---------------- -->
+    <div id="view-promos-liste">
+      <div class="tbl-scroll">
+        <table class="results" id="tbl-promos">
+          <thead><tr>
+            <th>Code promo</th><th>Début</th><th>Fin</th><th>Type</th><th>Valeur</th><th>Cumulable</th><th>Éligibilité</th><th>Année cotisation</th><th>Fédération</th>
+          </tr></thead>
+          <tbody id="tbl-promos-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ---------------- Vue fiche Promo ---------------- -->
+    <div id="view-promos-fiche" class="hidden">
+      <div class="fiche-box">
+        <div class="fiche-hdr" id="promo-titre">—</div>
+        <div class="fiche-sub">Réduction applicable à tous les produits (pas de lien à un produit précis). L'application au paiement reste gérée côté site.</div>
+
+        <div style="margin:14px 0;">
+          <button class="btn btn-save" id="btn-save-promo" onclick="savePromo()">💾 Enregistrer</button>
+          <button class="btn btn-cancel" onclick="cancelPromoAndReset()">↩️ Annuler</button>
+          <button class="btn" id="btn-delete-promo" onclick="deletePromo()" style="display:none;background:var(--err);color:#fff;">🗑️ Supprimer</button>
+        </div>
+
+        <div id="promo-fiche-sections"></div>
+
+        <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line);">
+          <button class="btn btn-save" onclick="savePromo()">💾 Enregistrer</button>
+          <button class="btn btn-cancel" onclick="cancelPromoAndReset()">↩️ Annuler</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ====================== OVERLAY LOGIN PIN ====================== -->
+<div id="overlay-pin" class="hidden">
+  <div class="pin-box">
+    <div class="pin-logo">EDUCPASS</div>
+    <h2>🔐 Accès sécurisé</h2>
+    <label>Agent :</label>
+    <select id="pin-agent">
+      <option value="">— Sélectionnez —</option>
+      <option>MARC</option>
+      <option>MAÏTE</option>
+      <option>PASCAL</option>
+      <option>VANESSA</option>
+    </select>
+    <label>Code PIN (4 chiffres) :</label>
+    <input type="password" id="pin-code" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" placeholder="••••" autocomplete="off" oninput="if(this.value.length===4)loginPin()">
+    <div id="pin-error" class="pin-err"></div>
+    <button class="pin-btn" onclick="loginPin()">Connexion →</button>
+  </div>
+</div>
+
+<!-- ====================== OVERLAY GESTION PINS (MARC uniquement) ====================== -->
+<div id="overlay-pin-mgr" class="hidden">
+  <div class="pin-mgr-box">
+    <h2>🔑 Gestion des codes PIN</h2>
+    <div class="pin-row"><label>MARC :</label><input type="password" id="pm-marc" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
+    <div class="pin-row"><label>MAÏTE :</label><input type="password" id="pm-maite" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
+    <div class="pin-row"><label>PASCAL :</label><input type="password" id="pm-pascal" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
+    <div class="pin-row"><label>VANESSA :</label><input type="password" id="pm-vanessa" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
+    <div class="pin-err" id="pm-msg"></div>
+    <div style="display:flex;gap:8px;margin-top:14px;">
+      <button class="btn btn-cancel" onclick="closeGestionPins()">Annuler</button>
+      <button class="btn btn-save" onclick="saveGestionPins()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  CONFIG AIRTABLE — même proxy Cloudflare Worker que FICHIER PROFS 2026.html
+//  et PRODUITS.html (jeton Airtable caché côté serveur, jamais exposé ici).
+// ══════════════════════════════════════════════════════════
+const PROXY = 'https://educpass-profs-proxy.marc-flasschoen.workers.dev';
+const BASE  = 'appWCfo8WBkMGUuc2';
+const HDRS  = {'Content-Type':'application/json'};
+
+// Table "Promos" — créée le 2026-09-07 dans la même base Airtable que
+// Profs/Produits. Peu d'enregistrements attendus : pas besoin de pagination
+// filtrée particulière.
+const PROMOS_TBL = 'tblxFU8yFFDPNSXSO';
+const PROMOS_API = `${PROXY}/v0/${BASE}/${PROMOS_TBL}`;
+
+// ══════════════════════════════════════════════════════════
+//  PROMOS — mapping id Airtable <-> clé DOM <-> libellé <-> type
+//  NOTE : "Codes Fédération" affiche pour l'instant les codes bruts
+//  (01/02/03/04/05/07) — Marc n'a pas encore communiqué les libellés
+//  humains correspondants. À remplacer plus tard si besoin.
+// ══════════════════════════════════════════════════════════
+const PROMOS_CHOICES = {
+  type: ['Montant','Pourcentage'],
+  eligibilite: ['Tous les membres','Membres en ordre de cotisation'],
+  federation: ['01','02','03','04','05','07'],
+  anneecotisation: ['26','27']
+};
+const PROMOS_SECTIONS = [
+  {title:'Code promo', fields:[
+    ['fldTUyh2hH0gLcfQG','codepromo','CodePromo','text'],
+    ['fldtfkYWVZI1H3Q41','datedebut','Date début','date'],
+    ['flddHmTgwccsnBsxO','datefin','Date Fin','date'],
+  ]},
+  {title:'Réduction', fields:[
+    ['fld0rvMde55cL6R32','type','Type','select:type'],
+    ['fldE23osiBODFcdK3','valeur','Valeur','number'],
+    ['fldSBzLtgiQY2VHRC','cumulable','Cumulable','checkbox'],
+  ]},
+  {title:'Conditions', fields:[
+    ['fldgi6X5IPWOgOhrO','eligibilite','Éligibilité','select:eligibilite'],
+    ['fldUxqATNAQE5kAGg','anneecotisation','Année cotisation','select:anneecotisation'],
+    ['fldeOlc9Liaal3ljh','federation','Codes Fédération','multiselect:federation'],
+  ]},
+];
+const PROMO_KEY_TO_NAME = {};
+PROMOS_SECTIONS.forEach(sec=>sec.fields.forEach(([fid,key,label])=>{ PROMO_KEY_TO_NAME[key]=label; }));
+
+// ══════════════════════════════════════════════════════════
+//  ÉTAT
+// ══════════════════════════════════════════════════════════
+let lastPromos = [];
+let curPromoId = null;
+let _promoLoading = false;
+let _promoDirty = false;
+
+function setSt(msg){
+  document.getElementById('st-bar').textContent = msg || '';
+  const box = document.getElementById('overlay-loading');
+  const isLoading = !!msg && (msg.indexOf('🔎')===0 || msg.indexOf('⏳')===0);
+  if(isLoading){
+    document.getElementById('loading-msg').textContent = msg;
+    box.classList.remove('hidden');
+  } else {
+    box.classList.add('hidden');
+  }
+}
+function esc(s){ return String(s).replace(/\\/g,'\\\\').replace(/"/g,'\\"'); }
+
+// ══════════════════════════════════════════════════════════
+//  APPELS AIRTABLE
+// ══════════════════════════════════════════════════════════
+async function atFetch(url, opts){
+  const r = await fetch(url, Object.assign({headers:HDRS}, opts||{}));
+  if(!r.ok){
+    const t = await r.text().catch(()=> '');
+    throw new Error('Airtable '+r.status+' : '+t.slice(0,200));
+  }
+  return r.json();
+}
+
+// ══════════════════════════════════════════════════════════
+//  PROMOS — liste + fiche
+// ══════════════════════════════════════════════════════════
+function fldPr(key){ return document.getElementById('pr-'+key); }
+function markPromoDirty(){ _promoDirty = true; }
+
+function buildPromoForm(){
+  const wrap = document.getElementById('promo-fiche-sections');
+  wrap.innerHTML = '';
+  PROMOS_SECTIONS.forEach(sec=>{
+    const fs = document.createElement('fieldset');
+    const lg = document.createElement('legend'); lg.textContent = sec.title; fs.appendChild(lg);
+    const row = document.createElement('div'); row.className='frow';
+    sec.fields.forEach(([fid,key,label,type])=>{
+      const item = document.createElement('div'); item.className='fitem';
+      const lab = document.createElement('label'); lab.textContent = label; item.appendChild(lab);
+      let input;
+      if(type.startsWith('select:')){
+        const choiceKey = type.split(':')[1];
+        input = document.createElement('select');
+        const empty=document.createElement('option'); empty.value=''; empty.textContent='—'; input.appendChild(empty);
+        PROMOS_CHOICES[choiceKey].forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; input.appendChild(o); });
+        input.id = 'pr-'+key;
+        input.dataset.fieldId = fid;
+        input.onchange = markPromoDirty;
+      } else if(type.startsWith('multiselect:')){
+        const choiceKey = type.split(':')[1];
+        input = document.createElement('div');
+        input.className = 'ms-group';
+        input.id = 'pr-'+key;
+        input.dataset.fieldId = fid;
+        PROMOS_CHOICES[choiceKey].forEach(c=>{
+          const cbLab = document.createElement('label');
+          const cb = document.createElement('input');
+          cb.type = 'checkbox'; cb.value = c; cb.onchange = markPromoDirty;
+          cbLab.appendChild(cb);
+          cbLab.appendChild(document.createTextNode(c));
+          input.appendChild(cbLab);
+        });
+      } else if(type==='checkbox'){
+        input = document.createElement('input');
+        input.type = 'checkbox';
+        input.id = 'pr-'+key;
+        input.dataset.fieldId = fid;
+        input.onchange = markPromoDirty;
+      } else if(type==='date'){
+        input = document.createElement('input');
+        input.type = 'date';
+        input.id = 'pr-'+key;
+        input.dataset.fieldId = fid;
+        input.oninput = markPromoDirty;
+      } else {
+        input = document.createElement('input');
+        input.type = (type==='number') ? 'number' : 'text';
+        if(type==='number') input.step = '0.01';
+        input.id = 'pr-'+key;
+        input.dataset.fieldId = fid;
+        input.oninput = markPromoDirty;
+      }
+      item.appendChild(input);
+      if(key==='valeur'){
+        const suf = document.createElement('span');
+        suf.textContent = ' (€ ou % selon le Type ci-dessus)';
+        suf.style.cssText = 'display:block;margin-top:2px;font-size:11px;color:#777;';
+        item.appendChild(suf);
+      }
+      row.appendChild(item);
+    });
+    fs.appendChild(row);
+    wrap.appendChild(fs);
+  });
+}
+
+function fillPromoForm(fields){
+  fields = fields || {};
+  PROMOS_SECTIONS.forEach(sec=>sec.fields.forEach(([fid,key,label,type])=>{
+    const el = fldPr(key); if(!el) return;
+    const v = fields[label];
+    if(type==='checkbox'){
+      el.checked = !!v;
+      return;
+    }
+    if(type.startsWith('multiselect:')){
+      const arr = Array.isArray(v) ? v : [];
+      el.querySelectorAll('input[type=checkbox]').forEach(cb=>{ cb.checked = arr.indexOf(cb.value)!==-1; });
+      return;
+    }
+    let vv = v;
+    if(vv && typeof vv==='object' && vv.name) vv = vv.name;
+    el.value = (vv==null) ? '' : vv;
+  }));
+}
+
+function setSaveDisabledPromo(v){ document.getElementById('btn-save-promo').disabled = v; }
+function setDeleteVisiblePromo(v){ document.getElementById('btn-delete-promo').style.display = v ? '' : 'none'; }
+
+async function loadPromos(){
+  document.getElementById('promos-count').textContent = '⏳';
+  try{
+    let all = [], offset;
+    do{
+      const params = new URLSearchParams({pageSize:'100'});
+      if(offset) params.set('offset', offset);
+      const data = await atFetch(PROMOS_API+'?'+params.toString());
+      all = all.concat(data.records||[]);
+      offset = data.offset;
+    } while(offset);
+    lastPromos = all;
+    renderPromosTable();
+    document.getElementById('promos-count').textContent = all.length;
+  }catch(e){ setSt('❌ '+e.message); document.getElementById('promos-count').textContent = ''; }
+}
+
+function renderPromosTable(){
+  const tbody = document.getElementById('tbl-promos-body');
+  tbody.innerHTML = '';
+  lastPromos.forEach(rec=>{
+    const f = rec.fields;
+    const tr = document.createElement('tr');
+    const cumulable = f['Cumulable'] ? '✅' : '—';
+    const federation = Array.isArray(f['Codes Fédération']) ? f['Codes Fédération'].join(', ') : '';
+    const valeur = (f['Valeur']!=null) ? (f['Type']==='Pourcentage' ? f['Valeur']+' %' : f['Valeur']+' €') : '';
+    tr.innerHTML = '<td>'+esc(f['CodePromo']||'')+'</td><td>'+esc(f['Date début']||'')+'</td><td>'+esc(f['Date Fin']||'')+'</td><td>'+esc(f['Type']||'')+'</td><td>'+esc(valeur)+'</td><td>'+cumulable+'</td><td>'+esc(f['Éligibilité']||'')+'</td><td>'+esc(f['Année cotisation']||'')+'</td><td>'+esc(federation)+'</td>';
+    tr.onclick = ()=>openPromo(rec.id);
+    tbody.appendChild(tr);
+  });
+}
+
+async function openPromo(id){
+  if(_promoDirty && !confirm('Des modifications non enregistrées seront perdues. Continuer ?')) return;
+  _promoLoading = true;
+  setSaveDisabledPromo(true);
+  setSt('⏳ Chargement du code promo...');
+  try{
+    const data = await atFetch(PROMOS_API+'/'+id);
+    curPromoId = id;
+    _promoDirty = false;
+    buildPromoForm();
+    document.getElementById('promo-titre').textContent = data.fields['CodePromo'] || '—';
+    fillPromoForm(data.fields);
+    setDeleteVisiblePromo(true);
+    showPromosView('fiche');
+    setSt('');
+  }catch(e){ setSt('❌ '+e.message); }
+  finally{ _promoLoading=false; setSaveDisabledPromo(false); }
+}
+
+function newPromo(){
+  if(_promoDirty && !confirm('Des modifications non enregistrées seront perdues. Continuer ?')) return;
+  curPromoId = null;
+  _promoDirty = false;
+  document.getElementById('promo-titre').textContent = 'Nouveau code promo';
+  buildPromoForm();
+  setDeleteVisiblePromo(false);
+  showPromosView('fiche');
+}
+
+async function savePromo(){
+  if(_promoLoading){ setSt('⏳ Chargement en cours, réessaie dans un instant.'); return; }
+  const fields = {};
+  let numError = null;
+  PROMOS_SECTIONS.forEach(sec=>sec.fields.forEach(([fid,key,label,type])=>{
+    const el = fldPr(key); if(!el) return;
+    if(type==='checkbox'){
+      fields[label] = el.checked;
+      return;
+    }
+    if(type.startsWith('multiselect:')){
+      const arr = Array.from(el.querySelectorAll('input[type=checkbox]:checked')).map(cb=>cb.value);
+      fields[label] = arr;
+      return;
+    }
+    let v = el.value;
+    if(v==='') return; // on n'écrase pas avec du vide (texte/nombre/select/date)
+    if(type==='number'){
+      v = Number(v);
+      if(isNaN(v)){ numError = numError || {label,val:el.value}; return; }
+    }
+    fields[label] = v;
+  }));
+  if(numError){ setSt('❌ Valeur invalide pour « '+numError.label+' » : "'+numError.val+'". Merci de n\'entrer que des chiffres.'); return; }
+  if(!fields['CodePromo']){ setSt('❌ Le Code promo est obligatoire.'); return; }
+  document.getElementById('sync-pending').classList.add('show');
+  setSaveDisabledPromo(true);
+  try{
+    if(curPromoId){
+      await atFetch(PROMOS_API+'/'+curPromoId, {method:'PATCH', body: JSON.stringify({fields})});
+      setSt('✅ Code promo enregistré.');
+    } else {
+      const res = await atFetch(PROMOS_API, {method:'POST', body: JSON.stringify({records:[{fields}]})});
+      curPromoId = res.records[0].id;
+      setSt('✅ Nouveau code promo créé.');
+    }
+    _promoDirty = false;
+    await loadPromos();
+    await openPromo(curPromoId);
+  }catch(e){ setSt('❌ '+e.message); }
+  finally{
+    document.getElementById('sync-pending').classList.remove('show');
+    setSaveDisabledPromo(false);
+  }
+}
+
+function cancelPromoAndReset(){
+  if(_promoDirty && !confirm('Annuler les modifications non enregistrées ?')) return;
+  _promoDirty = false;
+  curPromoId = null;
+  showPromosView('liste');
+}
+
+// Suppression réservée à MARC, même règle que pour les Produits/Profs.
+async function deletePromo(){
+  if(sessionStorage.getItem('auth_agent')!=='MARC') return;
+  if(!curPromoId){ setSt('Aucun code promo chargé à supprimer.'); return; }
+  const idToDelete = curPromoId;
+  const ref = document.getElementById('promo-titre').textContent;
+  if(!confirm('⚠️ SUPPRESSION DÉFINITIVE\n\nSupprimer définitivement le code promo "'+ref+'" ?\n\nCette action est IRRÉVERSIBLE.')) return;
+  setSt('⏳ Suppression en cours...');
+  try{
+    await atFetch(PROMOS_API+'/'+idToDelete, {method:'DELETE'});
+    lastPromos = lastPromos.filter(r=>r.id!==idToDelete);
+    curPromoId = null; _promoDirty = false;
+    renderPromosTable();
+    showPromosView('liste');
+    setSt('✅ Code promo supprimé définitivement.');
+  }catch(e){ setSt('❌ '+e.message); }
+}
+
+function showPromosView(v){
+  document.getElementById('view-promos-liste').classList.toggle('hidden', v!=='liste');
+  document.getElementById('view-promos-fiche').classList.toggle('hidden', v!=='fiche');
+}
+
+// ══════════════════════════════════════════════════════════
+//  SYSTÈME PIN — AUTHENTIFICATION (identique aux autres outils EDUCPASS)
+//  Stockage indépendant des autres fichiers (clé localStorage dédiée),
+//  chaque fichier HTML local ayant sa propre origine de stockage.
+// ══════════════════════════════════════════════════════════
+const AGENT_PINS_DEFAULT = { 'MARC':'1111', 'MAÏTE':'2222', 'PASCAL':'3333', 'VANESSA':'4444' };
+let AGENT_PINS = (function(){
+  try{
+    const stored = localStorage.getItem('educpass_promos_pins');
+    if(stored){ const p=JSON.parse(stored); if(p&&p.MARC) return p; }
+  }catch(e){}
+  return Object.assign({}, AGENT_PINS_DEFAULT);
+})();
+
+function _setAgentSession(agent){
+  sessionStorage.setItem('auth_agent', agent);
+  document.getElementById('header-agent').textContent = agent;
+  document.getElementById('btn-pin-mgr').style.display = (agent==='MARC') ? '' : 'none';
+  setDeleteVisiblePromo(false);
+}
+function loginPin(){
+  const agent = document.getElementById('pin-agent').value;
+  const pin = document.getElementById('pin-code').value;
+  const err = document.getElementById('pin-error');
+  err.textContent='';
+  if(!agent){ err.textContent='Sélectionnez votre nom.'; return; }
+  if(pin.length!==4){ err.textContent='Le code doit contenir 4 chiffres.'; return; }
+  if(AGENT_PINS[agent]!==pin){
+    err.textContent='❌ Code incorrect — réessayez.';
+    document.getElementById('pin-code').value=''; document.getElementById('pin-code').focus();
+    return;
+  }
+  document.getElementById('overlay-pin').classList.add('hidden');
+  _setAgentSession(agent);
+  init();
+}
+function logoutPin(){
+  if(!confirm('Se déconnecter ?')) return;
+  sessionStorage.removeItem('auth_agent');
+  location.reload();
+}
+function showGestionPins(){
+  if(sessionStorage.getItem('auth_agent')!=='MARC') return;
+  document.getElementById('pm-marc').value = AGENT_PINS['MARC']||'';
+  document.getElementById('pm-maite').value = AGENT_PINS['MAÏTE']||'';
+  document.getElementById('pm-pascal').value = AGENT_PINS['PASCAL']||'';
+  document.getElementById('pm-vanessa').value = AGENT_PINS['VANESSA']||'';
+  document.getElementById('pm-msg').textContent='';
+  document.getElementById('overlay-pin-mgr').classList.remove('hidden');
+}
+function closeGestionPins(){ document.getElementById('overlay-pin-mgr').classList.add('hidden'); }
+function saveGestionPins(){
+  const pins = {
+    MARC: document.getElementById('pm-marc').value.trim(),
+    'MAÏTE': document.getElementById('pm-maite').value.trim(),
+    PASCAL: document.getElementById('pm-pascal').value.trim(),
+    VANESSA: document.getElementById('pm-vanessa').value.trim(),
+  };
+  for(const [agent,pin] of Object.entries(pins)){
+    if(pin && !/^\d{4}$/.test(pin)){
+      document.getElementById('pm-msg').style.color='#c0392b';
+      document.getElementById('pm-msg').textContent='❌ PIN de '+agent+' invalide — 4 chiffres requis.';
+      return;
+    }
+    if(!pin) pins[agent]=AGENT_PINS[agent];
+  }
+  try{
+    localStorage.setItem('educpass_promos_pins', JSON.stringify(pins));
+    Object.assign(AGENT_PINS, pins);
+    document.getElementById('pm-msg').style.color='#27ae60';
+    document.getElementById('pm-msg').textContent='✅ Codes PIN enregistrés !';
+    setTimeout(closeGestionPins, 1200);
+  }catch(e){
+    document.getElementById('pm-msg').style.color='#c0392b';
+    document.getElementById('pm-msg').textContent='❌ Erreur : '+e.message;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════
+function init(){
+  buildPromoForm();
+  showPromosView('liste');
+  loadPromos();
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  const saved = sessionStorage.getItem('auth_agent');
+  if(saved && AGENT_PINS[saved]){
+    _setAgentSession(saved);
+    init();
+  } else {
+    document.getElementById('overlay-pin').classList.remove('hidden');
+  }
+});
+</script>
+</body>
+</html>
