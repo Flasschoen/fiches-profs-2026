@@ -61,7 +61,7 @@ legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
   <div class="logo">EDUCPASS</div>
   <div class="title">📦 PRODUITS — 2026</div>
   <button class="btn" id="btn-pin-mgr" onclick="showGestionPins()" style="display:none;">🔑 PINs</button>
-  <a class="btn" href="TABLEAU DE BORD.html" style="background:var(--navy-dark);color:#fff;text-decoration:none;display:inline-block;" title="Retour au Tableau de Bord">🗂️ Tableau de Bord</a>
+  <a class="btn" href="../TABLEAU DE BORD.html" style="background:var(--navy-dark);color:#fff;text-decoration:none;display:inline-block;" title="Retour au Tableau de Bord">🗂️ Tableau de Bord</a>
   <button class="btn" onclick="logoutPin()">🔒 <span id="header-agent">—</span></button>
 </div>
 
@@ -185,7 +185,7 @@ const PRODUITS_SECTIONS = [
     ['fldbLP3x6oIGtWl34','libellefr','Libellé FR','text'],
     ['fldRbOYQNCCWnvLgo','libellenl','Libellé NL','text'],
     ['fldpSe1nSTpfD8RXH','prix','Prix','number'],
-    ['fldXLnwPYRqHIlN4q','modelogo','Mode d’affichage logo','select:modelogo'],
+    ['fldXLnwPYRqHIlN4q','modelogo','Mode d\'affichage logo','select:modelogo'],
   ]},
   {title:'Description', fields:[
     ['fld2d6dH3rIf6S0Vw','descriptionfr','Description FR','textarea'],
@@ -381,6 +381,7 @@ async function saveProduit(){
   if(!fields['Référence']){ setSt('❌ La Référence est obligatoire.'); return; }
   document.getElementById('sync-pending').classList.add('show');
   setSaveDisabledProduit(true);
+  setSt('⏳ Enregistrement en cours...');
   try{
     if(curProduitId){
       await atFetch(PRODUITS_API+'/'+curProduitId, {method:'PATCH', body: JSON.stringify({fields})});
