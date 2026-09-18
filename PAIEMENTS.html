@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PAIEMENTS — EDUCPASS 2026</title>
+<style>
+:root{
+  --navy:#1e3a6e; --navy-dark:#152a52; --orange:#c55a11; --bg:#f0f4fa;
+  --line:#d7e0ee; --ok:#27ae60; --err:#c0392b;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:Calibri,Arial,sans-serif;background:var(--bg);color:#222;}
+.hdr-bar{background:var(--navy);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.hdr-bar .logo{font-weight:900;letter-spacing:1px;}
+.hdr-bar .title{font-weight:700;flex:1;}
+.btn{border:none;border-radius:4px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;background:#eee;color:#222;}
+.btn:hover{filter:brightness(0.95);}
+.btn-save{background:var(--ok);color:#fff;}
+.btn-cancel{background:#888;color:#fff;}
+.btn-blue{background:#d4e6f9;color:#1a4d80;}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+.toolbar{background:#fff;border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.toolbar input[type=text],.toolbar input[type=date],.toolbar select{padding:6px 8px;border:1px solid #bbb;border-radius:4px;font-size:13px;}
+#st-bar{padding:4px 16px;font-size:12px;color:#555;min-height:18px;}
+#sync-pending{display:none;background:#f39c12;color:#fff;text-align:center;padding:4px;font-weight:700;font-size:12px;}
+#sync-pending.show{display:block;animation:pulse 1s infinite alternate;}
+@keyframes pulse{from{opacity:.6}to{opacity:1}}
+.wrap{padding:14px 16px;}
+.totaux-bar{display:flex;gap:18px;flex-wrap:wrap;align-items:center;background:#fff;border:1px solid var(--line);border-radius:6px;padding:10px 16px;margin-bottom:12px;}
+.totaux-bar .tot-item{font-size:13px;color:#444;}
+.totaux-bar .tot-item b{font-size:17px;color:var(--navy);}
+table.results{border-collapse:collapse;width:100%;background:#fff;font-size:12.5px;}
+table.results th{background:var(--navy);color:#fff;padding:6px 8px;text-align:left;position:sticky;top:0;white-space:nowrap;}
+table.results td{padding:5px 8px;border-bottom:1px solid var(--line);white-space:nowrap;}
+table.results tr.detail:hover{background:#eaf1ff;cursor:pointer;}
+table.results tr.grp td{background:#eef2fa;font-weight:700;color:var(--navy);border-top:2px solid var(--navy);padding:7px 8px;}
+table.results tr.grp .grp-total{float:right;color:#5b2c8a;}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11.5px;font-weight:700;}
+.badge-paye{background:#d4f4d4;color:#1e6b1e;}
+.badge-attente{background:#fff3b0;color:#6b5900;}
+.badge-echoue{background:#f8d7da;color:#7a1f1f;}
+.badge-rembourse{background:#dceefa;color:#1a4d80;}
+.badge-annule{background:#e2e2e2;color:#555;}
+.badge-origine{background:#eee0f7;color:#5b2c8a;}
+.fiche-box{background:#fff;border-radius:6px;box-shadow:0 1px 6px rgba(30,58,110,.12);padding:16px 20px;max-width:1100px;}
+.fiche-hdr{font-size:20px;font-weight:900;color:var(--navy);margin-bottom:4px;}
+.fiche-sub{color:#777;font-size:13px;margin-bottom:14px;}
+fieldset{border:1px solid var(--line);border-radius:6px;margin-bottom:14px;padding:10px 14px 14px;}
+legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
+.frow{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px 14px;}
+.fitem label{display:block;font-size:11.5px;color:#555;margin-bottom:2px;font-weight:600;}
+.fitem input,.fitem select,.fitem textarea{width:100%;padding:6px 7px;border:1px solid #bbb;border-radius:4px;font-size:13px;font-family:inherit;}
+.fitem textarea{min-height:52px;resize:vertical;}
+.hidden{display:none !important;}
+.pin-box,.pin-mgr-box{background:#fff;border-radius:8px;padding:32px 40px;box-shadow:0 2px 20px rgba(0,0,0,.25);text-align:center;min-width:320px;}
+#overlay-pin,#overlay-pin-mgr{position:fixed;inset:0;background:rgba(20,30,50,.55);display:flex;align-items:center;justify-content:center;z-index:999;}
+#overlay-loading{position:fixed;inset:0;background:rgba(20,30,50,.35);display:flex;align-items:center;justify-content:center;z-index:1000;pointer-events:none;}
+.loading-box{background:#fff;border-radius:10px;padding:26px 40px;box-shadow:0 4px 28px rgba(0,0,0,.3);font-size:19px;font-weight:700;color:var(--navy);text-align:center;min-width:320px;}
+.pin-logo{font-weight:900;color:var(--navy);letter-spacing:1px;font-size:20px;margin-bottom:6px;}
+.pin-box label,.pin-mgr-box label{display:block;text-align:left;font-size:12.5px;font-weight:600;margin:12px 0 4px;}
+.pin-box select,.pin-box input,.pin-mgr-box input{width:100%;padding:8px;border:1px solid #bbb;border-radius:4px;font-size:14px;}
+.pin-btn{margin-top:18px;width:100%;padding:10px;background:var(--navy);color:#fff;border:none;border-radius:4px;font-weight:700;cursor:pointer;}
+.pin-err{color:var(--err);font-size:12.5px;min-height:18px;margin-top:6px;}
+.pin-row{display:flex;align-items:center;gap:8px;margin:8px 0;text-align:left;}
+.pin-row label{min-width:80px;margin:0;}
+.result-count{display:inline-block;font-size:17px;font-weight:800;color:#5b2c8a;background:#eee0f7;border:2px solid #8e44ad;border-radius:6px;padding:5px 14px;min-width:20px;text-align:center;}
+.result-count:empty{display:none;}
+.note-box{background:#fff8e6;border:1px solid #f0d98a;border-radius:5px;padding:8px 12px;font-size:12px;color:#7a5c00;margin-bottom:12px;}
+#overlay-mollie-sync{position:fixed;inset:0;background:rgba(20,30,50,.55);display:flex;align-items:center;justify-content:center;z-index:998;}
+.mollie-sync-box{background:#fff;border-radius:8px;padding:24px 28px;box-shadow:0 2px 20px rgba(0,0,0,.25);width:min(880px,92vw);}
+table.results td.mollie-chk{text-align:center;}
+</style>
+</head>
+<body>
+
+<div class="hdr-bar">
+  <div class="logo">EDUCPASS</div>
+  <div class="title">💳 PAIEMENTS — 2026</div>
+  <button class="btn" id="btn-pin-mgr" onclick="showGestionPins()" style="display:none;">🔑 PINs</button>
+  <a class="btn" href="../TABLEAU DE BORD.html" style="background:var(--navy-dark);color:#fff;text-decoration:none;display:inline-block;" title="Retour au Tableau de Bord">🗂️ Tableau de Bord</a>
+  <button class="btn" onclick="logoutPin()">🔒 <span id="header-agent">—</span></button>
+</div>
+
+<div id="sync-pending">⏳ Synchronisation en cours…</div>
+<div id="st-bar"></div>
+<div id="overlay-loading" class="hidden">
+  <div class="loading-box" id="loading-msg"></div>
+</div>
+
+<div class="wrap">
+
+  <!-- ====================== VUE LISTE / RAPPORT ====================== -->
+  <div id="view-paiements-liste">
+    <div class="toolbar">
+      <input type="date" id="flt-datedebut" title="Du" onchange="renderPaiementsReport()">
+      <span>→</span>
+      <input type="date" id="flt-datefin" title="Au" onchange="renderPaiementsReport()">
+      <select id="flt-statut" onchange="renderPaiementsReport()">
+        <option value="">Statut : tous</option>
+      </select>
+      <select id="flt-origine" onchange="renderPaiementsReport()">
+        <option value="">Origine : tous</option>
+      </select>
+      <input type="text" id="flt-recherche" placeholder="Rechercher : nom, matricule, N° membre, N° transaction..." style="min-width:260px;" oninput="renderPaiementsReport()">
+      <button class="btn btn-save" onclick="newPaiement()">➕ Ajouter un paiement</button>
+      <button class="btn" id="btn-synchro-mollie" onclick="synchroMollie()" title="Recherche les paiements Mollie payés des 30 derniers jours absents de cette table, pour validation avant import.">🔄 Synchro Mollie</button>
+      <span id="paiements-count" class="result-count"></span>
+    </div>
+
+    <div class="totaux-bar" id="totaux-bar">
+      <div class="tot-item">Paiements affichés : <b id="tot-count">0</b></div>
+      <div class="tot-item">Total : <b id="tot-montant">0,00 €</b></div>
+    </div>
+
+    <div style="max-height:70vh;overflow:auto;">
+      <table class="results">
+        <thead><tr>
+          <th>Date</th><th>N° Transaction</th><th>Montant</th><th>Statut</th><th>Origine</th><th>Article / Libellé</th><th>N° Membre</th><th>Matricule</th><th>Nom</th>
+        </tr></thead>
+        <tbody id="tbl-paiements-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ====================== VUE FICHE PAIEMENT ====================== -->
+  <div id="view-paiements-fiche" class="hidden">
+    <div class="fiche-box">
+      <div class="fiche-hdr" id="paiement-titre">—</div>
+      <div class="fiche-sub">Table Airtable "Paiements" — même table que le bouton 💳 Paiements de la fiche prof dans FICHIER PROFS 2026.html.</div>
+
+      <div style="margin:14px 0;">
+        <button class="btn btn-save" id="btn-save-paiement" onclick="savePaiementFiche()">💾 Enregistrer</button>
+        <button class="btn btn-cancel" onclick="cancelPaiementAndReset()">↩️ Annuler</button>
+        <button class="btn" id="btn-delete-paiement" onclick="deletePaiementFiche()" style="display:none;background:var(--err);color:#fff;">🗑️ Supprimer</button>
+      </div>
+
+      <div class="note-box" id="paiement-membre-note" style="display:none;"></div>
+
+      <div id="paiement-fiche-sections"></div>
+
+      <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line);">
+        <button class="btn btn-save" onclick="savePaiementFiche()">💾 Enregistrer</button>
+        <button class="btn btn-cancel" onclick="cancelPaiementAndReset()">↩️ Annuler</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ====================== OVERLAY SYNCHRO MOLLIE (liste à valider) ====================== -->
+<div id="overlay-mollie-sync" class="hidden">
+  <div class="mollie-sync-box">
+    <h2 style="margin-top:0;">🔄 Synchro Mollie — paiements à valider</h2>
+    <div id="mollie-sync-msg" class="pin-err" style="color:#555;"></div>
+    <div id="mollie-sync-content" class="hidden">
+      <div style="margin-bottom:10px;display:flex;gap:8px;align-items:center;">
+        <button class="btn btn-blue" onclick="toggleAllMollie(true)">Tout cocher</button>
+        <button class="btn btn-blue" onclick="toggleAllMollie(false)">Tout décocher</button>
+        <span id="mollie-sync-count" style="font-size:13px;color:#555;"></span>
+      </div>
+      <div style="max-height:50vh;overflow:auto;border:1px solid var(--line);border-radius:6px;">
+        <table class="results" style="width:100%;">
+          <thead><tr>
+            <th></th><th>Date</th><th>Montant</th><th>Méthode</th><th>Description Mollie</th><th>N° Membre repéré</th><th>Id Mollie</th>
+          </tr></thead>
+          <tbody id="mollie-sync-body"></tbody>
+        </table>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button class="btn btn-cancel" onclick="closeMollieSyncOverlay()">Fermer</button>
+      <button class="btn btn-save" id="btn-import-mollie" onclick="importMollieSelection()" style="display:none;">📥 Importer la sélection</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====================== OVERLAY LOGIN PIN ====================== -->
+<div id="overlay-pin" class="hidden">
+  <div class="pin-box">
+    <div class="pin-logo">EDUCPASS</div>
+    <h2>🔐 Accès sécurisé</h2>
+    <label>Agent :</label>
+    <select id="pin-agent">
+      <option value="">— Sélectionnez —</option>
+      <option>MARC</option>
+      <option>MAÏTE</option>
+      <option>PASCAL</option>
+      <option>VANESSA</option>
+    </select>
+    <label>Code PIN (4 chiffres) :</label>
+    <input type="password" id="pin-code" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" placeholder="••••" autocomplete="off" oninput="if(this.value.length===4)loginPin()">
+    <div id="pin-error" class="pin-err"></div>
+    <button class="pin-btn" onclick="loginPin()">Connexion →</button>
+  </div>
+</div>
+
+<!-- ====================== OVERLAY GESTION PINS (MARC uniquement) ====================== -->
+<div id="overlay-pin-mgr" class="hidden">
+  <div class="pin-mgr-box">
+    <h2>🔑 Gestion des codes PIN</h2>
+    <div class="pin-row"><label>MARC :</label><input type="password" id="pm-marc" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
+    <div class="pin-row"><label>MAÏTE :</label><input type="password" id="pm-maite" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
+    <div class="pin-row"><label>PASCAL :</label><input type="password" id="pm-pascal" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
+    <div class="pin-row"><label>VANESSA :</label><input type="password" id="pm-vanessa" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
+    <div class="pin-err" id="pm-msg"></div>
+    <div style="display:flex;gap:8px;margin-top:14px;">
+      <button class="btn btn-cancel" onclick="closeGestionPins()">Annuler</button>
+      <button class="btn btn-save" onclick="saveGestionPins()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  CONFIG AIRTABLE — même proxy Cloudflare Worker que FICHIER PROFS 2026.html,
+//  PRODUITS.html, PROMOS.html (jeton Airtable caché côté serveur).
+// ══════════════════════════════════════════════════════════
+const PROXY = 'https://educpass-profs-proxy.marc-flasschoen.workers.dev';
+const BASE  = 'appWCfo8WBkMGUuc2';
+const HDRS  = {'Content-Type':'application/json'};
+
+const PAIEMENT_TBL = 'tblphJSzrHNaYPco1';
+const PAIEMENT_API = `${PROXY}/v0/${BASE}/${PAIEMENT_TBL}`;
+
+const PROFS_TBL = 'tbl3e83BINBUCkhMH';
+const PROFS_API = `${PROXY}/v0/${BASE}/${PROFS_TBL}`;
+
+const PRODUITS_TBL = 'tblnEHRqjZ3XjW6vV';
+const PRODUITS_API = `${PROXY}/v0/${BASE}/${PRODUITS_TBL}`;
+
+// Route Worker dédiée Mollie (lecture seule, clé API à portée payments.read) —
+// voir /topics/educpass-tableau-de-bord-build-2.md pour le détail de conception.
+const MOLLIE_API = `${PROXY}/mollie/paiements-recents`;
+
+// ══════════════════════════════════════════════════════════
+//  PAIEMENTS — mapping id Airtable <-> clé DOM <-> libellé <-> type
+// ══════════════════════════════════════════════════════════
+const PAIEMENT_CHOICES = {
+  statut: ['Payé','En attente','Échoué','Remboursé','Annulé'],
+  origine: ['Synchro Mollie','Paiement manuel','Virement manuel']
+};
+
+// type "link:produits" = select rempli dynamiquement depuis le cache Produits
+// (voir loadProduitsCache) — pas un choix statique comme les autres select.
+const PAIEMENT_SECTIONS = [
+  {title:'Paiement', fields:[
+    ['fldDzVwLsQXS1lTjY','datepaiement','Date','date'],
+    ['fldCheCHHasdY9UYV','montant','Montant','number'],
+    ['fldJzlubpeWttG8Kx','statut','Statut','select:statut'],
+    ['flduJQ82yLCzgETNN','origine','Origine','select:origine'],
+    ['fldeVsI1Cv7Uab4OE','ntransaction','N° Transaction','text'],
+  ]},
+  {title:'Article & membre', fields:[
+    ['fldTHWXw1TE4ZAYsM','article','Article','link:produits'],
+    ['fldyIxzRcnWmUnFXJ','libelle','Libellé','text'],
+    ['fldxaQxPAtWtorpRa','nmembre','N° Membre','number'],
+    ['fldtK43p1olrQvlE8','matricule','Matricule','text'],
+    ['fldpHUTtuiUBP2W5X','nom','Nom','text'],
+  ]},
+  {title:'Autres', fields:[
+    ['fldzaNlFMjvd05baB','codepromo','Code Promo','text'],
+    ['fldy7E7V4DeMp2LOP','remarque','Remarque','textarea'],
+  ]},
+];
+const PAIEMENT_KEY_TO_NAME = {};
+PAIEMENT_SECTIONS.forEach(sec=>sec.fields.forEach(([fid,key,label])=>{ PAIEMENT_KEY_TO_NAME[key]=label; }));
+
+// Au-delà, on arrête de charger (sécurité — le volume réel attendu est bien plus
+// faible, quelques centaines/milliers de paiements par an tout au plus).
+const MAX_RESULTS = 20000;
+
+// ══════════════════════════════════════════════════════════
+//  ÉTAT
+// ══════════════════════════════════════════════════════════
+let lastPaiements = [];
+let produitsCache = []; // [{id, ref, libelle}]
+let curPaiementFicheId = null;
+let _paiementLoading = false;
+let _paiementDirty = false;
+
+function setSt(msg){
+  document.getElementById('st-bar').textContent = msg || '';
+  const box = document.getElementById('overlay-loading');
+  const isLoading = !!msg && (msg.indexOf('🔎')===0 || msg.indexOf('⏳')===0);
+  if(isLoading){
+    document.getElementById('loading-msg').textContent = msg;
+    box.classList.remove('hidden');
+  } else {
+    box.classList.add('hidden');
+  }
+}
+function esc(s){ return String(s).replace(/\\/g,'\\\\').replace(/"/g,'\\"'); }
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ══════════════════════════════════════════════════════════
+//  APPELS AIRTABLE
+// ══════════════════════════════════════════════════════════
+async function atFetch(url, opts){
+  const r = await fetch(url, Object.assign({headers:HDRS}, opts||{}));
+  if(!r.ok){
+    const t = await r.text().catch(()=> '');
+    throw new Error('Airtable '+r.status+' : '+t.slice(0,200));
+  }
+  return r.json();
+}
+
+function fmtMontant(n){
+  if(n==null || isNaN(n)) return '';
+  return n.toLocaleString('fr-BE', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
+}
+function round2(n){ return Math.round((n + Number.EPSILON) * 100) / 100; }
+
+function badgeClassStatut(s){
+  const map = { 'Payé':'badge-paye', 'En attente':'badge-attente', 'Échoué':'badge-echoue', 'Remboursé':'badge-rembourse', 'Annulé':'badge-annule' };
+  return map[s] || 'badge-annule';
+}
+
+// ══════════════════════════════════════════════════════════
+//  PRODUITS — cache pour le select "Article" (peu d'enregistrements, chargé une fois)
+// ══════════════════════════════════════════════════════════
+async function loadProduitsCache(){
+  try{
+    let all = [], offset;
+    do{
+      const params = new URLSearchParams({pageSize:'100'});
+      if(offset) params.set('offset', offset);
+      const data = await atFetch(PRODUITS_API+'?'+params.toString());
+      all = all.concat(data.records||[]);
+      offset = data.offset;
+    } while(offset);
+    produitsCache = all.map(r=>({ id:r.id, ref:r.fields['Référence']||'(sans réf.)', libelle:r.fields['Libellé FR']||'' }));
+  }catch(e){ setSt('❌ Produits (pour Article) : '+e.message); }
+}
+function produitLabel(id){
+  const p = produitsCache.find(p=>p.id===id);
+  return p ? (p.ref + (p.libelle ? ' — '+p.libelle : '')) : '(produit inconnu)';
+}
+
+// ══════════════════════════════════════════════════════════
+//  CHARGEMENT + RAPPORT (liste groupée par date avec sous-totaux)
+// ══════════════════════════════════════════════════════════
+async function loadPaiements(){
+  document.getElementById('paiements-count').textContent = '⏳';
+  try{
+    let all = [], offset;
+    do{
+      const params = new URLSearchParams({pageSize:'100'});
+      if(offset) params.set('offset', offset);
+      const data = await atFetch(PAIEMENT_API+'?'+params.toString());
+      all = all.concat(data.records||[]);
+      offset = data.offset;
+    } while(offset && all.length < MAX_RESULTS);
+    lastPaiements = all;
+    document.getElementById('paiements-count').textContent = all.length;
+    renderPaiementsReport();
+  }catch(e){ setSt('❌ '+e.message); document.getElementById('paiements-count').textContent = ''; }
+}
+
+function normTxt(s){ return (s||'').toString().normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase(); }
+
+function filteredPaiements(){
+  const du = document.getElementById('flt-datedebut').value;
+  const au = document.getElementById('flt-datefin').value;
+  const statut = document.getElementById('flt-statut').value;
+  const origine = document.getElementById('flt-origine').value;
+  const rch = normTxt(document.getElementById('flt-recherche').value.trim());
+  return lastPaiements.filter(r=>{
+    const f = r.fields;
+    const d = f['Date'] || '';
+    if(du && (!d || d < du)) return false;
+    if(au && (!d || d > au)) return false;
+    if(statut){ const s=(f['Statut']&&f['Statut'].name)||f['Statut']||''; if(s!==statut) return false; }
+    if(origine){ const o=(f['Origine']&&f['Origine'].name)||f['Origine']||''; if(o!==origine) return false; }
+    if(rch){
+      const hay = normTxt([f['Nom'],f['Matricule'],f['N° Membre'],f['N° Transaction'],f['Libellé']].filter(Boolean).join(' '));
+      if(!hay.includes(rch)) return false;
+    }
+    return true;
+  });
+}
+
+function renderPaiementsReport(){
+  const rows = filteredPaiements();
+  // Groupes par date (desc), triés eux-mêmes par date décroissante.
+  const groups = {};
+  rows.forEach(r=>{
+    const d = r.fields['Date'] || '(sans date)';
+    (groups[d] = groups[d] || []).push(r);
+  });
+  const dates = Object.keys(groups).sort((a,b)=> b.localeCompare(a));
+
+  const tbody = document.getElementById('tbl-paiements-body');
+  tbody.innerHTML = '';
+  let grandTotal = 0;
+  dates.forEach(d=>{
+    const recs = groups[d];
+    let subtotal = 0;
+    recs.forEach(r=> subtotal += (Number(r.fields['Montant'])||0));
+    grandTotal += subtotal;
+    const dispDate = (d==='(sans date)') ? d : d.split('-').reverse().join('/');
+    const trGrp = document.createElement('tr');
+    trGrp.className = 'grp';
+    trGrp.innerHTML = '<td colspan="9">📅 '+escHtml(dispDate)+' — '+recs.length+' paiement(s)<span class="grp-total">'+fmtMontant(round2(subtotal))+'</span></td>';
+    tbody.appendChild(trGrp);
+    recs.forEach(r=>{
+      const f = r.fields;
+      const tr = document.createElement('tr');
+      tr.className = 'detail';
+      const statutName = (f['Statut']&&f['Statut'].name)||f['Statut']||'';
+      const origineName = (f['Origine']&&f['Origine'].name)||f['Origine']||'';
+      const article = (f['Article']&&f['Article'].length) ? produitLabel(f['Article'][0]) : (f['Libellé']||'');
+      tr.innerHTML = '<td></td><td>'+escHtml(f['N° Transaction']||'')+'</td><td>'+fmtMontant(f['Montant'])+'</td>'
+        +'<td><span class="badge '+badgeClassStatut(statutName)+'">'+escHtml(statutName)+'</span></td>'
+        +'<td><span class="badge badge-origine">'+escHtml(origineName)+'</span></td>'
+        +'<td>'+escHtml(article)+'</td><td>'+escHtml(f['N° Membre']!=null?f['N° Membre']:'')+'</td>'
+        +'<td>'+escHtml(f['Matricule']||'')+'</td><td>'+escHtml(f['Nom']||'')+'</td>';
+      tr.onclick = ()=>openPaiementFiche(r.id);
+      tbody.appendChild(tr);
+    });
+  });
+  document.getElementById('tot-count').textContent = rows.length;
+  document.getElementById('tot-montant').textContent = fmtMontant(round2(grandTotal));
+}
+
+function populateFilterSelects(){
+  const selStatut = document.getElementById('flt-statut');
+  PAIEMENT_CHOICES.statut.forEach(s=>{ const o=document.createElement('option'); o.value=s; o.textContent=s; selStatut.appendChild(o); });
+  const selOrigine = document.getElementById('flt-origine');
+  PAIEMENT_CHOICES.origine.forEach(s=>{ const o=document.createElement('option'); o.value=s; o.textContent=s; selOrigine.appendChild(o); });
+}
+
+// ══════════════════════════════════════════════════════════
+//  FICHE PAIEMENT — création / édition
+// ══════════════════════════════════════════════════════════
+function fldPF(key){ return document.getElementById('pf-'+key); }
+function gvPF(key){ const el=fldPF(key); if(!el) return null; const v=el.value; return v===''?null:v; }
+function svPF(key, v){
+  const el = fldPF(key); if(!el) return;
+  if(v && typeof v==='object' && v.name) v = v.name;
+  el.value = (v==null) ? '' : v;
+}
+function markPaiementDirty(){ _paiementDirty = true; }
+
+function buildPaiementFicheForm(){
+  const wrap = document.getElementById('paiement-fiche-sections');
+  wrap.innerHTML = '';
+  PAIEMENT_SECTIONS.forEach(sec=>{
+    const fs = document.createElement('fieldset');
+    const lg = document.createElement('legend'); lg.textContent = sec.title; fs.appendChild(lg);
+    const row = document.createElement('div'); row.className='frow';
+    sec.fields.forEach(([fid,key,label,type])=>{
+      const item = document.createElement('div'); item.className='fitem';
+      const lab = document.createElement('label'); lab.textContent = label; item.appendChild(lab);
+      let input;
+      if(type.startsWith('select:')){
+        const ck = type.split(':')[1];
+        input = document.createElement('select');
+        const empty=document.createElement('option'); empty.value=''; empty.textContent='—'; input.appendChild(empty);
+        PAIEMENT_CHOICES[ck].forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; input.appendChild(o); });
+      } else if(type==='link:produits'){
+        input = document.createElement('select');
+        const empty=document.createElement('option'); empty.value=''; empty.textContent='— Aucun —'; input.appendChild(empty);
+        produitsCache.forEach(p=>{ const o=document.createElement('option'); o.value=p.id; o.textContent=p.ref+(p.libelle?' — '+p.libelle:''); input.appendChild(o); });
+      } else if(type==='textarea'){
+        input = document.createElement('textarea');
+      } else {
+        input = document.createElement('input');
+        input.type = (type==='number') ? 'number' : (type==='date' ? 'date' : 'text');
+      }
+      input.id = 'pf-'+key;
+      input.dataset.fieldId = fid;
+      input.oninput = markPaiementDirty;
+      item.appendChild(input);
+      if(key==='montant'){
+        const suf = document.createElement('span');
+        suf.textContent = ' €';
+        suf.style.cssText = 'margin-left:4px;font-weight:700;color:#555;';
+        item.appendChild(suf);
+      }
+      row.appendChild(item);
+    });
+    fs.appendChild(row);
+    wrap.appendChild(fs);
+  });
+}
+
+function fillPaiementFicheForm(fields){
+  PAIEMENT_SECTIONS.forEach(sec=>sec.fields.forEach(([fid,key])=>{
+    if(key==='article'){
+      svPF(key, (fields['Article']&&fields['Article'].length) ? fields['Article'][0] : null);
+      return;
+    }
+    svPF(key, fields[PAIEMENT_KEY_TO_NAME[key]]);
+  }));
+}
+
+function setSaveDisabledPaiement(v){ document.getElementById('btn-save-paiement').disabled = v; }
+function setDeleteVisiblePaiement(v){ document.getElementById('btn-delete-paiement').style.display = v ? '' : 'none'; }
+
+function showPaiementsView(v){
+  document.getElementById('view-paiements-liste').classList.toggle('hidden', v==='fiche');
+  document.getElementById('view-paiements-fiche').classList.toggle('hidden', v!=='fiche');
+}
+
+async function openPaiementFiche(id){
+  if(_paiementDirty && !confirm('Des modifications non enregistrées seront perdues. Continuer ?')) return;
+  _paiementLoading = true;
+  setSaveDisabledPaiement(true);
+  setSt('⏳ Chargement du paiement...');
+  try{
+    const data = await atFetch(PAIEMENT_API+'/'+id);
+    curPaiementFicheId = id;
+    _paiementDirty = false;
+    document.getElementById('paiement-titre').textContent = (data.fields['N° Transaction']||data.fields['Nom']||'Paiement');
+    buildPaiementFicheForm();
+    fillPaiementFicheForm(data.fields);
+    updateMembreNote(data.fields);
+    setDeleteVisiblePaiement(true);
+    showPaiementsView('fiche');
+    setSt('');
+  }catch(e){ setSt('❌ '+e.message); }
+  finally{ _paiementLoading=false; setSaveDisabledPaiement(false); }
+}
+
+function updateMembreNote(fields){
+  const box = document.getElementById('paiement-membre-note');
+  const linked = fields['Membre'] && fields['Membre'].length;
+  if(linked){
+    box.style.display = '';
+    box.textContent = '🔗 Ce paiement est lié à une fiche Prof (via le champ N° Membre).';
+  } else {
+    box.style.display = '';
+    box.textContent = 'ℹ️ Ce paiement n\'est pas encore lié à une fiche Prof — renseigne le N° Membre puis Enregistre : le rapprochement se fait automatiquement s\'il existe une fiche correspondante dans Profs.';
+  }
+}
+
+function newPaiement(){
+  if(_paiementDirty && !confirm('Des modifications non enregistrées seront perdues. Continuer ?')) return;
+  curPaiementFicheId = null;
+  _paiementDirty = false;
+  document.getElementById('paiement-titre').textContent = 'Nouveau paiement';
+  buildPaiementFicheForm();
+  svPF('datepaiement', new Date().toISOString().slice(0,10));
+  svPF('statut', 'Payé');
+  svPF('origine', 'Paiement manuel');
+  updateMembreNote({});
+  setDeleteVisiblePaiement(false);
+  showPaiementsView('fiche');
+}
+
+// Recherche une fiche Profs par N° membre exact (formule Airtable) pour lier
+// automatiquement le champ "Membre" — évite d'exiger la sélection manuelle
+// d'une fiche prof en plus du N° Membre déjà saisi.
+async function findProfByNMembre(nmembre){
+  if(nmembre==null || nmembre==='') return null;
+  try{
+    const params = new URLSearchParams({filterByFormula: '{N° membre}='+Number(nmembre), maxRecords:'1'});
+    const data = await atFetch(PROFS_API+'?'+params.toString());
+    return (data.records && data.records.length) ? data.records[0].id : null;
+  }catch(e){ return null; }
+}
+
+async function savePaiementFiche(){
+  if(_paiementLoading){ setSt('⏳ Chargement en cours, réessaie dans un instant.'); return; }
+  const montant = gvPF('montant');
+  if(montant==null || isNaN(Number(montant))){
+    setSt('❌ Le montant est obligatoire et doit être un nombre.');
+    return;
+  }
+  const fields = {};
+  PAIEMENT_SECTIONS.forEach(sec=>sec.fields.forEach(([fid,key,label,type])=>{
+    if(key==='article'){
+      const v = gvPF('article');
+      fields['Article'] = v ? [v] : [];
+      return;
+    }
+    let v = gvPF(key);
+    if(v==null) return;
+    if(type==='number') v = Number(v);
+    fields[label] = v;
+  }));
+  document.getElementById('sync-pending').classList.add('show');
+  setSaveDisabledPaiement(true);
+  try{
+    // Rapprochement automatique avec la fiche Prof correspondante (par N° Membre),
+    // uniquement à la création ou si le N° Membre a changé — jamais écrasé si déjà lié
+    // et que le N° Membre est resté vide dans le formulaire.
+    if(fields['N° Membre']!=null){
+      const profId = await findProfByNMembre(fields['N° Membre']);
+      if(profId) fields['Membre'] = [profId];
+    }
+    if(curPaiementFicheId){
+      await atFetch(PAIEMENT_API+'/'+curPaiementFicheId, {method:'PATCH', body: JSON.stringify({fields})});
+      setSt('✅ Paiement enregistré.');
+    } else {
+      const res = await atFetch(PAIEMENT_API, {method:'POST', body: JSON.stringify({records:[{fields}]})});
+      curPaiementFicheId = res.records[0].id;
+      setSt('✅ Nouveau paiement créé.');
+    }
+    _paiementDirty = false;
+    await loadPaiements();
+    await openPaiementFiche(curPaiementFicheId);
+  }catch(e){ setSt('❌ '+e.message); }
+  finally{
+    document.getElementById('sync-pending').classList.remove('show');
+    setSaveDisabledPaiement(false);
+  }
+}
+
+function cancelPaiementAndReset(){
+  if(_paiementDirty && !confirm('Annuler les modifications non enregistrées ?')) return;
+  _paiementDirty = false;
+  curPaiementFicheId = null;
+  showPaiementsView('liste');
+}
+
+// Suppression réservée à MARC, même règle que les autres outils.
+async function deletePaiementFiche(){
+  if(sessionStorage.getItem('auth_agent')!=='MARC') return;
+  if(!curPaiementFicheId){ setSt('Aucun paiement chargé à supprimer.'); return; }
+  const idToDelete = curPaiementFicheId;
+  if(!confirm('⚠️ SUPPRESSION DÉFINITIVE\n\nSupprimer définitivement ce paiement ?\n\nCette action est IRRÉVERSIBLE.')) return;
+  setSt('⏳ Suppression en cours...');
+  try{
+    await atFetch(PAIEMENT_API+'/'+idToDelete, {method:'DELETE'});
+    lastPaiements = lastPaiements.filter(r=>r.id!==idToDelete);
+    curPaiementFicheId = null; _paiementDirty = false;
+    renderPaiementsReport();
+    showPaiementsView('liste');
+    setSt('✅ Paiement supprimé définitivement.');
+  }catch(e){ setSt('❌ '+e.message); }
+}
+
+// ══════════════════════════════════════════════════════════
+//  SYNCHRO MOLLIE — rattrapage manuel des paiements non synchronisés
+//  (voir /topics/educpass-tableau-de-bord-build-2.md pour la conception validée avec Marc :
+//   liste à valider — pas de création automatique —, fenêtre de 30 jours, clé Mollie
+//   à portée payments.read uniquement, jamais exposée côté navigateur.)
+// ══════════════════════════════════════════════════════════
+let mollieCandidats = []; // [{id, montant, description, methode, dateCreation, url, nmembre, nom, matricule}]
+
+// La description Mollie observée suit le format "N° Membre - Nom Prénom (Matricule)",
+// ex: "52065 - Josephine Vitello (28410270414)". Si le format ne correspond pas,
+// on garde la description telle quelle en Libellé et on laisse N° Membre/Matricule/Nom vides
+// (Marc pourra les compléter manuellement après import, comme pour toute saisie manuelle).
+function parseMollieDescription(desc){
+  const m = /^\s*(\d+)\s*-\s*(.+?)\s*\(([^)]+)\)\s*$/.exec(desc || '');
+  if(!m) return { nmembre:null, nom:null, matricule:null };
+  return { nmembre: Number(m[1]), nom: m[2].trim(), matricule: m[3].trim() };
+}
+
+async function synchroMollie(){
+  document.getElementById('overlay-mollie-sync').classList.remove('hidden');
+  document.getElementById('mollie-sync-content').classList.add('hidden');
+  document.getElementById('btn-import-mollie').style.display = 'none';
+  document.getElementById('mollie-sync-msg').textContent = '⏳ Recherche des paiements Mollie des 30 derniers jours...';
+  try{
+    const resp = await fetch(MOLLIE_API + '?jours=30', {headers:HDRS});
+    const data = await resp.json();
+    if(!resp.ok || data.ok===false){
+      document.getElementById('mollie-sync-msg').textContent = '❌ '+(data.error||('Erreur HTTP '+resp.status));
+      return;
+    }
+    // Paiements déjà présents dans Airtable (peu importe la source — Synchro Mollie
+    // ou saisie manuelle antérieure) : on ne propose jamais un doublon d'Id Mollie.
+    const idsExistants = new Set(lastPaiements.map(r=>r.fields['Id Mollie']).filter(Boolean));
+    mollieCandidats = (data.paiements||[])
+      .filter(p=>!idsExistants.has(p.id))
+      .map(p=>Object.assign({}, p, parseMollieDescription(p.description)));
+
+    if(mollieCandidats.length===0){
+      document.getElementById('mollie-sync-msg').textContent = '✅ Aucun paiement Mollie manquant sur les 30 derniers jours — tout est déjà synchronisé.';
+      return;
+    }
+    document.getElementById('mollie-sync-msg').textContent = '';
+    document.getElementById('mollie-sync-content').classList.remove('hidden');
+    document.getElementById('btn-import-mollie').style.display = '';
+    renderMollieSyncTable();
+  }catch(e){
+    document.getElementById('mollie-sync-msg').textContent = '❌ Impossible de contacter le Worker : '+e.message;
+  }
+}
+
+function renderMollieSyncTable(){
+  const tbody = document.getElementById('mollie-sync-body');
+  tbody.innerHTML = '';
+  mollieCandidats.forEach((p,i)=>{
+    const tr = document.createElement('tr');
+    tr.className = 'detail';
+    const d = (p.dateCreation||'').slice(0,10);
+    const dispDate = d ? d.split('-').reverse().join('/') : '';
+    tr.innerHTML = '<td class="mollie-chk"><input type="checkbox" id="mollie-chk-'+i+'" onchange="updateMollieSyncCount()"></td>'
+      +'<td>'+escHtml(dispDate)+'</td>'
+      +'<td>'+fmtMontant(p.montant)+'</td>'
+      +'<td>'+escHtml(p.methode||'')+'</td>'
+      +'<td>'+escHtml(p.description||'')+'</td>'
+      +'<td>'+(p.nmembre!=null ? escHtml(p.nmembre)+' — '+escHtml(p.nom||'') : '<i style="color:#999;">non repéré</i>')+'</td>'
+      +'<td style="font-size:11px;color:#777;">'+escHtml(p.id)+'</td>';
+    tbody.appendChild(tr);
+  });
+  updateMollieSyncCount();
+}
+
+function updateMollieSyncCount(){
+  const n = mollieCandidats.filter((p,i)=>document.getElementById('mollie-chk-'+i) && document.getElementById('mollie-chk-'+i).checked).length;
+  document.getElementById('mollie-sync-count').textContent = n+' sélectionné(s) sur '+mollieCandidats.length;
+}
+
+function toggleAllMollie(checked){
+  mollieCandidats.forEach((p,i)=>{ const el=document.getElementById('mollie-chk-'+i); if(el) el.checked = checked; });
+  updateMollieSyncCount();
+}
+
+function closeMollieSyncOverlay(){
+  document.getElementById('overlay-mollie-sync').classList.add('hidden');
+  mollieCandidats = [];
+}
+
+async function importMollieSelection(){
+  const selection = mollieCandidats.filter((p,i)=>document.getElementById('mollie-chk-'+i) && document.getElementById('mollie-chk-'+i).checked);
+  if(selection.length===0){ document.getElementById('mollie-sync-msg').textContent = 'Coche au moins un paiement à importer.'; return; }
+  document.getElementById('btn-import-mollie').disabled = true;
+  document.getElementById('sync-pending').classList.add('show');
+  let importes = 0, erreurs = 0;
+  for(const p of selection){
+    try{
+      const fields = {
+        'Date': (p.dateCreation||'').slice(0,10),
+        'Montant': p.montant,
+        'Statut': 'Payé',
+        'Origine': 'Synchro Mollie',
+        'N° Transaction': p.id,
+        'Libellé': p.description||'',
+        'Id Mollie': p.id,
+        'Url Mollie': p.url||'',
+        'Méthode': p.methode||'',
+      };
+      if(p.nmembre!=null) fields['N° Membre'] = p.nmembre;
+      if(p.matricule) fields['Matricule'] = p.matricule;
+      if(p.nom) fields['Nom'] = p.nom;
+      if(p.nmembre!=null){
+        const profId = await findProfByNMembre(p.nmembre);
+        if(profId) fields['Membre'] = [profId];
+      }
+      await atFetch(PAIEMENT_API, {method:'POST', body: JSON.stringify({records:[{fields}]})});
+      importes++;
+    }catch(e){ erreurs++; }
+  }
+  document.getElementById('sync-pending').classList.remove('show');
+  document.getElementById('btn-import-mollie').disabled = false;
+  closeMollieSyncOverlay();
+  await loadPaiements();
+  setSt('✅ '+importes+' paiement(s) importé(s) depuis Mollie.'+(erreurs?' ⚠️ '+erreurs+' échec(s) — réessaie via Synchro Mollie.':''));
+}
+
+// ══════════════════════════════════════════════════════════
+//  SYSTÈME PIN — AUTHENTIFICATION (identique aux autres outils EDUCPASS)
+//  Stockage indépendant des autres fichiers (clé localStorage dédiée).
+// ══════════════════════════════════════════════════════════
+const AGENT_PINS_DEFAULT = { 'MARC':'1111', 'MAÏTE':'2222', 'PASCAL':'3333', 'VANESSA':'4444' };
+let AGENT_PINS = (function(){
+  try{
+    const stored = localStorage.getItem('educpass_paiements_pins');
+    if(stored){ const p=JSON.parse(stored); if(p&&p.MARC) return p; }
+  }catch(e){}
+  return Object.assign({}, AGENT_PINS_DEFAULT);
+})();
+
+function _setAgentSession(agent){
+  sessionStorage.setItem('auth_agent', agent);
+  document.getElementById('header-agent').textContent = agent;
+  document.getElementById('btn-pin-mgr').style.display = (agent==='MARC') ? '' : 'none';
+  setDeleteVisiblePaiement(false);
+}
+function loginPin(){
+  const agent = document.getElementById('pin-agent').value;
+  const pin = document.getElementById('pin-code').value;
+  const err = document.getElementById('pin-error');
+  err.textContent='';
+  if(!agent){ err.textContent='Sélectionnez votre nom.'; return; }
+  if(pin.length!==4){ err.textContent='Le code doit contenir 4 chiffres.'; return; }
+  if(AGENT_PINS[agent]!==pin){
+    err.textContent='❌ Code incorrect — réessayez.';
+    document.getElementById('pin-code').value=''; document.getElementById('pin-code').focus();
+    return;
+  }
+  document.getElementById('overlay-pin').classList.add('hidden');
+  _setAgentSession(agent);
+  init();
+}
+function logoutPin(){
+  if(!confirm('Se déconnecter ?')) return;
+  sessionStorage.removeItem('auth_agent');
+  location.reload();
+}
+function showGestionPins(){
+  if(sessionStorage.getItem('auth_agent')!=='MARC') return;
+  document.getElementById('pm-marc').value = AGENT_PINS['MARC']||'';
+  document.getElementById('pm-maite').value = AGENT_PINS['MAÏTE']||'';
+  document.getElementById('pm-pascal').value = AGENT_PINS['PASCAL']||'';
+  document.getElementById('pm-vanessa').value = AGENT_PINS['VANESSA']||'';
+  document.getElementById('pm-msg').textContent='';
+  document.getElementById('overlay-pin-mgr').classList.remove('hidden');
+}
+function closeGestionPins(){ document.getElementById('overlay-pin-mgr').classList.add('hidden'); }
+function saveGestionPins(){
+  const pins = {
+    MARC: document.getElementById('pm-marc').value.trim(),
+    'MAÏTE': document.getElementById('pm-maite').value.trim(),
+    PASCAL: document.getElementById('pm-pascal').value.trim(),
+    VANESSA: document.getElementById('pm-vanessa').value.trim(),
+  };
+  for(const [agent,pin] of Object.entries(pins)){
+    if(pin && !/^\d{4}$/.test(pin)){
+      document.getElementById('pm-msg').style.color='#c0392b';
+      document.getElementById('pm-msg').textContent='❌ PIN de '+agent+' invalide — 4 chiffres requis.';
+      return;
+    }
+    if(!pin) pins[agent]=AGENT_PINS[agent];
+  }
+  try{
+    localStorage.setItem('educpass_paiements_pins', JSON.stringify(pins));
+    Object.assign(AGENT_PINS, pins);
+    document.getElementById('pm-msg').style.color='#27ae60';
+    document.getElementById('pm-msg').textContent='✅ Codes PIN enregistrés !';
+    setTimeout(closeGestionPins, 1200);
+  }catch(e){
+    document.getElementById('pm-msg').style.color='#c0392b';
+    document.getElementById('pm-msg').textContent='❌ Erreur : '+e.message;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════
+async function init(){
+  populateFilterSelects();
+  showPaiementsView('liste');
+  await loadProduitsCache();
+  await loadPaiements();
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  const saved = sessionStorage.getItem('auth_agent');
+  if(saved && AGENT_PINS[saved]){
+    _setAgentSession(saved);
+    init();
+  } else {
+    document.getElementById('overlay-pin').classList.remove('hidden');
+  }
+});
+</script>
+</body>
+</html>
