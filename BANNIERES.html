@@ -75,7 +75,7 @@ select#filtre-langue{padding:6px 10px;border:1px solid #bbb;border-radius:4px;fo
   <div class="logo">EDUCPASS</div>
   <div class="title">🖼️ BANNIÈRES SITE — 2026</div>
   <button class="btn" id="btn-pin-mgr" onclick="showGestionPins()" style="display:none;">🔑 PINs</button>
-  <a class="btn" href="TABLEAU DE BORD.html" style="background:var(--navy-dark);color:#fff;text-decoration:none;display:inline-block;" title="Retour au Tableau de Bord">🗂️ Tableau de Bord</a>
+  <a class="btn" href="../TABLEAU DE BORD.html" style="background:var(--navy-dark);color:#fff;text-decoration:none;display:inline-block;" title="Retour au Tableau de Bord">🗂️ Tableau de Bord</a>
   <button class="btn" onclick="logoutPin()">🔒 <span id="header-agent">—</span></button>
 </div>
 
@@ -161,25 +161,6 @@ select#filtre-langue{padding:6px 10px;border:1px solid #bbb;border-radius:4px;fo
         </div>
       </div>
 
-      <!-- Cadre 4 : Vidéos (page "Vidéos" du nouveau site — table Airtable séparée,
-           car une vidéo n'a pas les mêmes besoins qu'une image : pas d'upload de
-           fichier, juste un lien YouTube à coller — demande de Marc du 2026-09-11). -->
-      <div class="cadre cadre-texte">
-        <div class="cadre-hdr">
-          <span class="cadre-title">🎬 Vidéos (page « Vidéos » du site)</span>
-          <span id="count-videos" class="result-count"></span>
-          <button class="btn btn-save" onclick="newVideo()">➕ Nouvelle vidéo</button>
-        </div>
-        <div style="max-height:40vh;overflow:auto;">
-          <table class="results" id="tbl-videos">
-            <thead><tr>
-              <th>Ordre</th><th>Langue</th><th>Titre</th><th>Lien YouTube</th><th>Actif</th>
-            </tr></thead>
-            <tbody id="tbl-videos-body"></tbody>
-          </table>
-        </div>
-      </div>
-
     </div>
 
     <!-- ---------------- Vue fiche Bannière ---------------- -->
@@ -202,46 +183,6 @@ select#filtre-langue{padding:6px 10px;border:1px solid #bbb;border-radius:4px;fo
         </div>
       </div>
     </div>
-
-    <!-- ---------------- Vue fiche Vidéo ---------------- -->
-    <div id="view-videos-fiche" class="hidden">
-      <div class="fiche-box">
-        <div class="fiche-hdr" id="video-titre">—</div>
-        <div class="fiche-sub">Vidéo hébergée sur YouTube — collez simplement le lien (ex : https://youtu.be/xxxxxxxxxxx). Pas d'upload de fichier vidéo.</div>
-
-        <div style="margin:14px 0;">
-          <button class="btn btn-save" id="btn-save-video" onclick="saveVideo()">💾 Enregistrer</button>
-          <button class="btn btn-cancel" onclick="cancelVideoAndReset()">↩️ Annuler</button>
-          <button class="btn" id="btn-delete-video" onclick="deleteVideo()" style="display:none;background:var(--err);color:#fff;">🗑️ Supprimer</button>
-        </div>
-
-        <fieldset>
-          <legend>Vidéo</legend>
-          <div class="frow">
-            <div class="fitem"><label>Titre</label><input id="v-titre" oninput="markVideoDirty()"></div>
-            <div class="fitem"><label>Langue</label>
-              <select id="v-langue" onchange="markVideoDirty()">
-                <option value="">—</option><option value="FR">FR</option><option value="NL">NL</option>
-              </select>
-            </div>
-            <div class="fitem"><label>Lien YouTube</label><input id="v-lien" oninput="markVideoDirty()" placeholder="https://youtu.be/xxxxxxxxxxx"></div>
-            <div class="fitem"><label>Ordre</label><input id="v-ordre" type="number" oninput="markVideoDirty()"></div>
-            <div class="fitem chk"><input id="v-actif" type="checkbox" onchange="markVideoDirty()"><label for="v-actif">Affichée sur le site</label></div>
-          </div>
-        </fieldset>
-        <fieldset>
-          <legend>Description affichée sous la vidéo</legend>
-          <div class="frow">
-            <div class="fitem" style="grid-column:1/-1;"><textarea id="v-description" oninput="markVideoDirty()" style="min-height:80px;"></textarea></div>
-          </div>
-        </fieldset>
-
-        <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line);">
-          <button class="btn btn-save" onclick="saveVideo()">💾 Enregistrer</button>
-          <button class="btn btn-cancel" onclick="cancelVideoAndReset()">↩️ Annuler</button>
-        </div>
-      </div>
-    </div>
   </div>
 
 </div>
@@ -256,7 +197,7 @@ select#filtre-langue{padding:6px 10px;border:1px solid #bbb;border-radius:4px;fo
       <option value="">— Sélectionnez —</option>
       <option>MARC</option>
       <option>MAÏTE</option>
-      <option>PASCAL</option>
+      
       <option>VANESSA</option>
     </select>
     <label>Code PIN (4 chiffres) :</label>
@@ -272,7 +213,6 @@ select#filtre-langue{padding:6px 10px;border:1px solid #bbb;border-radius:4px;fo
     <h2>🔑 Gestion des codes PIN</h2>
     <div class="pin-row"><label>MARC :</label><input type="password" id="pm-marc" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
     <div class="pin-row"><label>MAÏTE :</label><input type="password" id="pm-maite" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
-    <div class="pin-row"><label>PASCAL :</label><input type="password" id="pm-pascal" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
     <div class="pin-row"><label>VANESSA :</label><input type="password" id="pm-vanessa" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
     <div class="pin-err" id="pm-msg"></div>
     <div style="display:flex;gap:8px;margin-top:14px;">
@@ -294,11 +234,6 @@ const HDRS  = {'Content-Type':'application/json'};
 // Table "Bannières" — page d'accueil du nouveau site (carrousel tournant).
 const BANNIERES_TBL = 'tblPvu1219W1xUnAY';
 const BANNIERES_API = `${PROXY}/v0/${BASE}/${BANNIERES_TBL}`;
-
-// Table "Vidéos" — page "Vidéos" du nouveau site (table séparée : une vidéo
-// n'a pas les mêmes besoins qu'une image, juste un lien YouTube à coller).
-const VIDEOS_TBL = 'tblzgMkxcoA6DZnDc';
-const VIDEOS_API = `${PROXY}/v0/${BASE}/${VIDEOS_TBL}`;
 
 // ══════════════════════════════════════════════════════════
 //  BANNIÈRES — mapping id Airtable <-> clé DOM <-> libellé <-> type
@@ -339,11 +274,6 @@ let lastBannieres = [];
 let curBanniereId = null;
 let _banniereLoading = false;
 let _banniereDirty = false;
-
-let lastVideos = [];
-let curVideoId = null;
-let _videoLoading = false;
-let _videoDirty = false;
 
 function setSt(msg){
   document.getElementById('st-bar').textContent = msg || '';
@@ -488,7 +418,6 @@ function renderAllCadres(){
   renderPhotosCadre();
   renderPromoCadre();
   renderTexteCadre();
-  renderVideosCadre();
 }
 
 // Cadre 1 : Photos d'accueil
@@ -656,175 +585,17 @@ async function deleteBanniere(){
   }catch(e){ setSt('❌ '+e.message); }
 }
 
-// ══════════════════════════════════════════════════════════
-//  VIDÉOS — liste + fiche (table Airtable séparée de Bannières)
-// ══════════════════════════════════════════════════════════
-function markVideoDirty(){ _videoDirty = true; }
-function setSaveDisabledVideo(v){ document.getElementById('btn-save-video').disabled = v; }
-function setDeleteVisibleVideo(v){ document.getElementById('btn-delete-video').style.display = v ? '' : 'none'; }
-
-function fillVideoForm(fields){
-  document.getElementById('v-titre').value = fields['Titre'] || '';
-  document.getElementById('v-langue').value = fields['Langue'] || '';
-  document.getElementById('v-lien').value = fields['URL YouTube'] || '';
-  document.getElementById('v-ordre').value = (fields['Ordre']!=null) ? fields['Ordre'] : '';
-  document.getElementById('v-actif').checked = !!fields['EstActif'];
-  document.getElementById('v-description').value = fields['Description'] || '';
-}
-
-async function loadVideos(){
-  document.getElementById('count-videos').textContent = '⏳';
-  try{
-    let all = [], offset;
-    do{
-      const params = new URLSearchParams({pageSize:'100'});
-      if(offset) params.set('offset', offset);
-      const data = await atFetch(VIDEOS_API+'?'+params.toString());
-      all = all.concat(data.records||[]);
-      offset = data.offset;
-    } while(offset);
-    lastVideos = all;
-    renderVideosCadre();
-  }catch(e){
-    setSt('❌ '+e.message);
-    document.getElementById('count-videos').textContent = '';
-  }
-}
-
-function renderVideosCadre(){
-  const tbody = document.getElementById('tbl-videos-body');
-  tbody.innerHTML = '';
-  const filtreLangue = document.getElementById('filtre-langue') ? document.getElementById('filtre-langue').value : '';
-  const rows = lastVideos
-    .filter(rec => !filtreLangue || (rec.fields['Langue']===filtreLangue))
-    .slice()
-    .sort((a,b)=> (a.fields['Ordre']||0) - (b.fields['Ordre']||0));
-  document.getElementById('count-videos').textContent = rows.length;
-  rows.forEach(rec=>{
-    const f = rec.fields;
-    const tr = document.createElement('tr');
-    const actifCell = f['EstActif'] ? '<span class="pill pill-ok">✓ Actif</span>' : '<span class="pill pill-off">— Inactif</span>';
-    tr.innerHTML = '<td>'+(f['Ordre']!=null?f['Ordre']:'')+'</td><td>'+esc(f['Langue']||'')+'</td><td>'+esc(f['Titre']||'')+'</td>'
-      +'<td class="wrap-cell">'+esc(f['URL YouTube']||'—')+'</td><td>'+actifCell+'</td>';
-    tr.onclick = ()=>openVideo(rec.id);
-    tbody.appendChild(tr);
-  });
-}
-
-async function openVideo(id){
-  if(_videoDirty && !confirm('Des modifications non enregistrées seront perdues. Continuer ?')) return;
-  _videoLoading = true;
-  setSaveDisabledVideo(true);
-  setSt('⏳ Chargement de la vidéo...');
-  try{
-    const data = await atFetch(VIDEOS_API+'/'+id);
-    curVideoId = id;
-    _videoDirty = false;
-    document.getElementById('video-titre').textContent = data.fields['Titre'] || '—';
-    fillVideoForm(data.fields);
-    setDeleteVisibleVideo(true);
-    showView('video');
-    setSt('');
-  }catch(e){ setSt('❌ '+e.message); }
-  finally{ _videoLoading=false; setSaveDisabledVideo(false); }
-}
-
-function newVideo(){
-  if(_videoDirty && !confirm('Des modifications non enregistrées seront perdues. Continuer ?')) return;
-  curVideoId = null;
-  _videoDirty = false;
-  document.getElementById('video-titre').textContent = 'Nouvelle vidéo';
-  fillVideoForm({});
-  const rangDejaPris = lastVideos.map(r=>r.fields['Ordre']||0);
-  document.getElementById('v-ordre').value = rangDejaPris.length ? Math.max(...rangDejaPris)+1 : 1;
-  document.getElementById('v-langue').value = 'FR';
-  document.getElementById('v-actif').checked = true;
-  _videoDirty = false; // les valeurs pré-remplies ne comptent pas comme une modification à confirmer
-  setDeleteVisibleVideo(false);
-  showView('video');
-}
-
-async function saveVideo(){
-  if(_videoLoading){ setSt('⏳ Chargement en cours, réessaie dans un instant.'); return; }
-  const fields = {};
-  const titre = document.getElementById('v-titre').value.trim();
-  if(!titre){ setSt('❌ Le Titre est obligatoire.'); return; }
-  fields['Titre'] = titre;
-  const langue = document.getElementById('v-langue').value;
-  if(langue) fields['Langue'] = langue;
-  const lien = document.getElementById('v-lien').value.trim();
-  if(lien) fields['URL YouTube'] = lien;
-  const ordreVal = document.getElementById('v-ordre').value;
-  if(ordreVal!==''){
-    const n = Number(ordreVal);
-    if(isNaN(n)){ setSt('❌ Valeur invalide pour « Ordre » : "'+ordreVal+'". Merci de n\'entrer que des chiffres.'); return; }
-    fields['Ordre'] = n;
-  }
-  fields['EstActif'] = document.getElementById('v-actif').checked;
-  const description = document.getElementById('v-description').value.trim();
-  if(description) fields['Description'] = description;
-
-  document.getElementById('sync-pending').classList.add('show');
-  setSaveDisabledVideo(true);
-  try{
-    if(curVideoId){
-      await atFetch(VIDEOS_API+'/'+curVideoId, {method:'PATCH', body: JSON.stringify({fields})});
-      setSt('✅ Vidéo enregistrée.');
-    } else {
-      const res = await atFetch(VIDEOS_API, {method:'POST', body: JSON.stringify({records:[{fields}]})});
-      curVideoId = res.records[0].id;
-      setSt('✅ Nouvelle vidéo créée.');
-    }
-    _videoDirty = false;
-    await loadVideos();
-    await openVideo(curVideoId);
-  }catch(e){ setSt('❌ '+e.message); }
-  finally{
-    document.getElementById('sync-pending').classList.remove('show');
-    setSaveDisabledVideo(false);
-  }
-}
-
-function cancelVideoAndReset(){
-  if(_videoDirty && !confirm('Annuler les modifications non enregistrées ?')) return;
-  _videoDirty = false;
-  curVideoId = null;
-  showView('liste');
-}
-
-// Suppression réservée à MARC, même règle que pour les autres outils.
-async function deleteVideo(){
-  if(sessionStorage.getItem('auth_agent')!=='MARC') return;
-  if(!curVideoId){ setSt('Aucune vidéo chargée à supprimer.'); return; }
-  const idToDelete = curVideoId;
-  const titre = document.getElementById('video-titre').textContent;
-  if(!confirm('⚠️ SUPPRESSION DÉFINITIVE\n\nSupprimer définitivement la vidéo "'+titre+'" ?\n\nCette action est IRRÉVERSIBLE.')) return;
-  setSt('⏳ Suppression en cours...');
-  try{
-    await atFetch(VIDEOS_API+'/'+idToDelete, {method:'DELETE'});
-    lastVideos = lastVideos.filter(r=>r.id!==idToDelete);
-    curVideoId = null; _videoDirty = false;
-    renderVideosCadre();
-    showView('liste');
-    setSt('✅ Vidéo supprimée définitivement.');
-  }catch(e){ setSt('❌ '+e.message); }
-}
-
-// Vue partagée entre Bannières et Vidéos : la liste (3 cadres Bannières + 1 cadre
-// Vidéos) et les 2 fiches (Bannière / Vidéo) sont mutuellement exclusives.
-function showView(v){
+function showBannieresView(v){
   document.getElementById('view-bannieres-liste').classList.toggle('hidden', v!=='liste');
-  document.getElementById('view-bannieres-fiche').classList.toggle('hidden', v!=='banniere');
-  document.getElementById('view-videos-fiche').classList.toggle('hidden', v!=='video');
+  document.getElementById('view-bannieres-fiche').classList.toggle('hidden', v!=='fiche');
 }
-function showBannieresView(v){ showView(v==='fiche' ? 'banniere' : 'liste'); }
 
 // ══════════════════════════════════════════════════════════
 //  SYSTÈME PIN — AUTHENTIFICATION (identique aux autres outils EDUCPASS)
 //  Stockage indépendant (clé localStorage dédiée), chaque fichier HTML
 //  local ayant sa propre origine de stockage.
 // ══════════════════════════════════════════════════════════
-const AGENT_PINS_DEFAULT = { 'MARC':'1111', 'MAÏTE':'2222', 'PASCAL':'3333', 'VANESSA':'4444' };
+const AGENT_PINS_DEFAULT = { 'MARC':'1111', 'MAÏTE':'2222', 'VANESSA':'4444' };
 let AGENT_PINS = (function(){
   try{
     const stored = localStorage.getItem('educpass_bannieres_pins');
@@ -864,7 +635,6 @@ function showGestionPins(){
   if(sessionStorage.getItem('auth_agent')!=='MARC') return;
   document.getElementById('pm-marc').value = AGENT_PINS['MARC']||'';
   document.getElementById('pm-maite').value = AGENT_PINS['MAÏTE']||'';
-  document.getElementById('pm-pascal').value = AGENT_PINS['PASCAL']||'';
   document.getElementById('pm-vanessa').value = AGENT_PINS['VANESSA']||'';
   document.getElementById('pm-msg').textContent='';
   document.getElementById('overlay-pin-mgr').classList.remove('hidden');
@@ -874,7 +644,6 @@ function saveGestionPins(){
   const pins = {
     MARC: document.getElementById('pm-marc').value.trim(),
     'MAÏTE': document.getElementById('pm-maite').value.trim(),
-    PASCAL: document.getElementById('pm-pascal').value.trim(),
     VANESSA: document.getElementById('pm-vanessa').value.trim(),
   };
   for(const [agent,pin] of Object.entries(pins)){
@@ -902,9 +671,8 @@ function saveGestionPins(){
 // ══════════════════════════════════════════════════════════
 function init(){
   buildBanniereForm();
-  showView('liste');
+  showBannieresView('liste');
   loadBannieres();
-  loadVideos();
 }
 
 document.addEventListener('DOMContentLoaded', function(){

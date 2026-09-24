@@ -115,7 +115,7 @@ fieldset.fieldset-mauve input[type=number]::-webkit-inner-spin-button{-webkit-ap
   <div class="title">📋 FICHE PROF — 2026</div>
   <button class="btn" id="btn-delete-header" onclick="deleteMember()" style="display:none;background:var(--err);color:#fff;">🗑️ Supprimer</button>
   <button class="btn" id="btn-pin-mgr" onclick="showGestionPins()" style="display:none;">🔑 PINs</button>
-  <a class="btn" href="TABLEAU DE BORD.html" style="background:var(--navy-dark);color:#fff;text-decoration:none;display:inline-block;" title="Retour au Tableau de Bord">🗂️ Tableau de Bord</a>
+  <a class="btn" href="../TABLEAU DE BORD.html" style="background:var(--navy-dark);color:#fff;text-decoration:none;display:inline-block;" title="Retour au Tableau de Bord">🗂️ Tableau de Bord</a>
   <button class="btn" onclick="logoutPin()">🔒 <span id="header-agent">—</span></button>
 </div>
 
@@ -380,7 +380,7 @@ fieldset.fieldset-mauve input[type=number]::-webkit-inner-spin-button{-webkit-ap
       <option value="">— Sélectionnez —</option>
       <option>MARC</option>
       <option>MAÏTE</option>
-      <option>PASCAL</option>
+      
       <option>VANESSA</option>
     </select>
     <label>Code PIN (4 chiffres) :</label>
@@ -396,7 +396,6 @@ fieldset.fieldset-mauve input[type=number]::-webkit-inner-spin-button{-webkit-ap
     <h2>🔑 Gestion des codes PIN</h2>
     <div class="pin-row"><label>MARC :</label><input type="password" id="pm-marc" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
     <div class="pin-row"><label>MAÏTE :</label><input type="password" id="pm-maite" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
-    <div class="pin-row"><label>PASCAL :</label><input type="password" id="pm-pascal" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
     <div class="pin-row"><label>VANESSA :</label><input type="password" id="pm-vanessa" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
     <div class="pin-err" id="pm-msg"></div>
     <div style="display:flex;gap:8px;margin-top:14px;">
@@ -1985,7 +1984,7 @@ async function savePaiement(){
 //  SYSTÈME PIN — AUTHENTIFICATION (identique au site Attractions)
 //  Valeurs par défaut au 1er déploiement — MARC peut les changer via 🔑
 // ══════════════════════════════════════════════════════════
-const AGENT_PINS_DEFAULT = { 'MARC':'1111', 'MAÏTE':'2222', 'PASCAL':'3333', 'VANESSA':'4444' };
+const AGENT_PINS_DEFAULT = { 'MARC':'1111', 'MAÏTE':'2222', 'VANESSA':'4444' };
 let AGENT_PINS = (function(){
   try{
     const stored = localStorage.getItem('educpass_profs_pins');
@@ -2051,7 +2050,6 @@ function showGestionPins(){
   if(sessionStorage.getItem('auth_agent')!=='MARC') return;
   document.getElementById('pm-marc').value = AGENT_PINS['MARC']||'';
   document.getElementById('pm-maite').value = AGENT_PINS['MAÏTE']||'';
-  document.getElementById('pm-pascal').value = AGENT_PINS['PASCAL']||'';
   document.getElementById('pm-vanessa').value = AGENT_PINS['VANESSA']||'';
   document.getElementById('pm-msg').textContent='';
   document.getElementById('overlay-pin-mgr').classList.remove('hidden');
@@ -2061,7 +2059,6 @@ function saveGestionPins(){
   const pins = {
     MARC: document.getElementById('pm-marc').value.trim(),
     'MAÏTE': document.getElementById('pm-maite').value.trim(),
-    PASCAL: document.getElementById('pm-pascal').value.trim(),
     VANESSA: document.getElementById('pm-vanessa').value.trim(),
   };
   for(const [agent,pin] of Object.entries(pins)){
@@ -2092,6 +2089,16 @@ function init(){
   populateFilterSelects();
   showView('liste');
   setSt('Tape un nom, une ville ou un N° de membre ci-dessus pour commencer une recherche.');
+  ouvrirDepuisURL();
+}
+
+// Ouvre directement une fiche si l'URL contient ?rec=recXXXXXXXXXXXXXX
+// (utilisé par le bouton "🔙 Retour à la fiche membre" de RESERVATIONS.html).
+function ouvrirDepuisURL(){
+  try{
+    const recId = new URLSearchParams(location.search).get('rec');
+    if(recId) loadMember(recId);
+  }catch(e){}
 }
 
 document.addEventListener('DOMContentLoaded', function(){

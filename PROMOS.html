@@ -70,7 +70,7 @@ legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
   <div class="logo">EDUCPASS</div>
   <div class="title">🏷️ PROMOS — 2026</div>
   <button class="btn" id="btn-pin-mgr" onclick="showGestionPins()" style="display:none;">🔑 PINs</button>
-  <a class="btn" href="TABLEAU DE BORD.html" style="background:var(--navy-dark);color:#fff;text-decoration:none;display:inline-block;" title="Retour au Tableau de Bord">🗂️ Tableau de Bord</a>
+  <a class="btn" href="../TABLEAU DE BORD.html" style="background:var(--navy-dark);color:#fff;text-decoration:none;display:inline-block;" title="Retour au Tableau de Bord">🗂️ Tableau de Bord</a>
   <button class="btn" onclick="logoutPin()">🔒 <span id="header-agent">—</span></button>
 </div>
 
@@ -145,7 +145,7 @@ legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
       <option value="">— Sélectionnez —</option>
       <option>MARC</option>
       <option>MAÏTE</option>
-      <option>PASCAL</option>
+      
       <option>VANESSA</option>
     </select>
     <label>Code PIN (4 chiffres) :</label>
@@ -161,7 +161,6 @@ legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
     <h2>🔑 Gestion des codes PIN</h2>
     <div class="pin-row"><label>MARC :</label><input type="password" id="pm-marc" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
     <div class="pin-row"><label>MAÏTE :</label><input type="password" id="pm-maite" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
-    <div class="pin-row"><label>PASCAL :</label><input type="password" id="pm-pascal" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
     <div class="pin-row"><label>VANESSA :</label><input type="password" id="pm-vanessa" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
     <div class="pin-err" id="pm-msg"></div>
     <div style="display:flex;gap:8px;margin-top:14px;">
@@ -489,7 +488,7 @@ function showPromosView(v){
 //  Stockage indépendant des autres fichiers (clé localStorage dédiée),
 //  chaque fichier HTML local ayant sa propre origine de stockage.
 // ══════════════════════════════════════════════════════════
-const AGENT_PINS_DEFAULT = { 'MARC':'1111', 'MAÏTE':'2222', 'PASCAL':'3333', 'VANESSA':'4444' };
+const AGENT_PINS_DEFAULT = { 'MARC':'1111', 'MAÏTE':'2222', 'VANESSA':'4444' };
 let AGENT_PINS = (function(){
   try{
     const stored = localStorage.getItem('educpass_promos_pins');
@@ -529,7 +528,6 @@ function showGestionPins(){
   if(sessionStorage.getItem('auth_agent')!=='MARC') return;
   document.getElementById('pm-marc').value = AGENT_PINS['MARC']||'';
   document.getElementById('pm-maite').value = AGENT_PINS['MAÏTE']||'';
-  document.getElementById('pm-pascal').value = AGENT_PINS['PASCAL']||'';
   document.getElementById('pm-vanessa').value = AGENT_PINS['VANESSA']||'';
   document.getElementById('pm-msg').textContent='';
   document.getElementById('overlay-pin-mgr').classList.remove('hidden');
@@ -539,7 +537,6 @@ function saveGestionPins(){
   const pins = {
     MARC: document.getElementById('pm-marc').value.trim(),
     'MAÏTE': document.getElementById('pm-maite').value.trim(),
-    PASCAL: document.getElementById('pm-pascal').value.trim(),
     VANESSA: document.getElementById('pm-vanessa').value.trim(),
   };
   for(const [agent,pin] of Object.entries(pins)){

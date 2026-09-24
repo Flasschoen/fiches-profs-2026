@@ -60,7 +60,7 @@ textarea.edit-input{width:100%;font-family:inherit;font-size:13.5px;padding:6px;
 <div class="hdr-bar">
   <div class="logo">EDUCPASS</div>
   <div class="title">🎫 CARTES DE VISITE — PARTENAIRES</div>
-  <a class="btn" href="TABLEAU DE BORD.html" style="background:var(--navy-dark);color:#fff;" title="Retour au Tableau de Bord">🗂️ Tableau de Bord</a>
+  <a class="btn" href="../TABLEAU DE BORD.html" style="background:var(--navy-dark);color:#fff;" title="Retour au Tableau de Bord">🗂️ Tableau de Bord</a>
   <button class="btn" onclick="logoutPin()" style="background:#555;color:#fff;">🔒 <span id="header-agent">—</span></button>
 </div>
 
@@ -91,6 +91,9 @@ textarea.edit-input{width:100%;font-family:inherit;font-size:13.5px;padding:6px;
       <button class="btn" id="edit-btn" onclick="enterEditMode()" style="background:#1e8449;color:#fff;">✏️ Modifier</button>
       <button class="btn hidden" id="save-btn" onclick="saveFiche()" style="background:var(--navy);color:#fff;">💾 Enregistrer</button>
       <button class="btn hidden" id="cancel-btn" onclick="cancelEdit()" style="background:var(--err);color:#fff;">✖️ Annuler</button>
+      <!-- Bouton Suppression (2026-09-23, demande de Marc) : réservé à sa propre session
+           (auth_agent === 'MARC'), affiché/masqué dans renderFiche(). -->
+      <button class="btn hidden" id="delete-btn" onclick="deleteCarte()" style="background:var(--err);color:#fff;margin-left:auto;" title="Supprimer définitivement cette carte de visite (réservé à Marc)">🗑️ Supprimer</button>
     </div>
     <div class="fiche-box">
       <div class="fiche-top">
@@ -401,6 +404,8 @@ function renderFiche(){
   document.getElementById('edit-btn').classList.toggle('hidden', editMode);
   document.getElementById('save-btn').classList.toggle('hidden', !editMode);
   document.getElementById('cancel-btn').classList.toggle('hidden', !editMode);
+  // Bouton Supprimer : réservé à Marc, et masqué pendant l'édition (2026-09-23).
+  document.getElementById('delete-btn').classList.toggle('hidden', editMode || sessionStorage.getItem('auth_agent') !== 'MARC');
 }
 
 function renderPhotosArea(){
@@ -552,9 +557,57 @@ async function saveFiche(){
 }
 
 // ══════════════════════════════════════════════════════════
+//  SUPPRESSION D'UNE CARTE (2026-09-23, demande de Marc) : réservée à sa
+//  propre session (le bouton est déjà masqué pour tout autre agent dans
+//  renderFiche() ; garde-fou ici aussi en cas d'appel direct). Double
+//  confirmation avec récap de la carte avant l'appel DELETE définitif.
+//  Passe par le même Worker proxy que loadCartes()/saveFiche() (CARTE_URL/
+//  hdrs, voir CONFIG plus haut) — route DELETE /records/:tableId/:recordId
+//  déjà exposée par ce Worker pour la table Cartes de visite (ajoutée le
+//  2026-09-18, vérifié dans le code source du Worker), donc pas besoin
+//  d'y toucher côté serveur pour ce point.
+// ══════════════════════════════════════════════════════════
+async function deleteCarte(){
+  if(!curCarte) return;
+  if(sessionStorage.getItem('auth_agent') !== 'MARC'){
+    setSt('❌ Suppression réservée à Marc.');
+    return;
+  }
+  const f = curCarte.fields;
+  const nom = nomOf(f);
+  const recap = 'Carte : ' + nom
+    + '\nPubliée : ' + (f['Publié'] ? 'OUI' : 'NON')
+    + '\nCoupon publié : ' + (f['Coupon publié'] ? 'OUI' : 'NON')
+    + '\nLogo : ' + ((f['Logo carte de visite'] && f['Logo carte de visite'].length) ? 'oui' : 'non')
+    + '\nPhotos jointes : ' + ((f['Photos']||[]).length);
+  if(!confirm('⚠️ Supprimer définitivement cette carte de visite ?\n\n' + recap)) return;
+  if(!confirm('⚠️ Dernière confirmation — action IRRÉVERSIBLE (pas de corbeille Airtable).\n\nConfirmer la suppression de « ' + nom + ' » ?')) return;
+
+  const delBtn = document.getElementById('delete-btn');
+  delBtn.disabled = true;
+  setSt('⏳ Suppression...');
+  try{
+    const res = await fetch(CARTE_URL+'/'+curCarte.id, {method:'DELETE', headers: hdrs});
+    const data = await res.json();
+    if(data.error) throw new Error(data.error.message || 'Erreur Airtable');
+
+    lastCartes = lastCartes.filter(r=>r.id!==curCarte.id);
+    document.getElementById('cartes-count').textContent = lastCartes.length;
+    curCarte = null;
+    renderGrid();
+    backToListe();
+    setSt('✅ Carte « ' + nom + ' » supprimée.');
+  }catch(e){
+    setSt('❌ '+e.message);
+  } finally {
+    delBtn.disabled = false;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
 //  SYSTÈME PIN — AUTHENTIFICATION (identique aux autres outils EDUCPASS)
 // ══════════════════════════════════════════════════════════
-const AGENT_PINS_DEFAULT = { 'MARC':'1111', 'MAÏTE':'2222', 'PASCAL':'3333', 'VANESSA':'4444' };
+const AGENT_PINS_DEFAULT = { 'MARC':'1111', 'MAÏTE':'2222', 'ANTOINE':'3333', 'VANESSA':'4444' };
 let AGENT_PINS = (function(){
   try{
     const stored = localStorage.getItem('educpass_cartes_pins');
@@ -614,7 +667,7 @@ document.addEventListener('DOMContentLoaded', function(){
       <option value="">— Sélectionnez —</option>
       <option>MARC</option>
       <option>MAÏTE</option>
-      <option>PASCAL</option>
+      <option>ANTOINE</option>
       <option>VANESSA</option>
     </select>
     <label style="display:block;text-align:left;font-size:12.5px;font-weight:600;margin:12px 0 4px;">Code PIN (4 chiffres) :</label>

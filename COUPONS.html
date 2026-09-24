@@ -61,7 +61,7 @@ legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
 <div class="hdr-bar">
   <div class="logo">EDUCPASS</div>
   <div class="title">🎟️ COUPONS — PARTENAIRES</div>
-  <a class="btn" href="TABLEAU DE BORD.html" style="background:var(--navy-dark);color:#fff;" title="Retour au Tableau de Bord">🗂️ Tableau de Bord</a>
+  <a class="btn" href="../TABLEAU DE BORD.html" style="background:var(--navy-dark);color:#fff;" title="Retour au Tableau de Bord">🗂️ Tableau de Bord</a>
   <button class="btn" onclick="logoutPin()" style="background:#555;color:#fff;">🔒 <span id="header-agent">—</span></button>
 </div>
 
@@ -209,7 +209,7 @@ async function cvGet(url){
 }
 
 async function loadCartes(){
-  setSt('⏳ Chargement des cartes de visite...');
+  setSt('⏳ Chargement des fiches coupon...');
   document.getElementById('coupons-count').textContent = '⏳';
   try{
     let all = [], offset;
@@ -388,7 +388,7 @@ function renderFiche(){
 // ══════════════════════════════════════════════════════════
 //  SYSTÈME PIN — AUTHENTIFICATION (identique aux autres outils EDUCPASS)
 // ══════════════════════════════════════════════════════════
-const AGENT_PINS_DEFAULT = { 'MARC':'1111', 'MAÏTE':'2222', 'PASCAL':'3333', 'VANESSA':'4444' };
+const AGENT_PINS_DEFAULT = { 'MARC':'1111', 'MAÏTE':'2222', 'VANESSA':'4444' };
 let AGENT_PINS = (function(){
   try{
     const stored = localStorage.getItem('educpass_coupons_pins');
@@ -448,7 +448,7 @@ document.addEventListener('DOMContentLoaded', function(){
       <option value="">— Sélectionnez —</option>
       <option>MARC</option>
       <option>MAÏTE</option>
-      <option>PASCAL</option>
+      
       <option>VANESSA</option>
     </select>
     <label style="display:block;text-align:left;font-size:12.5px;font-weight:600;margin:12px 0 4px;">Code PIN (4 chiffres) :</label>

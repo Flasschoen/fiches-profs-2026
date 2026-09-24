@@ -79,7 +79,7 @@ input:checked + .slider:before{transform:translateX(20px);}
       <option value="">— Sélectionnez —</option>
       <option>MARC</option>
       <option>MAÏTE</option>
-      <option>PASCAL</option>
+      
       <option>VANESSA</option>
     </select>
     <label>Code PIN (4 chiffres) :</label>
@@ -159,7 +159,7 @@ async function basculerActif(checkbox){
 // ══════════════════════════════════════════════════════════
 //  SYSTÈME PIN — AUTHENTIFICATION (identique aux autres outils EDUCPASS)
 // ══════════════════════════════════════════════════════════
-const AGENT_PINS_DEFAULT = { 'MARC':'1111', 'MAÏTE':'2222', 'PASCAL':'3333', 'VANESSA':'4444' };
+const AGENT_PINS_DEFAULT = { 'MARC':'1111', 'MAÏTE':'2222', 'VANESSA':'4444' };
 let AGENT_PINS = (function(){
   try{
     const stored = localStorage.getItem('educpass_moyens_paiement_pins');
