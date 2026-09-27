@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contacts — Educpass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --paper:#faf5e8; --paper-2:#f1e9d6; --page-bg:#e9dcb8;
+  --teal:#0f3d3e; --teal-dark:#0a2b2c; --green-dark:#164a2e;
+  --gold:#c89b3c; --gold-light:#e6c878; --line:#d8cca4;
+  --text:#2a2118; --text-soft:#5c5344; --off:#8a7f6a;
+  --ok:#1e6b3d; --err:#a4322a;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:'Work Sans',Arial,sans-serif;background:var(--page-bg);color:var(--text);}
+.topbar{background:var(--teal);color:var(--paper);padding:14px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.topbar .logo{font-family:'Fraunces',serif;font-weight:700;font-size:19px;letter-spacing:.5px;}
+.topbar a.back{color:var(--gold-light);text-decoration:none;font-weight:600;font-size:14px;margin-left:auto;}
+.topbar a.back:hover{text-decoration:underline;}
+.wrap{max-width:900px;margin:0 auto;padding:40px 24px 60px;display:flex;flex-direction:column;gap:24px;}
+.page-card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:36px 40px;box-shadow:0 6px 24px rgba(19,36,32,.10);}
+h1{font-family:'Fraunces',serif;font-weight:700;font-size:32px;color:var(--teal-dark);margin:0 0 18px;text-wrap:balance;}
+h2{font-family:'Fraunces',serif;font-weight:700;font-size:22px;color:var(--teal-dark);margin:0 0 16px;}
+.corps{font-size:16px;line-height:1.75;color:var(--text-soft);white-space:pre-wrap;}
+.loading{color:var(--off);font-style:italic;}
+.coord-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin-top:22px;}
+.coord-item{background:var(--paper-2);border:1px solid var(--line);border-radius:10px;padding:16px 18px;}
+.coord-item .label{font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--off);margin-bottom:6px;}
+.coord-item .val{font-size:15.5px;color:var(--text);line-height:1.5;}
+.coord-item a{color:var(--teal-dark);font-weight:600;text-decoration:none;}
+.coord-item a:hover{text-decoration:underline;}
+.form-grid{display:grid;gap:16px;margin-top:8px;}
+.fitem label{display:block;font-size:13px;font-weight:600;color:var(--text-soft);margin-bottom:6px;}
+.fitem input,.fitem textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:15px;font-family:inherit;background:#fff;color:var(--text);}
+.fitem textarea{min-height:130px;resize:vertical;}
+.btn-envoyer{margin-top:6px;align-self:flex-start;background:var(--teal);color:var(--paper);border:none;border-radius:8px;padding:12px 26px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;}
+.btn-envoyer:hover{background:var(--teal-dark);}
+.btn-envoyer:disabled{opacity:.55;cursor:not-allowed;}
+#form-msg{font-size:14px;margin-top:12px;min-height:18px;}
+#form-msg.ok{color:var(--ok);font-weight:600;}
+#form-msg.err{color:var(--err);font-weight:600;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">EDUCPASS</div>
+  <a class="back" href="ACCUEIL.html">← Retour à l'accueil</a>
+</div>
+
+<div class="wrap">
+  <div class="page-card">
+    <h1 id="page-titre">Contacts</h1>
+    <div class="corps loading" id="page-texte">⏳ Chargement…</div>
+    <div class="coord-grid" id="coord-grid"></div>
+  </div>
+
+  <div class="page-card">
+    <h2>Envoyez-nous un message</h2>
+    <div class="form-grid">
+      <div class="fitem"><label for="f-nom">Votre nom</label><input type="text" id="f-nom" autocomplete="name"></div>
+      <div class="fitem"><label for="f-email">Votre email</label><input type="email" id="f-email" autocomplete="email"></div>
+      <div class="fitem"><label for="f-message">Votre message</label><textarea id="f-message"></textarea></div>
+      <button class="btn-envoyer" id="btn-envoyer" onclick="envoyerMessage()">Envoyer →</button>
+      <div id="form-msg"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PROXY = 'https://educpass-profs-proxy.marc-flasschoen.workers.dev';
+const BASE  = 'appWCfo8WBkMGUuc2';
+const CONTENU_TBL = 'tblovGO4fsg7Iopx5';
+const RECORD_ID = 'recx1NZ0G1vAgn90Z'; // fiche "Coordonnées"
+
+let emailDestinataire = '';
+
+function escHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function afficherCoordItem(label, val, isLink, hrefPrefix){
+  if(!val) return '';
+  const contenu = isLink ? '<a href="'+hrefPrefix+escHtml(val)+'">'+escHtml(val)+'</a>' : escHtml(val);
+  return '<div class="coord-item"><div class="label">'+label+'</div><div class="val">'+contenu+'</div></div>';
+}
+
+async function chargerContenu(){
+  const elTexte = document.getElementById('page-texte');
+  try{
+    const r = await fetch(`${PROXY}/v0/${BASE}/${CONTENU_TBL}/${RECORD_ID}`);
+    if(!r.ok) throw new Error('Airtable '+r.status);
+    const data = await r.json();
+    const f = data.fields || {};
+    if(f['Titre']) document.getElementById('page-titre').textContent = f['Titre'];
+    elTexte.textContent = f['Texte'] || 'à compléter';
+    elTexte.classList.remove('loading');
+    emailDestinataire = f['Email'] || '';
+    const grid = document.getElementById('coord-grid');
+    grid.innerHTML = ''
+      + afficherCoordItem('Adresse', f['Adresse'], false)
+      + afficherCoordItem('Téléphone', f['Téléphone'], true, 'tel:')
+      + afficherCoordItem('Email', f['Email'], true, 'mailto:');
+  }catch(e){
+    elTexte.textContent = 'Contenu momentanément indisponible.';
+  }
+}
+
+async function envoyerMessage(){
+  const msgEl = document.getElementById('form-msg');
+  const btn = document.getElementById('btn-envoyer');
+  const nom = document.getElementById('f-nom').value.trim();
+  const email = document.getElementById('f-email').value.trim();
+  const message = document.getElementById('f-message').value.trim();
+  msgEl.className = ''; msgEl.textContent = '';
+
+  if(!nom || !email || !message){
+    msgEl.className = 'err'; msgEl.textContent = '❌ Merci de remplir votre nom, votre email et votre message.';
+    return;
+  }
+  if(!emailDestinataire){
+    msgEl.className = 'err'; msgEl.textContent = '❌ Le formulaire est momentanément indisponible, merci de réessayer plus tard.';
+    return;
+  }
+
+  btn.disabled = true;
+  msgEl.textContent = '⏳ Envoi en cours...';
+  try{
+    const body = 'Nouveau message reçu via le formulaire de contact du site Educpass.fr\n\n'
+      + 'Nom : ' + nom + '\n'
+      + 'Email : ' + email + '\n\n'
+      + 'Message :\n' + message;
+    const r = await fetch(`${PROXY}/send-email`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        to: emailDestinataire,
+        subject: 'Nouveau message via le formulaire de contact — ' + nom,
+        body: body
+      })
+    });
+    if(!r.ok){
+      const t = await r.text().catch(()=> '');
+      throw new Error('Envoi '+r.status+' : '+t.slice(0,200));
+    }
+    msgEl.className = 'ok'; msgEl.textContent = '✅ Votre message a bien été envoyé, merci !';
+    document.getElementById('f-nom').value = '';
+    document.getElementById('f-email').value = '';
+    document.getElementById('f-message').value = '';
+  }catch(e){
+    msgEl.className = 'err'; msgEl.textContent = '❌ Impossible d\'envoyer le message pour le moment. Merci de réessayer plus tard.';
+  }finally{
+    btn.disabled = false;
+  }
+}
+
+chargerContenu();
+</script>
+
+</body>
+</html>
