@@ -265,7 +265,12 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 //  Airtable automatiquement — voir payerCotisation() et
 //  verifierRetourPaiement() plus bas.
 // ══════════════════════════════════════════════════════════
-const ANNEES_EN_ORDRE = ['2026', '2027'];
+// 2026-09-28 : dans Airtable (champ "Année" de la fiche Prof, hérité de WinDev), l'année est
+// stockée sur 2 chiffres (26, 27…). On accepte les deux formats par sécurité.
+const ANNEES_EN_ORDRE = ['26', '27', '2026', '2027'];
+const ANNEE_A_RENOUVELER = '2026'; // affichée dans le message "Renouvelez-la pour …"
+// Affichage lisible : "27" → "2027" (les autres valeurs sont affichées telles quelles)
+function anneeLisible(a){ a = String(a||'').trim(); return /^\d{2}$/.test(a) ? '20' + a : a; }
 
 // Bascule d'affichage du moyen de paiement en ligne (Mollie). Tant que la
 // vérification de domaine Mollie n'est pas validée côté Mollie, on masque le
@@ -866,11 +871,11 @@ async function chargerCotisation(){
     const enOrdre = ANNEES_EN_ORDRE.includes(annee);
 
     if(enOrdre){
-      document.getElementById('annee-en-ordre').textContent = annee ? ('pour ' + annee) : '';
+      document.getElementById('annee-en-ordre').textContent = annee ? ('pour ' + anneeLisible(annee)) : '';
       document.getElementById('bloc-en-ordre').classList.remove('hidden');
     } else {
       document.getElementById('statut-non-detail').textContent = annee
-        ? ('Votre dernière cotisation enregistrée concerne l\'année ' + annee + '. Renouvelez-la pour ' + ANNEES_EN_ORDRE[0] + ' afin de retrouver l\'accès à vos coupons.')
+        ? ('Votre dernière cotisation enregistrée concerne l\'année ' + anneeLisible(annee) + '. Renouvelez-la pour ' + ANNEE_A_RENOUVELER + ' afin de retrouver l\'accès à vos coupons.')
         : 'Nous n\'avons pas encore enregistré de cotisation pour vous. Réglez-la pour accéder à vos coupons partenaires.';
 
       try{
