@@ -211,7 +211,28 @@ h1.title{
    La page peut scroller un peu pour l'atteindre (choix de Marc du
    2026-09-11 : plutôt que de l'écraser pour tout faire tenir sur un écran). ---- */
 /* Bannière centrée sur la page plutôt qu'étirée bord à bord (demande de Marc du 2026-09-11). */
-.banner-block{max-width:900px;margin:0 auto 20px;}
+.banner-col{min-width:0;}
+.sponsor-block{
+  border-radius:14px;
+  overflow:hidden;
+  box-shadow:0 6px 24px rgba(19,36,32,.16);
+  background:var(--paper-2);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  padding:12px;
+  min-width:0;
+}
+.sponsor-block .sponsor-logo{max-width:82%;max-height:50%;object-fit:contain;}
+.sponsor-block .sponsor-action-btn{
+  border:none;border-radius:10px;padding:8px 16px;
+  font-family:'Work Sans',Arial,sans-serif;font-weight:700;font-size:13px;
+  color:#fff;background:var(--action-blue);cursor:pointer;
+  transition:transform .12s ease,filter .12s ease;
+}
+.sponsor-block .sponsor-action-btn:hover{filter:brightness(1.06);transform:translateY(-1px);}
 .carousel{
   position:relative;
   border-radius:14px;
@@ -297,8 +318,8 @@ h1.title{
           <span class="hab-icon">🎁</span><span class="hab-label">Avantages</span>
         </button>
         <div class="hero-dropdown" id="avantages-dropdown">
-          <a href="javascript:void(0)">Avantages Enseignants 2026<span class="soon">Bientôt disponible</span></a>
-          <a href="javascript:void(0)">Espace VIP 2026<span class="soon">Bientôt disponible</span></a>
+          <a href="AVANTAGES ENSEIGNANTS.html">Avantages Enseignants 2026</a>
+          <a href="ESPACE VIP.html">Espace VIP 2026</a>
           <a href="javascript:void(0)">Partenaires 2026<span class="soon">Bientôt disponible</span></a>
         </div>
       </div>
@@ -333,9 +354,8 @@ h1.title{
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="banner-block">
+    <div class="banner-col">
     <div class="section-label">✨ Offres du moment</div>
     <div class="carousel" id="carousel">
       <div class="carousel-track" id="carousel-track">
@@ -344,6 +364,17 @@ h1.title{
       <div class="carousel-dots" id="carousel-dots"></div>
     </div>
     <p class="carousel-note" id="carousel-note"></p>
+    </div>
+
+    <!-- Bloc sponsor ACTION (demande de Marc du 2026-09-25) : logo Credit Mutuel +
+         bouton "Action" dont le texte reste a definir plus tard depuis le futur
+         back-office (section ACCUEIL > ACTION). Aligne en grille sous le bloc des
+         4 boutons, meme largeur qu'eux ; meme hauteur que la banniere par
+         etirement automatique de la grille CSS (align-items:stretch par defaut). -->
+    <div class="sponsor-block">
+      <img src="assets/logo-credit-mutuel.png" alt="Sponsor" class="sponsor-logo" id="sponsor-logo-img">
+      <button type="button" class="sponsor-action-btn" id="sponsor-action-btn">Action</button>
+    </div>
   </div>
 </div>
 
@@ -358,6 +389,9 @@ const PROXY = 'https://educpass-profs-proxy.marc-flasschoen.workers.dev';
 const BASE  = 'appWCfo8WBkMGUuc2';
 const BANNIERES_TBL = 'tblPvu1219W1xUnAY';
 const BANNIERES_API = `${PROXY}/v0/${BASE}/${BANNIERES_TBL}`;
+const CONTENU_TBL = 'tblvNiGHmWXwI4Htz';
+const CONTENU_API = `${PROXY}/v0/${BASE}/${CONTENU_TBL}`;
+const SPONSOR_ACTION_ID = 'recHU6GeSKmAdBdpX'; // fiche "Sponsor Action" (table Contenu Accueil)
 const LANGUE_COURANTE = 'FR'; // à faire évoluer plus tard si le site devient bilingue
 
 // Aperçu de secours (2026-09-11) : tant que Marc n'a pas encore glissé les
@@ -415,21 +449,17 @@ function buildSlideList(records, emplacement){
 // ── Menu horizontal de l'entête : 7 onglets, chacun avec un menu déroulant ──
 // (remplace l'ancien menu latéral vertical — demande de Marc du 2026-09-11)
 const NAV_GROUPS = [
-  { label: "Nos Editions", items: [
-    { label: "Nos éditions" },
+  { label: "NOS ÉDITIONS", items: [
+    { label: "NOS ÉDITIONS" },
   ]},
-  { label: "Voyages", items: [
-    { label: "Voyages & Week-ends" },
+  { label: "PROFS RELAIS", items: [
+    { label: "PROFS RELAIS", href: "INFOS PROFS RELAIS.html" },
   ]},
-  { label: "Enseignants Relais", items: [
-    { label: "Enseignants Relais" },
+  { label: "VIDÉOS", items: [
+    { label: "VIDÉOS", href: "VIDEOS.html" },
   ]},
-  { label: "Vidéos", items: [
-    { label: "Vidéos" },
-  ]},
-  { label: "Contacts", items: [
-    { label: "Contact" },
-    { label: "Enseignants-Contacts 2026" },
+  { label: "CONTACTS", items: [
+    { label: "CONTACT", href: "CONTACTS.html" },
   ]},
 ];
 
@@ -452,8 +482,13 @@ function renderNav(){
     dropdown.className = 'nav-dropdown';
     group.items.forEach(sub => {
       const a = document.createElement('a');
-      a.href = 'javascript:void(0)';
-      a.innerHTML = esc(sub.label) + '<span class="soon">Bientôt disponible</span>';
+      if (sub.href) {
+        a.href = sub.href;
+        a.innerHTML = esc(sub.label);
+      } else {
+        a.href = 'javascript:void(0)';
+        a.innerHTML = esc(sub.label) + '<span class="soon">Bientôt disponible</span>';
+      }
       dropdown.appendChild(a);
     });
     item.appendChild(dropdown);
@@ -615,6 +650,26 @@ function goToSlideAuto(i){
   document.querySelectorAll('.carousel-dots button').forEach((el,idx)=> el.classList.toggle('active', idx===curSlide));
 }
 
+// ── Bloc sponsor ACTION : logo + texte du bouton chargés depuis Airtable
+//    (table "Contenu Accueil", back-office CONTENU ACCUEIL.html, 2026-09-25) ──
+async function chargerSponsor(){
+  try{
+    const data = await atFetch(CONTENU_API + '/' + SPONSOR_ACTION_ID);
+    const f = data.fields || {};
+    const img = document.getElementById('sponsor-logo-img');
+    const btn = document.getElementById('sponsor-action-btn');
+    const logo = f['Logo'] && f['Logo'][0];
+    if(img && logo && logo.url) img.src = logo.url;
+    if(btn){
+      if(f['Texte bouton']) btn.textContent = f['Texte bouton'];
+      const lien = f['Lien bouton'];
+      if(lien){ btn.onclick = () => window.open(lien, '_blank'); }
+    }
+  }catch(e){
+    // Silencieux : le logo et le texte par défaut codés en dur restent affichés.
+  }
+}
+
 // ── Chargement unique depuis Airtable, réparti entre les deux carrousels ──
 async function loadAllBannieres(){
   try{
@@ -643,6 +698,7 @@ function toggleMenu(){
 document.addEventListener('DOMContentLoaded', function(){
   renderNav();
   loadAllBannieres();
+  chargerSponsor();
 
   // Arrivée depuis un lien externe du type "ACCUEIL.html#inscription" (ex:
   // bouton du texte "Qui sommes-nous ?") : ouvre directement le menu
