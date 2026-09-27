@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vidéos — Educpass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --paper:#faf5e8; --paper-2:#f1e9d6; --page-bg:#e9dcb8;
+  --teal:#0f3d3e; --teal-dark:#0a2b2c; --green-dark:#164a2e;
+  --gold:#c89b3c; --gold-light:#e6c878; --line:#d8cca4;
+  --text:#2a2118; --text-soft:#5c5344; --off:#8a7f6a;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:'Work Sans',Arial,sans-serif;background:var(--page-bg);color:var(--text);}
+.topbar{background:var(--teal);color:var(--paper);padding:14px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.topbar .logo{font-family:'Fraunces',serif;font-weight:700;font-size:19px;letter-spacing:.5px;}
+.topbar a.back{color:var(--gold-light);text-decoration:none;font-weight:600;font-size:14px;margin-left:auto;}
+.topbar a.back:hover{text-decoration:underline;}
+.wrap{max-width:900px;margin:0 auto;padding:40px 24px 60px;}
+h1{font-family:'Fraunces',serif;font-weight:700;font-size:32px;color:var(--teal-dark);margin:0 0 24px;text-wrap:balance;}
+.loading,.vide{color:var(--off);font-style:italic;}
+.video-card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:24px 26px 26px;box-shadow:0 6px 24px rgba(19,36,32,.10);margin-bottom:26px;}
+.video-card h2{font-family:'Fraunces',serif;font-weight:700;font-size:22px;color:var(--teal-dark);margin:0 0 14px;}
+.player{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden;}
+.player iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
+.video-desc{margin-top:14px;font-size:15.5px;line-height:1.7;color:var(--text-soft);white-space:pre-wrap;}
+.lien-ext{display:inline-block;margin-top:6px;color:var(--teal);font-weight:600;}
+@media (max-width:600px){ .wrap{padding:24px 16px 40px;} .video-card{padding:16px;} h1{font-size:26px;} }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">EDUCPASS</div>
+  <a class="back" href="ACCUEIL.html">← Retour à l'accueil</a>
+</div>
+
+<div class="wrap">
+  <h1>Vidéos</h1>
+  <div id="liste-videos"><div class="loading">⏳ Chargement…</div></div>
+</div>
+
+<script>
+const PROXY = 'https://educpass-profs-proxy.marc-flasschoen.workers.dev';
+const BASE  = 'appWCfo8WBkMGUuc2';
+const VIDEOS_TBL = 'tblzgMkxcoA6DZnDc';
+
+function escHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escAttr(s){ return escHtml(s).replace(/"/g,'&quot;'); }
+
+// Convertit toute adresse YouTube courante en adresse "embed" ; renvoie '' si non reconnue
+function urlEmbed(url){
+  const u = String(url||'').trim();
+  if(!u) return '';
+  let m = u.match(/youtu\.be\/([A-Za-z0-9_-]{6,})/)
+       || u.match(/[?&]v=([A-Za-z0-9_-]{6,})/)
+       || u.match(/youtube(?:-nocookie)?\.com\/(?:embed|shorts|live)\/([A-Za-z0-9_-]{6,})/);
+  return m ? 'https://www.youtube.com/embed/' + m[1] : '';
+}
+
+async function chargerToutesLesVideos(){
+  let tous = [], offset = '';
+  do {
+    const p = new URLSearchParams({pageSize:'100'});
+    if(offset) p.set('offset', offset);
+    const r = await fetch(`${PROXY}/v0/${BASE}/${VIDEOS_TBL}?${p}`);
+    if(!r.ok) throw new Error('Airtable '+r.status);
+    const d = await r.json();
+    tous = tous.concat(d.records || []);
+    offset = d.offset || '';
+  } while(offset);
+  return tous;
+}
+
+function afficherVideos(records){
+  const zone = document.getElementById('liste-videos');
+  const actives = records
+    .filter(r => r.fields && r.fields['EstActif'] === true)
+    .sort((a,b) => (a.fields['Ordre']||0) - (b.fields['Ordre']||0));
+  if(!actives.length){
+    zone.innerHTML = '<div class="vide">Aucune vidéo disponible pour le moment.</div>';
+    return;
+  }
+  zone.innerHTML = actives.map(r => {
+    const f = r.fields;
+    const embed = urlEmbed(f['URL YouTube']);
+    const lecteur = embed
+      ? '<div class="player"><iframe src="'+escAttr(embed)+'" title="'+escAttr(f['Titre']||'Vidéo')+'" loading="lazy" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>'
+      : (f['URL YouTube'] ? '<a class="lien-ext" href="'+escAttr(f['URL YouTube'])+'" target="_blank" rel="noopener">▶ Voir la vidéo</a>' : '');
+    return '<div class="video-card">'
+      + '<h2>'+escHtml(f['Titre']||'')+'</h2>'
+      + lecteur
+      + (f['Description'] ? '<div class="video-desc">'+escHtml(f['Description'])+'</div>' : '')
+      + '</div>';
+  }).join('');
+}
+
+(async function(){
+  try{ afficherVideos(await chargerToutesLesVideos()); }
+  catch(e){ document.getElementById('liste-videos').innerHTML = '<div class="vide">Contenu momentanément indisponible.</div>'; }
+})();
+</script>
+
+</body>
+</html>
