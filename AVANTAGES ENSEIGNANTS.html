@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Avantages enseignants — Educpass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --paper:#faf5e8; --paper-2:#f1e9d6; --page-bg:#e9dcb8;
+  --teal:#0f3d3e; --teal-dark:#0a2b2c; --green-dark:#164a2e;
+  --gold:#c89b3c; --gold-light:#e6c878; --line:#d8cca4;
+  --text:#2a2118; --text-soft:#5c5344; --off:#8a7f6a;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:'Work Sans',Arial,sans-serif;background:var(--page-bg);color:var(--text);}
+.topbar{background:var(--teal);color:var(--paper);padding:14px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.topbar .logo{font-family:'Fraunces',serif;font-weight:700;font-size:19px;letter-spacing:.5px;}
+.topbar a.back{color:var(--gold-light);text-decoration:none;font-weight:600;font-size:14px;margin-left:auto;}
+.topbar a.back:hover{text-decoration:underline;}
+.wrap{max-width:1100px;margin:0 auto;padding:40px 24px 60px;display:flex;flex-direction:column;gap:26px;}
+.page-card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:36px 40px;box-shadow:0 6px 24px rgba(19,36,32,.10);}
+h1{font-family:'Fraunces',serif;font-weight:700;font-size:32px;color:var(--teal-dark);margin:0 0 18px;text-wrap:balance;}
+h2{font-family:'Fraunces',serif;font-weight:700;font-size:23px;color:var(--teal-dark);margin:0 0 6px;}
+.corps{font-size:16px;line-height:1.75;color:var(--text-soft);white-space:pre-wrap;}
+.loading{color:var(--off);font-style:italic;}
+
+/* ---------- galerie ---------- */
+.gal-soustitre{font-size:14.5px;color:var(--text-soft);margin:0 0 20px;}
+.gal-controls{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.gal-tabs{display:flex;flex-wrap:wrap;gap:8px;}
+.gal-tab{background:var(--paper-2);border:1px solid var(--line);border-radius:20px;padding:7px 16px;font-size:13.5px;font-weight:600;color:var(--text-soft);cursor:pointer;font-family:inherit;}
+.gal-tab.active{background:var(--teal);border-color:var(--teal);color:var(--paper);}
+.gal-tab .cnt{opacity:.75;font-weight:500;margin-left:4px;}
+.gal-search-sort{display:flex;gap:10px;align-items:center;}
+.gal-search{padding:9px 14px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-family:inherit;background:#fff;color:var(--text);min-width:220px;}
+.gal-sort-btn{background:var(--paper-2);border:1px solid var(--line);border-radius:8px;padding:9px 14px;font-size:13.5px;font-weight:600;color:var(--text-soft);cursor:pointer;font-family:inherit;white-space:nowrap;}
+.gal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:18px;min-height:120px;}
+.gal-card{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;transition:box-shadow .15s,transform .15s;text-align:left;padding:0;font-family:inherit;}
+.gal-card:hover{box-shadow:0 8px 22px rgba(19,36,32,.16);transform:translateY(-2px);}
+.gal-card .logo-wrap{width:100%;aspect-ratio:374/201;background:var(--paper-2);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.gal-card .logo-wrap img{width:100%;height:100%;object-fit:contain;}
+.gal-card .logo-wrap .no-logo{font-size:12px;color:var(--off);font-style:italic;}
+.gal-card .gal-card-nom{padding:10px 12px 12px;font-weight:700;font-size:14px;color:var(--teal-dark);line-height:1.3;}
+.gal-card .gal-card-pays{padding:0 12px 10px;font-size:11.5px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--off);}
+.gal-empty{grid-column:1/-1;color:var(--off);font-style:italic;padding:30px 0;text-align:center;}
+.gal-pagination{display:flex;gap:12px;align-items:center;justify-content:center;margin-top:22px;font-size:14px;color:var(--text-soft);}
+.gal-page-btn{background:var(--teal);color:var(--paper);border:none;border-radius:8px;padding:8px 16px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit;}
+.gal-page-btn:disabled{opacity:.4;cursor:not-allowed;}
+
+/* ---------- modal fiche partenaire ---------- */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,20,18,.55);display:none;align-items:center;justify-content:center;padding:24px;z-index:50;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--paper);border-radius:16px;max-width:720px;width:100%;max-height:88vh;overflow-y:auto;padding:32px 36px 36px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.35);}
+.modal-close{position:absolute;top:16px;right:18px;background:none;border:none;font-size:22px;line-height:1;cursor:pointer;color:var(--off);}
+.modal-close:hover{color:var(--text);}
+.modal-logo-wrap{width:100%;max-width:280px;aspect-ratio:374/201;background:var(--paper-2);border-radius:10px;overflow:hidden;margin-bottom:18px;}
+.modal-logo-wrap img{width:100%;height:100%;object-fit:contain;}
+.modal-h1{font-family:'Fraunces',serif;font-weight:700;font-size:26px;color:var(--teal-dark);margin:0 0 4px;text-wrap:balance;}
+.modal-pays{font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--off);margin-bottom:18px;}
+.modal-section{margin-bottom:18px;}
+.modal-section .lbl{font-size:12.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--teal);margin-bottom:6px;}
+.modal-section .val{font-size:15px;line-height:1.65;color:var(--text-soft);white-space:pre-wrap;}
+.modal-avantage{background:var(--gold-light);border-radius:10px;padding:14px 18px;font-weight:700;color:var(--teal-dark);font-size:15px;}
+.modal-photos{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;}
+.modal-photos img{height:110px;border-radius:8px;flex-shrink:0;}
+.modal-video{position:relative;width:100%;padding-top:56.25%;border-radius:10px;overflow:hidden;background:#000;}
+.modal-video iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">EDUCPASS</div>
+  <a class="back" href="ACCUEIL.html">← Retour à l'accueil</a>
+</div>
+
+<div class="wrap">
+  <div class="page-card">
+    <h1 id="page-titre">Avantages enseignants</h1>
+    <div class="corps loading" id="page-texte">⏳ Chargement…</div>
+  </div>
+
+  <div class="page-card">
+    <h2>Nos partenaires</h2>
+    <p class="gal-soustitre">Retrouvez ici toutes les cartes de visite actives de nos partenaires — cliquez sur une carte pour en savoir plus.</p>
+
+    <div class="gal-controls">
+      <div class="gal-tabs" id="gal-tabs"></div>
+      <div class="gal-search-sort">
+        <input type="text" class="gal-search" id="gal-search" placeholder="Rechercher un partenaire…">
+        <button class="gal-sort-btn" id="gal-sort-btn" type="button">A → Z</button>
+      </div>
+    </div>
+
+    <div class="gal-grid" id="gal-grid"><div class="gal-empty">⏳ Chargement des partenaires…</div></div>
+    <div class="gal-pagination" id="gal-pagination"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-box">
+    <button class="modal-close" id="modal-close" type="button" aria-label="Fermer">✕</button>
+    <div class="modal-logo-wrap" id="modal-logo-wrap"></div>
+    <h3 class="modal-h1" id="modal-nom"></h3>
+    <div class="modal-pays" id="modal-pays"></div>
+    <div class="modal-section" id="modal-sec-avantage" style="display:none;">
+      <div class="modal-avantage" id="modal-avantage"></div>
+    </div>
+    <div class="modal-section" id="modal-sec-desc" style="display:none;">
+      <div class="lbl">À propos</div>
+      <div class="val" id="modal-desc"></div>
+    </div>
+    <div class="modal-section" id="modal-sec-horaires" style="display:none;">
+      <div class="lbl">Horaires et fermetures</div>
+      <div class="val" id="modal-horaires"></div>
+    </div>
+    <div class="modal-section" id="modal-sec-tarifs" style="display:none;">
+      <div class="lbl">Tarifs, réservation et infos pratiques</div>
+      <div class="val" id="modal-tarifs"></div>
+    </div>
+    <div class="modal-section" id="modal-sec-video" style="display:none;">
+      <div class="lbl">Vidéo</div>
+      <div class="modal-video" id="modal-video"></div>
+    </div>
+    <div class="modal-section" id="modal-sec-photos" style="display:none;">
+      <div class="lbl">Photos</div>
+      <div class="modal-photos" id="modal-photos"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PROXY = 'https://educpass-profs-proxy.marc-flasschoen.workers.dev';
+const BASE  = 'appWCfo8WBkMGUuc2';
+const CONTENU_TBL = 'tblvNiGHmWXwI4Htz';
+const RECORD_ID = 'recV77YGeQ1HBjSAY'; // fiche "Avantages enseignants"
+
+function escHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escAttr(s){ return escHtml(s).replace(/"/g,'&quot;'); }
+
+async function chargerContenu(){
+  const el = document.getElementById('page-texte');
+  try{
+    const r = await fetch(`${PROXY}/v0/${BASE}/${CONTENU_TBL}/${RECORD_ID}`);
+    if(!r.ok) throw new Error('Airtable '+r.status);
+    const data = await r.json();
+    const f = data.fields || {};
+    if(f['Titre']) document.getElementById('page-titre').textContent = f['Titre'];
+    el.textContent = f['Texte'] || 'à compléter';
+    el.classList.remove('loading');
+  }catch(e){
+    el.textContent = 'Contenu momentanément indisponible.';
+  }
+}
+chargerContenu();
+
+/* ===================== Galerie des cartes de visite actives ===================== */
+const ATT_PROXY = 'https://educpass-attractions-proxy.marc-flasschoen.workers.dev';
+const ATT_KEY   = 's0usEmEVnof0Js74MgIIeSGTD6DY5e4M';
+const CARTE_TBL = 'tblFn2gRUJOdgdMTZ';
+const CARTE_URL = `${ATT_PROXY}/records/${CARTE_TBL}`;
+
+const PAYS_ORDRE = ['BELGIQUE', 'FRANCE', 'LUXEMBOURG'];
+const NON_CLASSE = 'NON CLASSÉ';
+const PAGE_SIZE = 12;
+
+let toutesLesCartes = [];
+let ongletActif = 'TOUTES';
+let rechercheTxt = '';
+let triAsc = true;
+let pageCourante = 1;
+
+function normaliser(s){
+  return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+}
+
+function paysDe(carte){
+  const arr = carte.fields['Pays (via Attraction)'];
+  const v = Array.isArray(arr) && arr.length ? String(arr[0]).trim().toUpperCase() : '';
+  return v || NON_CLASSE;
+}
+
+function toEmbedUrl(url){
+  if(!url) return null;
+  try{
+    const u = new URL(url);
+    let id = null;
+    if(u.hostname.indexOf('youtu.be')!==-1){ id = u.pathname.replace(/^\//,''); }
+    else if(u.searchParams.get('v')){ id = u.searchParams.get('v'); }
+    else if(u.pathname.indexOf('/embed/')!==-1){ return url; }
+    if(!id) return null;
+    return 'https://www.youtube.com/embed/' + id;
+  }catch(e){ return null; }
+}
+
+async function chargerCartes(){
+  const grid = document.getElementById('gal-grid');
+  try{
+    let all = [], offset;
+    do{
+      const params = new URLSearchParams({pageSize:'100', filterByFormula:'{Publié}=1'});
+      if(offset) params.set('offset', offset);
+      const r = await fetch(`${CARTE_URL}?${params.toString()}`, {headers:{'X-Proxy-Key': ATT_KEY}});
+      if(!r.ok) throw new Error('Attractions '+r.status);
+      const data = await r.json();
+      all = all.concat(data.records||[]);
+      offset = data.offset;
+    } while(offset);
+
+    toutesLesCartes = all;
+    construireOnglets();
+    rendreGalerie();
+  }catch(e){
+    grid.innerHTML = '<div class="gal-empty">Répertoire momentanément indisponible.</div>';
+  }
+}
+
+function construireOnglets(){
+  const paysPresents = new Set(toutesLesCartes.map(paysDe));
+  const ordreFinal = ['TOUTES'];
+  PAYS_ORDRE.forEach(p => { if(paysPresents.has(p)) ordreFinal.push(p); });
+  const autres = [...paysPresents].filter(p => p!==NON_CLASSE && !PAYS_ORDRE.includes(p)).sort();
+  ordreFinal.push(...autres);
+  if(paysPresents.has(NON_CLASSE)) ordreFinal.push(NON_CLASSE);
+
+  const tabsEl = document.getElementById('gal-tabs');
+  tabsEl.innerHTML = ordreFinal.map(p=>{
+    const n = p==='TOUTES' ? toutesLesCartes.length : toutesLesCartes.filter(c=>paysDe(c)===p).length;
+    const label = p==='TOUTES' ? 'Toutes' : (p.charAt(0)+p.slice(1).toLowerCase());
+    return `<button type="button" class="gal-tab${p===ongletActif?' active':''}" data-pays="${escAttr(p)}">${escHtml(label)} <span class="cnt">(${n})</span></button>`;
+  }).join('');
+  tabsEl.querySelectorAll('.gal-tab').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      ongletActif = btn.getAttribute('data-pays');
+      pageCourante = 1;
+      construireOnglets();
+      rendreGalerie();
+    });
+  });
+}
+
+function cartesFiltrees(){
+  let liste = toutesLesCartes.slice();
+  if(ongletActif !== 'TOUTES'){
+    liste = liste.filter(c => paysDe(c) === ongletActif);
+  }
+  if(rechercheTxt){
+    const q = normaliser(rechercheTxt);
+    liste = liste.filter(c => normaliser(c.fields['Nom attraction']||'').indexOf(q) !== -1);
+  }
+  liste.sort((a,b)=>{
+    const na = (a.fields['Nom attraction']||'');
+    const nb = (b.fields['Nom attraction']||'');
+    return triAsc ? na.localeCompare(nb, 'fr') : nb.localeCompare(na, 'fr');
+  });
+  return liste;
+}
+
+function rendreGalerie(){
+  const grid = document.getElementById('gal-grid');
+  const pag = document.getElementById('gal-pagination');
+  const liste = cartesFiltrees();
+
+  if(!liste.length){
+    grid.innerHTML = '<div class="gal-empty">Aucun partenaire ne correspond à cette recherche.</div>';
+    pag.innerHTML = '';
+    return;
+  }
+
+  const nbPages = Math.max(1, Math.ceil(liste.length / PAGE_SIZE));
+  if(pageCourante > nbPages) pageCourante = nbPages;
+  const debut = (pageCourante-1)*PAGE_SIZE;
+  const pageItems = liste.slice(debut, debut+PAGE_SIZE);
+
+  grid.innerHTML = pageItems.map(c=>{
+    const f = c.fields;
+    const nom = f['Nom attraction'] || '(sans nom)';
+    const logo = f['Logo carte de visite'] && f['Logo carte de visite'][0];
+    const pays = paysDe(c);
+    const logoHtml = logo
+      ? `<img src="${escAttr(logo.url)}" alt="${escAttr(nom)}" loading="lazy">`
+      : `<span class="no-logo">Logo à venir</span>`;
+    return `<button type="button" class="gal-card" data-id="${escAttr(c.id)}">`
+      + `<div class="logo-wrap">${logoHtml}</div>`
+      + `<div class="gal-card-nom">${escHtml(nom)}</div>`
+      + `<div class="gal-card-pays">${escHtml(pays==='NON CLASSÉ' ? 'Pays non renseigné' : (pays.charAt(0)+pays.slice(1).toLowerCase()))}</div>`
+      + `</button>`;
+  }).join('');
+
+  grid.querySelectorAll('.gal-card').forEach(btn=>{
+    btn.addEventListener('click', ()=> ouvrirFiche(btn.getAttribute('data-id')));
+  });
+
+  if(nbPages > 1){
+    pag.innerHTML = `<button class="gal-page-btn" id="gal-prev" ${pageCourante<=1?'disabled':''}>← Précédent</button>`
+      + `<span>Page ${pageCourante} / ${nbPages}</span>`
+      + `<button class="gal-page-btn" id="gal-next" ${pageCourante>=nbPages?'disabled':''}>Suivant →</button>`;
+    const prevBtn = document.getElementById('gal-prev');
+    const nextBtn = document.getElementById('gal-next');
+    if(prevBtn) prevBtn.addEventListener('click', ()=>{ pageCourante--; rendreGalerie(); window.scrollTo({top:0,behavior:'smooth'}); });
+    if(nextBtn) nextBtn.addEventListener('click', ()=>{ pageCourante++; rendreGalerie(); window.scrollTo({top:0,behavior:'smooth'}); });
+  } else {
+    pag.innerHTML = '';
+  }
+}
+
+function ouvrirFiche(id){
+  const c = toutesLesCartes.find(x=>x.id===id);
+  if(!c) return;
+  const f = c.fields;
+  const nom = f['Nom attraction'] || '(sans nom)';
+  const pays = paysDe(c);
+  const logo = f['Logo carte de visite'] && f['Logo carte de visite'][0];
+  const avantage = f['Avantage coupon (affichage)'] || f['Avantage coupon'] || '';
+  const desc = f['Description longue'] || f['Description courte'] || '';
+  const horaires = f['Horaires et fermetures'] || '';
+  const tarifs = f['Tarifs, réservation et infos pratiques'] || '';
+  const photos = f['Photos'] || [];
+  const embed = toEmbedUrl(f['Vidéo YouTube']);
+
+  document.getElementById('modal-logo-wrap').innerHTML = logo
+    ? `<img src="${escAttr(logo.url)}" alt="${escAttr(nom)}">`
+    : '';
+  document.getElementById('modal-nom').textContent = nom;
+  document.getElementById('modal-pays').textContent = pays==='NON CLASSÉ' ? 'Pays non renseigné' : (pays.charAt(0)+pays.slice(1).toLowerCase());
+
+  const secAv = document.getElementById('modal-sec-avantage');
+  if(avantage){ secAv.style.display=''; document.getElementById('modal-avantage').textContent = avantage; }
+  else secAv.style.display='none';
+
+  const secDesc = document.getElementById('modal-sec-desc');
+  if(desc){ secDesc.style.display=''; document.getElementById('modal-desc').textContent = desc; }
+  else secDesc.style.display='none';
+
+  const secHor = document.getElementById('modal-sec-horaires');
+  if(horaires){ secHor.style.display=''; document.getElementById('modal-horaires').textContent = horaires; }
+  else secHor.style.display='none';
+
+  const secTar = document.getElementById('modal-sec-tarifs');
+  if(tarifs){ secTar.style.display=''; document.getElementById('modal-tarifs').textContent = tarifs; }
+  else secTar.style.display='none';
+
+  const secVid = document.getElementById('modal-sec-video');
+  if(embed){ secVid.style.display=''; document.getElementById('modal-video').innerHTML = `<iframe src="${escAttr(embed)}" title="${escAttr(nom)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`; }
+  else { secVid.style.display='none'; document.getElementById('modal-video').innerHTML=''; }
+
+  const secPhotos = document.getElementById('modal-sec-photos');
+  if(photos.length){ secPhotos.style.display=''; document.getElementById('modal-photos').innerHTML = photos.map(p=>`<img src="${escAttr((p.thumbnails&&p.thumbnails.large)?p.thumbnails.large.url:p.url)}" alt="">`).join(''); }
+  else secPhotos.style.display='none';
+
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function fermerFiche(){
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+document.getElementById('modal-close').addEventListener('click', fermerFiche);
+document.getElementById('modal-overlay').addEventListener('click', (e)=>{
+  if(e.target.id === 'modal-overlay') fermerFiche();
+});
+document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') fermerFiche(); });
+
+let searchDebounce;
+document.getElementById('gal-search').addEventListener('input', (e)=>{
+  clearTimeout(searchDebounce);
+  const val = e.target.value;
+  searchDebounce = setTimeout(()=>{ rechercheTxt = val; pageCourante = 1; rendreGalerie(); }, 200);
+});
+
+document.getElementById('gal-sort-btn').addEventListener('click', ()=>{
+  triAsc = !triAsc;
+  document.getElementById('gal-sort-btn').textContent = triAsc ? 'A → Z' : 'Z → A';
+  rendreGalerie();
+});
+
+chargerCartes();
+</script>
+
+</body>
+</html>
