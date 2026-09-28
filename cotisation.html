@@ -429,12 +429,17 @@ async function chargerProduits(){
 function afficherProduits(){
   const grid = document.getElementById('produits-grid');
   grid.innerHTML = '';
-  produits.forEach(p => {
+  // 2026-09-29 (demande Marc) : formules VIP groupées, la moins chère en haut (20 € puis 30 €)
+  const estVip = p => /^\s*VIP/i.test(p.libelle);
+  const ordre = produits.filter(p => !estVip(p)).concat(produits.filter(estVip).sort((a,b) => a.prix - b.prix));
+  ordre.forEach(p => {
     const carte = document.createElement('button');
     carte.type = 'button';
     carte.className = 'produit-carte' + (/^\s*VIP/i.test(p.libelle) ? ' vip' : '');
     carte.dataset.produitId = p.id;
-    carte.innerHTML = '<div class="produit-nom">' + escHtml(p.libelle) + '</div>'
+    // VIP : retour à la ligne après « VIP-PENSIONNÉ » (ex. « VIP-PENSIONNÉ / CARTE PVC »)
+    const nomHtml = estVip(p) ? escHtml(p.libelle).replace(/^(\s*VIP\S*)\s+/i, '$1<br>') : escHtml(p.libelle);
+    carte.innerHTML = '<div class="produit-nom">' + nomHtml + '</div>'
       + '<div class="produit-prix">' + formatEuros(p.prix) + '</div>'
       + (p.description ? '<div class="produit-desc">' + escHtml(p.description.split('\n')[0]) + '</div>' : '');
     carte.onclick = () => choisirProduit(p.id);
