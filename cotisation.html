@@ -94,6 +94,8 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:24px;color:var(-
 /* ===== Choix du produit de cotisation ===== */
 .produits-titre{font-size:13px;font-weight:700;color:var(--teal-dark);margin:4px 0 10px;text-transform:uppercase;letter-spacing:.4px;}
 .produits-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:18px;}
+/* 2026-09-29 (demande Marc) : les formules VIP regroupées dans la colonne de droite, l'une sous l'autre */
+@media (min-width:560px){ .produits-grid{grid-template-columns:repeat(3,1fr);grid-auto-flow:row dense;} .produit-carte.vip{grid-column:3;} }
 .produit-carte{
   background:var(--paper-2);border:2px solid var(--line);border-radius:10px;padding:14px 12px;
   cursor:pointer;text-align:left;font-family:inherit;
@@ -141,8 +143,8 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:24px;color:var(-
     <nav class="compte-nav">
       <a href="gerer-mon-compte.html">Gérer mon compte</a>
       <a href="ma-carte.html">Afficher ma carte</a>
+      <a href="mes-coupons.html">Mes coupons</a>
       <a href="cotisation.html" class="actif">Cotisation</a>
-      <!-- 2026-09-28 : "Afficher mes coupons" masqué jusqu'à la création de la vraie page Mes coupons (décision de Marc) -->
       <a href="#" id="lien-deconnexion" class="deconnexion">Déconnexion</a>
     </nav>
   </div>
@@ -163,7 +165,7 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:24px;color:var(-
     <div class="card hidden" id="bloc-en-ordre">
       <div class="statut-badge statut-ok">✅ Cotisation en ordre <span id="annee-en-ordre"></span></div>
       <p class="statut-detail">Merci ! Votre cotisation est à jour. Vous avez accès aux coupons de tous nos partenaires.</p>
-      <!-- 2026-09-28 : bouton "Voir mes coupons" masqué jusqu'à la création de la page Mes coupons -->
+      <a href="mes-coupons.html" class="btn-principal" style="margin-top:14px;">🎟️ Voir mes coupons</a>
     </div>
 
     <!-- ===== Cas : cotisation pas en ordre ===== -->
@@ -430,7 +432,7 @@ function afficherProduits(){
   produits.forEach(p => {
     const carte = document.createElement('button');
     carte.type = 'button';
-    carte.className = 'produit-carte';
+    carte.className = 'produit-carte' + (/^\s*VIP/i.test(p.libelle) ? ' vip' : '');
     carte.dataset.produitId = p.id;
     carte.innerHTML = '<div class="produit-nom">' + escHtml(p.libelle) + '</div>'
       + '<div class="produit-prix">' + formatEuros(p.prix) + '</div>'
