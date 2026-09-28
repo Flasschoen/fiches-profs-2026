@@ -278,7 +278,9 @@ function anneeLisible(a){ a = String(a||'').trim(); return /^\d{2}$/.test(a) ? '
 // (voir bloc-paiement-mollie / bloc-paiement-virement ci-dessus, et leur
 // bascule dans chargerCotisation() plus bas). Repasser à true dès que Mollie
 // est de nouveau opérationnel : aucune autre modification n'est nécessaire.
-const PAIEMENT_EN_LIGNE_DISPONIBLE = false;
+// 2026-09-28 : Mollie ACTIVÉ en réel (clé live posée, paiement réel de contrôle réussi
+// tr_xEDN2ZWwB9YQd6rWqvQXJ → Airtable mis à jour automatiquement).
+const PAIEMENT_EN_LIGNE_DISPONIBLE = true;
 
 // Virement bancaire : 2026-09-28, décision de Marc = affichage final "Mollie + virement".
 // Le virement reste donc visible EN PLUS de Mollie (il n'est plus masqué quand Mollie est actif).
