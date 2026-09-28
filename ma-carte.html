@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ma carte — Educpass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{
+  --paper:#faf5e8;
+  --paper-2:#f1e9d6;
+  --page-bg:#e9dcb8;
+  --teal:#0f3d3e;
+  --teal-dark:#0a2b2c;
+  --green-dark:#164a2e;
+  --gold:#c89b3c;
+  --gold-light:#e6c878;
+  --line:#d8cca4;
+  --text:#2a2118;
+  --text-soft:#5c5344;
+  --off:#8a7f6a;
+  --err:#a5432a;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--page-bg);color:var(--text);font-family:'Work Sans',Arial,sans-serif;min-height:100vh;}
+.site-header{background:var(--green-dark);box-shadow:0 2px 12px rgba(10,20,18,.28);}
+.site-header-inner{max-width:720px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.site-logo{font-family:'Fraunces',serif;font-weight:700;font-size:17px;color:var(--paper);letter-spacing:.5px;}
+.site-logo b{color:var(--gold-light);}
+.compte-nav{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap;}
+.compte-nav a,.compte-nav span{font-size:12.5px;padding:7px 12px;border-radius:7px;text-decoration:none;color:var(--paper-2);font-weight:600;white-space:nowrap;}
+.compte-nav a:hover{background:rgba(255,255,255,.1);}
+.compte-nav a.actif{background:var(--gold);color:var(--teal-dark);}
+.compte-nav span.desactive{opacity:.5;cursor:not-allowed;}
+.compte-nav a.deconnexion{color:#f0c9bc;}
+
+.wrap{max-width:720px;margin:0 auto;padding:26px 20px 60px;display:flex;flex-direction:column;align-items:center;}
+h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:24px;color:var(--teal-dark);margin:0 0 6px;text-wrap:balance;text-align:center;}
+.subtitle{color:var(--text-soft);font-size:13.5px;margin:0 0 26px;line-height:1.5;text-align:center;max-width:460px;}
+
+#overlay-loading{position:fixed;inset:0;background:rgba(15,61,62,.35);display:flex;align-items:center;justify-content:center;z-index:1000;}
+.loading-box{background:var(--paper);border-radius:12px;padding:22px 34px;box-shadow:0 4px 28px rgba(0,0,0,.3);font-size:16px;font-weight:700;color:var(--teal-dark);text-align:center;min-width:260px;}
+.hidden{display:none !important;}
+.msg-box{border-radius:9px;padding:12px 16px;font-size:13.5px;line-height:1.5;margin-bottom:16px;background:#fbe6e0;border:1px solid #e3a48f;color:#7a2c17;max-width:460px;}
+
+/* ===== Carte digitale ===== */
+.carte{
+  width:340px;max-width:100%;background:#fff;border-radius:12px;overflow:hidden;
+  box-shadow:0 10px 34px rgba(19,36,32,.28);border:1px solid var(--line);
+  font-family:'Work Sans',Arial,sans-serif;
+}
+.carte-corps{padding:18px 20px 14px;position:relative;}
+.carte-logo{font-family:'Fraunces',serif;font-weight:700;font-size:20px;color:var(--teal-dark);}
+.carte-logo b{color:var(--gold);}
+.carte-qr{position:absolute;top:16px;right:18px;width:64px;height:64px;background:#fff;padding:3px;border:1px solid var(--line);border-radius:4px;}
+.carte-nom{font-size:15px;font-weight:800;color:var(--text);margin-top:16px;}
+.carte-adresse{font-size:12.5px;color:var(--text-soft);line-height:1.5;margin-top:2px;}
+.carte-membre{position:absolute;top:88px;right:18px;font-size:12px;font-weight:700;color:var(--off);text-align:right;}
+.carte-bandeau{
+  background:linear-gradient(135deg,var(--gold-light),var(--gold));color:var(--teal-dark);
+  padding:12px 20px;font-family:'Fraunces',serif;font-weight:700;font-size:15px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.carte-bandeau .annee{font-size:19px;}
+
+.note-carte{margin-top:22px;font-size:12px;color:var(--off);text-align:center;max-width:400px;line-height:1.6;}
+</style>
+</head>
+<body>
+
+<div class="site-header">
+  <div class="site-header-inner">
+    <div class="site-logo">EDUCPASS<b> ·</b> Mon compte</div>
+    <nav class="compte-nav">
+      <a href="gerer-mon-compte.html">Gérer mon compte</a>
+      <a href="ma-carte.html" class="actif">Afficher ma carte</a>
+      <span class="desactive" title="Bientôt disponible">Mes favoris</span>
+      <a href="#" id="lien-deconnexion" class="deconnexion">Déconnexion</a>
+    </nav>
+  </div>
+</div>
+
+<div id="overlay-loading" class="hidden"><div class="loading-box" id="loading-msg"></div></div>
+
+<div class="wrap">
+  <h1 class="title">Ma carte Educpass</h1>
+  <p class="subtitle">Votre carte numérique d'enseignant, à présenter chez nos partenaires.</p>
+
+  <div class="msg-box hidden" id="msg-erreur"></div>
+
+  <div class="carte hidden" id="carte">
+    <div class="carte-corps">
+      <div class="carte-logo">Educ<b>pass</b></div>
+      <div id="carte-qr" class="carte-qr"></div>
+      <div class="carte-membre" id="carte-nmembre"></div>
+      <div class="carte-nom" id="carte-nom"></div>
+      <div class="carte-adresse" id="carte-adresse"></div>
+    </div>
+    <div class="carte-bandeau">
+      <span>European teacher card</span>
+      <span class="annee" id="carte-annee"></span>
+    </div>
+  </div>
+
+  <p class="note-carte">Présentez cette page (ou une capture d'écran) chez un partenaire Educpass. Le contenu exact du QR code sera activé lors de la mise en place de la validation par QR (à venir).</p>
+</div>
+
+<script>
+const PROXY = 'https://educpass-profs-proxy.marc-flasschoen.workers.dev';
+
+function getSession(){
+  try{ return JSON.parse(localStorage.getItem('educpass_session') || 'null'); }catch(e){ return null; }
+}
+const session = getSession();
+if(!session || !session.token){
+  location.href = 'connexion-fr.html';
+}
+
+document.getElementById('lien-deconnexion').addEventListener('click', (e)=>{
+  e.preventDefault();
+  try{ localStorage.removeItem('educpass_session'); }catch(e){}
+  location.href = 'ACCUEIL.html';
+});
+
+function setSt(msg){
+  document.getElementById('loading-msg').textContent = msg || '';
+  document.getElementById('overlay-loading').classList.toggle('hidden', !msg);
+}
+
+async function chargerCarte(){
+  setSt('⏳ Chargement de votre carte...');
+  try{
+    const r = await fetch(`${PROXY}/account/me`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ token: session.token }),
+    });
+    const data = await r.json().catch(()=> ({}));
+    if(!r.ok || !data.ok){
+      if(r.status === 401){
+        try{ localStorage.removeItem('educpass_session'); }catch(e){}
+        location.href = 'connexion-fr.html';
+        return;
+      }
+      throw new Error(data.error || 'Erreur inconnue');
+    }
+    const c = data.compte;
+    document.getElementById('carte-nom').textContent = (c.prenom + ' ' + c.nom).trim().toUpperCase();
+    const adresseLigne1 = [c.rue, c.nMaison].filter(Boolean).join(', ');
+    const adresseLigne2 = [c.cp, c.ville].filter(Boolean).join(' - ');
+    document.getElementById('carte-adresse').innerHTML = [adresseLigne1, adresseLigne2].filter(Boolean).map(l=>l).join('<br>');
+    document.getElementById('carte-nmembre').textContent = c.membre ? ('N° ' + c.membre) : '';
+    document.getElementById('carte-annee').textContent = c.anneeCotisation || '';
+
+    if(window.QRCode){
+      new QRCode(document.getElementById('carte-qr'), {
+        text: 'EDUCPASS:' + (c.membre || c.matricule || ''),
+        width: 58, height: 58,
+        colorDark: '#0a2b2c', colorLight: '#ffffff',
+      });
+    }
+
+    document.getElementById('carte').classList.remove('hidden');
+  }catch(e){
+    const box = document.getElementById('msg-erreur');
+    box.textContent = "Impossible de charger votre carte : " + e.message + ". Rechargez la page ou reconnectez-vous.";
+    box.classList.remove('hidden');
+  }finally{
+    setSt('');
+  }
+}
+chargerCarte();
+</script>
+
+</body>
+</html>
