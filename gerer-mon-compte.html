@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mon compte — Educpass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --paper:#faf5e8;
+  --paper-2:#f1e9d6;
+  --page-bg:#e9dcb8;
+  --teal:#0f3d3e;
+  --teal-dark:#0a2b2c;
+  --green-dark:#164a2e;
+  --gold:#c89b3c;
+  --gold-light:#e6c878;
+  --line:#d8cca4;
+  --text:#2a2118;
+  --text-soft:#5c5344;
+  --off:#8a7f6a;
+  --ok:#2f7d4f;
+  --err:#a5432a;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--page-bg);color:var(--text);font-family:'Work Sans',Arial,sans-serif;min-height:100vh;}
+.site-header{background:var(--green-dark);box-shadow:0 2px 12px rgba(10,20,18,.28);}
+.site-header-inner{max-width:720px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.site-logo{font-family:'Fraunces',serif;font-weight:700;font-size:17px;color:var(--paper);letter-spacing:.5px;}
+.site-logo b{color:var(--gold-light);}
+.compte-nav{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap;}
+.compte-nav a,.compte-nav span{
+  font-size:12.5px;padding:7px 12px;border-radius:7px;text-decoration:none;color:var(--paper-2);
+  font-weight:600;white-space:nowrap;
+}
+.compte-nav a:hover{background:rgba(255,255,255,.1);}
+.compte-nav a.actif{background:var(--gold);color:var(--teal-dark);}
+.compte-nav span.desactive{opacity:.5;cursor:not-allowed;}
+.compte-nav a.deconnexion{color:#f0c9bc;}
+
+.wrap{max-width:720px;margin:0 auto;padding:26px 20px 60px;}
+h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:24px;color:var(--teal-dark);margin:0 0 6px;text-wrap:balance;}
+.subtitle{color:var(--text-soft);font-size:13.5px;margin:0 0 22px;line-height:1.5;}
+
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:26px;box-shadow:0 6px 24px rgba(19,36,32,.10);margin-bottom:20px;}
+.card h2{font-family:'Fraunces',serif;font-size:17px;color:var(--teal-dark);margin:0 0 16px;}
+.card h2 small{display:block;font-family:'Work Sans',sans-serif;font-weight:400;font-size:12px;color:var(--off);margin-top:2px;}
+
+.fitem{margin-bottom:16px;}
+.fitem label{display:block;font-size:12px;color:var(--text-soft);margin-bottom:5px;font-weight:600;}
+.fitem input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8px;font-size:15px;font-family:inherit;background:#fff;color:var(--text);}
+.fitem input:focus{outline:2px solid var(--teal);outline-offset:1px;}
+.fitem input[readonly]{background:var(--paper-2);color:var(--off);}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;}
+.grid-adresse{display:grid;grid-template-columns:2.2fr 1fr;gap:0 14px;}
+.grid-cp{display:grid;grid-template-columns:1fr 2fr;gap:0 14px;}
+@media (max-width:520px){.grid2,.grid-adresse,.grid-cp{grid-template-columns:1fr;}}
+
+.multisel{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:6px 12px;margin-bottom:10px;}
+.multisel-item{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text);cursor:pointer;}
+.multisel-item input{width:auto;accent-color:var(--teal-dark);}
+
+.pw-wrap{position:relative;}
+.pw-wrap input{padding-right:44px;}
+.pw-toggle{position:absolute;top:50%;right:6px;transform:translateY(-50%);border:none;background:transparent;cursor:pointer;padding:8px;display:flex;align-items:center;justify-content:center;border-radius:6px;color:var(--off);}
+.pw-toggle:hover{color:var(--teal-dark);background:var(--paper-2);}
+.pw-toggle:focus-visible{outline:2px solid var(--teal);outline-offset:1px;}
+.pw-toggle svg{width:19px;height:19px;display:block;}
+.pw-toggle .icon-off{display:none;}
+.pw-toggle[aria-pressed="true"] .icon-on{display:none;}
+.pw-toggle[aria-pressed="true"] .icon-off{display:block;}
+
+.btn-submit{display:inline-block;padding:12px 22px;border:none;border-radius:9px;background:var(--teal-dark);color:#fff;font-size:14.5px;font-weight:700;cursor:pointer;font-family:inherit;}
+.btn-submit:hover{filter:brightness(1.08);}
+.btn-submit:disabled{opacity:.55;cursor:not-allowed;}
+
+.msg-box{border-radius:9px;padding:11px 15px;font-size:13px;line-height:1.5;margin:0 0 16px;display:none;}
+.msg-box.show{display:block;}
+.msg-err{background:#fbe6e0;border:1px solid #e3a48f;color:#7a2c17;}
+.msg-ok{background:#e4f2e8;border:1px solid #a9d3b6;color:#1e5a37;}
+.msg-wait{background:#fdf3d9;border:1px solid #e6c878;color:#6b5100;}
+
+.hidden{display:none !important;}
+
+#overlay-loading{position:fixed;inset:0;background:rgba(15,61,62,.35);display:flex;align-items:center;justify-content:center;z-index:1000;}
+.loading-box{background:var(--paper);border-radius:12px;padding:22px 34px;box-shadow:0 4px 28px rgba(0,0,0,.3);font-size:16px;font-weight:700;color:var(--teal-dark);text-align:center;min-width:260px;}
+</style>
+</head>
+<body>
+
+<div class="site-header">
+  <div class="site-header-inner">
+    <div class="site-logo">EDUCPASS<b> ·</b> Mon compte</div>
+    <nav class="compte-nav">
+      <a href="gerer-mon-compte.html" class="actif">Gérer mon compte</a>
+      <a href="ma-carte.html">Afficher ma carte</a>
+      <span class="desactive" title="Bientôt disponible">Mes favoris</span>
+      <a href="#" id="lien-deconnexion" class="deconnexion">Déconnexion</a>
+    </nav>
+  </div>
+</div>
+
+<div id="overlay-loading" class="hidden"><div class="loading-box" id="loading-msg"></div></div>
+
+<div class="wrap">
+  <h1 class="title">Gérer mon compte</h1>
+  <p class="subtitle" id="sous-titre">Modifiez vos coordonnées, vos niveaux/branches enseignés ou votre mot de passe.</p>
+
+  <div id="contenu" class="hidden">
+
+    <div class="card">
+      <h2>Identité</h2>
+      <div class="grid2">
+        <div class="fitem"><label>Nom</label><input type="text" id="f-nom" readonly></div>
+        <div class="fitem"><label>Prénom</label><input type="text" id="f-prenom" readonly></div>
+        <div class="fitem"><label>N° matricule</label><input type="text" id="f-matricule" readonly></div>
+        <div class="fitem"><label>N° membre</label><input type="text" id="f-membre" readonly></div>
+      </div>
+      <p style="font-size:12px;color:var(--off);margin:0;">Le nom, le prénom et le N° matricule ne sont pas modifiables ici. Pour toute correction, contactez <a href="mailto:info@educpass.fr" style="color:var(--teal-dark);">info@educpass.fr</a>.</p>
+    </div>
+
+    <form id="form-profil">
+      <div class="card">
+        <h2>Coordonnées</h2>
+        <div class="msg-box" id="msg-profil"></div>
+        <div class="fitem"><label>Email</label><input type="email" id="f-email" autocomplete="email"></div>
+        <div class="grid2">
+          <div class="fitem"><label>GSM</label><input type="text" id="f-gsm" autocomplete="tel"></div>
+          <div class="fitem"><label>Téléphone</label><input type="text" id="f-telephone" autocomplete="tel"></div>
+        </div>
+        <div class="grid-adresse">
+          <div class="fitem"><label>Rue</label><input type="text" id="f-rue"></div>
+          <div class="fitem"><label>N° maison</label><input type="text" id="f-nmaison"></div>
+        </div>
+        <div class="grid-cp">
+          <div class="fitem"><label>CP</label><input type="text" id="f-cp"></div>
+          <div class="fitem"><label>Ville</label><input type="text" id="f-ville"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Enseignement</h2>
+        <div class="fitem">
+          <label>Niveau(x)</label>
+          <div class="multisel" id="f-niveaux"></div>
+          <input type="text" id="f-autreniveau" placeholder="Autre niveau (facultatif)">
+        </div>
+        <div class="fitem">
+          <label>Branche(s)</label>
+          <div class="multisel" id="f-branches"></div>
+          <input type="text" id="f-autrebranche" placeholder="Autre branche (facultatif)">
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit" id="btn-profil">Enregistrer mes coordonnées</button>
+    </form>
+
+    <form id="form-mdp" style="margin-top:26px;">
+      <div class="card">
+        <h2>Mot de passe<small>Confirmez votre mot de passe actuel avant d'en choisir un nouveau.</small></h2>
+        <div class="msg-box" id="msg-mdp"></div>
+        <div class="fitem">
+          <label>Mot de passe actuel</label>
+          <div class="pw-wrap">
+            <input type="password" id="f-mdp-actuel" autocomplete="current-password">
+            <button type="button" class="pw-toggle" data-toggle-for="f-mdp-actuel" aria-pressed="false" aria-label="Afficher le mot de passe">
+              <svg class="icon-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="icon-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 5.2A11 11 0 0 1 12 5c7 0 11 7 11 7a13.2 13.2 0 0 1-3.2 3.9M6.6 6.6C3.5 8.5 1 12 1 12s4 7 11 7a10.6 10.6 0 0 0 4.4-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="fitem">
+            <label>Nouveau mot de passe</label>
+            <div class="pw-wrap">
+              <input type="password" id="f-mdp-nouveau" autocomplete="new-password">
+              <button type="button" class="pw-toggle" data-toggle-for="f-mdp-nouveau" aria-pressed="false" aria-label="Afficher le mot de passe">
+                <svg class="icon-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="icon-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 5.2A11 11 0 0 1 12 5c7 0 11 7 11 7a13.2 13.2 0 0 1-3.2 3.9M6.6 6.6C3.5 8.5 1 12 1 12s4 7 11 7a10.6 10.6 0 0 0 4.4-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="fitem">
+            <label>Confirmer le nouveau mot de passe</label>
+            <div class="pw-wrap">
+              <input type="password" id="f-mdp-confirme" autocomplete="new-password">
+              <button type="button" class="pw-toggle" data-toggle-for="f-mdp-confirme" aria-pressed="false" aria-label="Afficher le mot de passe">
+                <svg class="icon-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="icon-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 5.2A11 11 0 0 1 12 5c7 0 11 7 11 7a13.2 13.2 0 0 1-3.2 3.9M6.6 6.6C3.5 8.5 1 12 1 12s4 7 11 7a10.6 10.6 0 0 0 4.4-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button type="submit" class="btn-submit" id="btn-mdp">Changer mon mot de passe</button>
+    </form>
+
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  GÉRER MON COMPTE — espace personnel Enseignant Français
+//  ------------------------------------------------------------
+//  Réutilise le jeton de session posé par connexion-fr.html
+//  (localStorage.educpass_session). Aucune donnée sensible n'est
+//  jamais stockée ici : ni mot de passe, ni hash.
+// ══════════════════════════════════════════════════════════
+const PROXY = 'https://educpass-profs-proxy.marc-flasschoen.workers.dev';
+
+// Mêmes listes que le formulaire d'inscription Enseignant Français
+// (INSCRIPTION PROFS FRANÇAIS.html), pour rester cohérent avec ce qui a
+// déjà été proposé et validé par Marc à l'inscription.
+const NIVEAUX_CHOICES = ['Maternelle','Élémentaire','Collège','Lycée général et technologique','Lycée professionnel','Enseignement supérieur','Enseignement spécialisé','Formation continue / adultes'];
+const BRANCHES_CHOICES = ['Maternelle','Élémentaire','Direction','Français / Lettres','Lettres classiques (Latin/Grec)','Mathématiques','Histoire-Géographie','Enseignement moral et civique','Sciences de la Vie et de la Terre (SVT)','Physique-Chimie','Technologie',"Sciences de l'ingénieur",'Langues vivantes','Éducation musicale','Arts plastiques','EPS','Sciences Économiques et Sociales (SES)','Philosophie','Documentation (CDI)','Enseignement professionnel/technique','Vie scolaire / CPE','Administration'];
+
+function getSession(){
+  try{ return JSON.parse(localStorage.getItem('educpass_session') || 'null'); }catch(e){ return null; }
+}
+const session = getSession();
+if(!session || !session.token){
+  location.href = 'connexion-fr.html';
+}
+
+document.getElementById('lien-deconnexion').addEventListener('click', (e)=>{
+  e.preventDefault();
+  try{ localStorage.removeItem('educpass_session'); }catch(e){}
+  location.href = 'ACCUEIL.html';
+});
+
+function buildMultiselect(containerId, choices, valeursCochees){
+  const box = document.getElementById(containerId);
+  box.innerHTML = '';
+  const dejaCoche = new Set((valeursCochees||'').split(',').map(s=>s.trim()).filter(Boolean));
+  choices.forEach(c=>{
+    const lbl = document.createElement('label'); lbl.className = 'multisel-item';
+    const cb = document.createElement('input'); cb.type = 'checkbox'; cb.value = c;
+    if(dejaCoche.has(c)) cb.checked = true;
+    lbl.appendChild(cb); lbl.appendChild(document.createTextNode(c));
+    box.appendChild(lbl);
+  });
+}
+function checkedValues(containerId){
+  return Array.from(document.getElementById(containerId).querySelectorAll('input[type=checkbox]')).filter(c=>c.checked).map(c=>c.value);
+}
+
+function setSt(msg){
+  document.getElementById('loading-msg').textContent = msg || '';
+  document.getElementById('overlay-loading').classList.toggle('hidden', !msg);
+}
+function afficherMessage(boxId, texte, type){
+  const box = document.getElementById(boxId);
+  box.textContent = texte;
+  box.className = 'msg-box show msg-' + type;
+}
+function cacherMessage(boxId){
+  document.getElementById(boxId).className = 'msg-box';
+}
+
+function brancherToggleMotDePasse(input, toggle){
+  toggle.addEventListener('click', ()=>{
+    const visible = input.type === 'text';
+    input.type = visible ? 'password' : 'text';
+    toggle.setAttribute('aria-pressed', String(!visible));
+    toggle.setAttribute('aria-label', visible ? 'Afficher le mot de passe' : 'Masquer le mot de passe');
+  });
+}
+document.querySelectorAll('.pw-toggle').forEach(btn=>{
+  brancherToggleMotDePasse(document.getElementById(btn.dataset.toggleFor), btn);
+});
+
+async function chargerCompte(){
+  setSt('⏳ Chargement de votre compte...');
+  try{
+    const r = await fetch(`${PROXY}/account/me`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ token: session.token }),
+    });
+    const data = await r.json().catch(()=> ({}));
+    if(!r.ok || !data.ok){
+      if(r.status === 401){
+        try{ localStorage.removeItem('educpass_session'); }catch(e){}
+        location.href = 'connexion-fr.html';
+        return;
+      }
+      throw new Error(data.error || 'Erreur inconnue');
+    }
+    const c = data.compte;
+    document.getElementById('f-nom').value = c.nom;
+    document.getElementById('f-prenom').value = c.prenom;
+    document.getElementById('f-matricule').value = c.matricule;
+    document.getElementById('f-membre').value = c.membre;
+    document.getElementById('f-email').value = c.email;
+    document.getElementById('f-gsm').value = c.gsm;
+    document.getElementById('f-telephone').value = c.telephone;
+    document.getElementById('f-rue').value = c.rue;
+    document.getElementById('f-nmaison').value = c.nMaison;
+    document.getElementById('f-cp').value = c.cp;
+    document.getElementById('f-ville').value = c.ville;
+    document.getElementById('f-autreniveau').value = c.autreNiveau;
+    document.getElementById('f-autrebranche').value = c.autreBranche;
+    buildMultiselect('f-niveaux', NIVEAUX_CHOICES, c.niveau);
+    buildMultiselect('f-branches', BRANCHES_CHOICES, c.branche);
+    document.getElementById('sous-titre').textContent = 'Bonjour ' + c.prenom + ' ' + c.nom + '. Modifiez vos coordonnées, vos niveaux/branches enseignés ou votre mot de passe.';
+    document.getElementById('contenu').classList.remove('hidden');
+  }catch(e){
+    document.getElementById('sous-titre').textContent = "Impossible de charger votre compte : " + e.message + ". Rechargez la page ou reconnectez-vous.";
+  }finally{
+    setSt('');
+  }
+}
+chargerCompte();
+
+document.getElementById('form-profil').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  cacherMessage('msg-profil');
+  const btn = document.getElementById('btn-profil');
+  const email = document.getElementById('f-email').value.trim();
+  if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    afficherMessage('msg-profil', 'Adresse email invalide.', 'err');
+    return;
+  }
+  btn.disabled = true; btn.textContent = 'Enregistrement...';
+  try{
+    const champs = {
+      email,
+      gsm: document.getElementById('f-gsm').value.trim(),
+      telephone: document.getElementById('f-telephone').value.trim(),
+      rue: document.getElementById('f-rue').value.trim(),
+      nMaison: document.getElementById('f-nmaison').value.trim(),
+      cp: document.getElementById('f-cp').value.trim(),
+      ville: document.getElementById('f-ville').value.trim(),
+      niveau: checkedValues('f-niveaux').join(','),
+      branche: checkedValues('f-branches').join(','),
+      autreNiveau: document.getElementById('f-autreniveau').value.trim(),
+      autreBranche: document.getElementById('f-autrebranche').value.trim(),
+    };
+    const r = await fetch(`${PROXY}/account/update`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ token: session.token, champs }),
+    });
+    const data = await r.json().catch(()=> ({}));
+    if(!r.ok || !data.ok) throw new Error(data.error || 'Erreur inconnue');
+    afficherMessage('msg-profil', '✅ Vos coordonnées ont bien été enregistrées.', 'ok');
+  }catch(e){
+    afficherMessage('msg-profil', 'Impossible d\'enregistrer : ' + e.message, 'err');
+  }finally{
+    btn.disabled = false; btn.textContent = 'Enregistrer mes coordonnées';
+  }
+});
+
+document.getElementById('form-mdp').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  cacherMessage('msg-mdp');
+  const btn = document.getElementById('btn-mdp');
+  const actuel = document.getElementById('f-mdp-actuel').value;
+  const nouveau = document.getElementById('f-mdp-nouveau').value;
+  const confirme = document.getElementById('f-mdp-confirme').value;
+
+  if(!actuel || !nouveau || !confirme){
+    afficherMessage('msg-mdp', 'Tous les champs sont obligatoires.', 'err');
+    return;
+  }
+  if(nouveau.length < 6){
+    afficherMessage('msg-mdp', 'Le nouveau mot de passe doit contenir au moins 6 caractères.', 'err');
+    return;
+  }
+  if(nouveau !== confirme){
+    afficherMessage('msg-mdp', 'Les deux mots de passe ne correspondent pas.', 'err');
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = 'Modification en cours...';
+  try{
+    const r = await fetch(`${PROXY}/account/change-password`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ token: session.token, motDePasseActuel: actuel, nouveauMotDePasse: nouveau }),
+    });
+    const data = await r.json().catch(()=> ({}));
+    if(!r.ok || !data.ok){
+      afficherMessage('msg-mdp', data.error || 'Une erreur est survenue.', r.status === 429 ? 'wait' : 'err');
+      return;
+    }
+    afficherMessage('msg-mdp', '✅ Votre mot de passe a bien été modifié.', 'ok');
+    document.getElementById('form-mdp').reset();
+  }catch(e){
+    afficherMessage('msg-mdp', 'Impossible de contacter le serveur. Réessayez.', 'err');
+  }finally{
+    btn.disabled = false; btn.textContent = 'Changer mon mot de passe';
+  }
+});
+</script>
+
+</body>
+</html>
