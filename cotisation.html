@@ -280,10 +280,14 @@ function anneeLisible(a){ a = String(a||'').trim(); return /^\d{2}$/.test(a) ? '
 // est de nouveau opérationnel : aucune autre modification n'est nécessaire.
 const PAIEMENT_EN_LIGNE_DISPONIBLE = false;
 
-// PayPal est un moyen de paiement INDÉPENDANT de Mollie/virement ci-dessus : il reste actif
-// même si Mollie est masqué, et s'affiche à côté du virement. Passer à false le masquerait
-// entièrement (ex: en cas de souci technique), sans toucher au reste.
-const PAYPAL_DISPONIBLE = true;
+// Virement bancaire : 2026-09-28, décision de Marc = affichage final "Mollie + virement".
+// Le virement reste donc visible EN PLUS de Mollie (il n'est plus masqué quand Mollie est actif).
+const VIREMENT_DISPONIBLE = true;
+
+// PayPal : 2026-09-28, décision de Marc = bouton PayPal séparé RETIRÉ, car PayPal est déjà
+// proposé à l'intérieur de la page de paiement Mollie. Code conservé (repasser à true pour le
+// réafficher) ; le Worker educpass-paypal-proxy reste en sommeil dans Cloudflare.
+const PAYPAL_DISPONIBLE = false;
 
 const PROXY = 'https://educpass-profs-proxy.marc-flasschoen.workers.dev';
 
@@ -887,8 +891,8 @@ async function chargerCotisation(){
       majReferenceEtBouton(null, null);
       document.getElementById('bloc-paiement-mollie').classList.toggle('hidden', !PAIEMENT_EN_LIGNE_DISPONIBLE);
       document.getElementById('bloc-paiement-paypal').classList.toggle('hidden', !PAYPAL_DISPONIBLE);
-      document.getElementById('bloc-paiement-virement').classList.toggle('hidden', PAIEMENT_EN_LIGNE_DISPONIBLE);
-      if(!PAIEMENT_EN_LIGNE_DISPONIBLE){ chargerTexteVirement(); }
+      document.getElementById('bloc-paiement-virement').classList.toggle('hidden', !VIREMENT_DISPONIBLE);
+      if(VIREMENT_DISPONIBLE){ chargerTexteVirement(); }
       chargerMoyensDePaiement();
       document.getElementById('bloc-pas-en-ordre').classList.remove('hidden');
     }
