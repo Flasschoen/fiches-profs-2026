@@ -95,7 +95,8 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:24px;color:var(-
     <nav class="compte-nav">
       <a href="gerer-mon-compte.html" class="actif">Gérer mon compte</a>
       <a href="ma-carte.html">Afficher ma carte</a>
-      <span class="desactive" title="Bientôt disponible">Mes favoris</span>
+      <a href="cotisation.html">Cotisation</a>
+      <!-- 2026-09-28 : "Afficher mes coupons" masqué jusqu'à la création de la vraie page Mes coupons (décision de Marc) -->
       <a href="#" id="lien-deconnexion" class="deconnexion">Déconnexion</a>
     </nav>
   </div>
@@ -215,8 +216,39 @@ const PROXY = 'https://educpass-profs-proxy.marc-flasschoen.workers.dev';
 const NIVEAUX_CHOICES = ['Maternelle','Élémentaire','Collège','Lycée général et technologique','Lycée professionnel','Enseignement supérieur','Enseignement spécialisé','Formation continue / adultes'];
 const BRANCHES_CHOICES = ['Maternelle','Élémentaire','Direction','Français / Lettres','Lettres classiques (Latin/Grec)','Mathématiques','Histoire-Géographie','Enseignement moral et civique','Sciences de la Vie et de la Terre (SVT)','Physique-Chimie','Technologie',"Sciences de l'ingénieur",'Langues vivantes','Éducation musicale','Arts plastiques','EPS','Sciences Économiques et Sociales (SES)','Philosophie','Documentation (CDI)','Enseignement professionnel/technique','Vie scolaire / CPE','Administration'];
 
+// ── Session : stockage en double (localStorage + cookie), identique à cotisation.html ──
+// Un cookie longue durée (180 jours) prend le relais si le localStorage disparaît
+// (Safari iOS notamment), pour éviter les reconnexions intempestives.
+const SESSION_COOKIE_MAX_AGE_S = 180 * 24 * 60 * 60;
+function setCookie(nom, valeur, maxAgeS){
+  try{
+    document.cookie = nom + '=' + encodeURIComponent(valeur) + '; path=/; max-age=' + maxAgeS + '; SameSite=Lax' + (location.protocol === 'https:' ? '; Secure' : '');
+  }catch(e){}
+}
+function getCookie(nom){
+  try{
+    const m = document.cookie.match(new RegExp('(?:^|; )' + nom.replace(/([.$?*|{}()\[\]\\\/+^])/g, '\\$1') + '=([^;]*)'));
+    return m ? decodeURIComponent(m[1]) : null;
+  }catch(e){ return null; }
+}
+function removeCookie(nom){
+  try{ document.cookie = nom + '=; path=/; max-age=0'; }catch(e){}
+}
+function clearSession(){
+  try{ localStorage.removeItem('educpass_session'); }catch(e){}
+  removeCookie('educpass_session');
+}
 function getSession(){
-  try{ return JSON.parse(localStorage.getItem('educpass_session') || 'null'); }catch(e){ return null; }
+  try{
+    const brut = localStorage.getItem('educpass_session');
+    if(brut) return JSON.parse(brut);
+  }catch(e){}
+  const brutCookie = getCookie('educpass_session');
+  if(brutCookie){
+    try{ localStorage.setItem('educpass_session', brutCookie); }catch(e){}
+    try{ return JSON.parse(brutCookie); }catch(e){ return null; }
+  }
+  return null;
 }
 const session = getSession();
 if(!session || !session.token){
@@ -225,7 +257,7 @@ if(!session || !session.token){
 
 document.getElementById('lien-deconnexion').addEventListener('click', (e)=>{
   e.preventDefault();
-  try{ localStorage.removeItem('educpass_session'); }catch(e){}
+  clearSession();
   location.href = 'ACCUEIL.html';
 });
 
@@ -280,7 +312,7 @@ async function chargerCompte(){
     const data = await r.json().catch(()=> ({}));
     if(!r.ok || !data.ok){
       if(r.status === 401){
-        try{ localStorage.removeItem('educpass_session'); }catch(e){}
+        clearSession();
         location.href = 'connexion-fr.html';
         return;
       }
