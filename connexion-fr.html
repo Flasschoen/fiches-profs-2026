@@ -129,7 +129,7 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:24px;color:var(-
     <div class="result-panel" id="result-panel">
       <div class="big" id="result-bienvenue"></div>
       <div class="detail" id="result-detail"></div>
-      <div class="bientot">📋 Votre espace « Mon compte » (coupons, historique, cotisation) arrive bientôt. Vous êtes bien connecté(e) — nous vous préviendrons dès qu'il sera disponible.</div>
+      <div class="bientot">⏳ Ouverture de votre espace membre… <a href="cotisation.html">Cliquez ici</a> si rien ne se passe.</div>
     </div>
 
   </div>
@@ -148,6 +148,51 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:24px;color:var(-
 //  toujours educpass.eu/FR/Connexion.awp en attendant leur tour.
 // ══════════════════════════════════════════════════════════
 const PROXY = 'https://educpass-profs-proxy.marc-flasschoen.workers.dev';
+
+// 2026-09-28 : page d'arrivée de l'espace membre après connexion (décision de Marc)
+const PAGE_ARRIVEE = 'cotisation.html';
+
+// ── Session : stockage en double (localStorage + cookie), identique à cotisation.html ──
+// Un cookie longue durée (180 jours) prend le relais si le localStorage disparaît
+// (Safari iOS notamment), pour éviter les reconnexions intempestives.
+const SESSION_COOKIE_MAX_AGE_S = 180 * 24 * 60 * 60;
+function setCookie(nom, valeur, maxAgeS){
+  try{
+    document.cookie = nom + '=' + encodeURIComponent(valeur) + '; path=/; max-age=' + maxAgeS + '; SameSite=Lax' + (location.protocol === 'https:' ? '; Secure' : '');
+  }catch(e){}
+}
+function getCookie(nom){
+  try{
+    const m = document.cookie.match(new RegExp('(?:^|; )' + nom.replace(/([.$?*|{}()\[\]\\\/+^])/g, '\\$1') + '=([^;]*)'));
+    return m ? decodeURIComponent(m[1]) : null;
+  }catch(e){ return null; }
+}
+function removeCookie(nom){
+  try{ document.cookie = nom + '=; path=/; max-age=0'; }catch(e){}
+}
+function clearSession(){
+  try{ localStorage.removeItem('educpass_session'); }catch(e){}
+  removeCookie('educpass_session');
+}
+function getSession(){
+  try{
+    const brut = localStorage.getItem('educpass_session');
+    if(brut) return JSON.parse(brut);
+  }catch(e){}
+  const brutCookie = getCookie('educpass_session');
+  if(brutCookie){
+    try{ localStorage.setItem('educpass_session', brutCookie); }catch(e){}
+    try{ return JSON.parse(brutCookie); }catch(e){ return null; }
+  }
+  return null;
+}
+
+// Déjà connecté ? On va directement dans l'espace membre (si le jeton a expiré,
+// cotisation.html efface la session et renvoie ici : pas de boucle possible).
+(function(){
+  const s = getSession();
+  if(s && s.token) location.replace(PAGE_ARRIVEE);
+})();
 
 const form = document.getElementById('login-form');
 const btn = document.getElementById('btn-connexion');
@@ -206,15 +251,17 @@ form.addEventListener('submit', async (e)=>{
 
     // Connexion réussie : on garde le jeton et l'identité du prof pour la suite
     // (espace « Mon compte », à venir) — jamais le mot de passe ni le hash.
-    try{
-      localStorage.setItem('educpass_session', JSON.stringify({ token: data.token, prof: data.prof }));
-    }catch(e){ /* stockage local indisponible (navigation privée...) : la session ne persistera pas au rechargement, sans bloquer la connexion en cours */ }
+    const brutSession = JSON.stringify({ token: data.token, prof: data.prof });
+    try{ localStorage.setItem('educpass_session', brutSession); }catch(e){ /* navigation privée... : le cookie prend le relais */ }
+    setCookie('educpass_session', brutSession, SESSION_COOKIE_MAX_AGE_S);
 
     form.classList.add('hidden');
     document.querySelector('.aide-mdp').classList.add('hidden');
-    document.getElementById('result-bienvenue').textContent = 'Bienvenue ' + (data.prof.prenom || '') + ' ' + (data.prof.nom || '') + ' !';
+    document.getElementById('result-bienvenue').textContent = 'Bienvenue ' + (data.prof.prenom || '') + ' ' + (data.prof.nom || '') + ' sur votre compte !';
     document.getElementById('result-detail').textContent = data.prof.membre ? ('N° membre : ' + data.prof.membre) : '';
     resultPanel.classList.add('show');
+    // 2026-09-28 : redirection automatique vers l'espace membre
+    setTimeout(()=> location.href = PAGE_ARRIVEE, 1200);
 
   }catch(e){
     afficherMessage('Impossible de contacter le serveur. Vérifiez votre connexion et réessayez.', 'err');
