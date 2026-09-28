@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nos éditions — Educpass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --paper:#faf5e8; --paper-2:#f1e9d6; --page-bg:#e9dcb8;
+  --teal:#0f3d3e; --teal-dark:#0a2b2c; --green-dark:#164a2e;
+  --gold:#c89b3c; --gold-light:#e6c878; --line:#d8cca4;
+  --text:#2a2118; --text-soft:#5c5344; --off:#8a7f6a;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:'Work Sans',Arial,sans-serif;background:var(--page-bg);color:var(--text);}
+.topbar{background:var(--teal);color:var(--paper);padding:14px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.topbar .logo{font-family:'Fraunces',serif;font-weight:700;font-size:19px;letter-spacing:.5px;}
+.topbar a.back{color:var(--gold-light);text-decoration:none;font-weight:600;font-size:14px;margin-left:auto;}
+.topbar a.back:hover{text-decoration:underline;}
+.wrap{max-width:1000px;margin:0 auto;padding:40px 24px 60px;}
+h1{font-family:'Fraunces',serif;font-weight:700;font-size:32px;color:var(--teal-dark);margin:0 0 8px;text-wrap:balance;}
+.intro{color:var(--text-soft);margin:0 0 28px;font-size:15.5px;}
+.loading,.vide{color:var(--off);font-style:italic;}
+.grille{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px;}
+.edition{background:var(--paper);border:1px solid var(--line);border-radius:14px;box-shadow:0 6px 24px rgba(19,36,32,.10);overflow:hidden;display:flex;flex-direction:column;}
+.couverture{aspect-ratio:3/4;background:var(--paper-2);display:flex;align-items:center;justify-content:center;overflow:hidden;border-bottom:1px solid var(--line);}
+.couverture img{width:100%;height:100%;object-fit:cover;display:block;}
+.couverture .sans{font-size:64px;opacity:.5;}
+.corps{padding:18px 20px 20px;display:flex;flex-direction:column;flex:1;}
+.corps h2{font-family:'Fraunces',serif;font-weight:700;font-size:20px;color:var(--teal-dark);margin:0 0 10px;}
+.desc{font-size:15px;line-height:1.6;color:var(--text-soft);white-space:pre-wrap;margin:0 0 16px;flex:1;}
+.actions{display:flex;gap:10px;flex-wrap:wrap;}
+.bt{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;font-weight:600;font-size:14px;text-decoration:none;cursor:pointer;border:none;font-family:inherit;}
+.bt-lire{background:var(--teal);color:var(--paper);}
+.bt-dl{background:var(--gold);color:var(--teal-dark);}
+.bt:hover{filter:brightness(1.08);}
+.pas-pdf{font-size:13.5px;color:var(--off);font-style:italic;}
+@media (max-width:600px){ .wrap{padding:24px 16px 40px;} h1{font-size:26px;} .grille{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">EDUCPASS</div>
+  <a class="back" href="ACCUEIL.html">← Retour à l'accueil</a>
+</div>
+
+<div class="wrap">
+  <h1>Nos éditions</h1>
+  <p class="intro">Consultez en ligne ou téléchargez nos brochures.</p>
+  <div id="liste-editions"><div class="loading">⏳ Chargement…</div></div>
+</div>
+
+<script>
+const PROXY = 'https://educpass-profs-proxy.marc-flasschoen.workers.dev';
+const BASE  = 'appWCfo8WBkMGUuc2';
+const EDITIONS_TBL = 'tbl08iJluFNjmw6dF';
+
+function escHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escAttr(s){ return escHtml(s).replace(/"/g,'&quot;'); }
+function nomFichier(titre){
+  const base = String(titre||'edition').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^A-Za-z0-9 _-]+/g,'').trim().replace(/\s+/g,'-');
+  return (base || 'edition') + '.pdf';
+}
+
+async function chargerToutesLesEditions(){
+  let tous = [], offset = '';
+  do {
+    const p = new URLSearchParams({pageSize:'100'});
+    if(offset) p.set('offset', offset);
+    const r = await fetch(`${PROXY}/v0/${BASE}/${EDITIONS_TBL}?${p}`);
+    if(!r.ok) throw new Error('Airtable '+r.status);
+    const d = await r.json();
+    tous = tous.concat(d.records || []);
+    offset = d.offset || '';
+  } while(offset);
+  return tous;
+}
+
+function urlCouverture(f){
+  const a = Array.isArray(f['Couverture']) ? f['Couverture'][0] : null;
+  if(!a) return '';
+  return (a.thumbnails && a.thumbnails.large && a.thumbnails.large.url) || a.url || '';
+}
+function pdfDe(f){
+  const a = Array.isArray(f['PDF']) ? f['PDF'][0] : null;
+  return a && a.url ? a : null;
+}
+
+function afficherEditions(records){
+  const zone = document.getElementById('liste-editions');
+  const actives = records
+    .filter(r => r.fields && r.fields['Actif'] === true && r.fields['Titre'])
+    .sort((a,b) => (a.fields['Ordre']||0) - (b.fields['Ordre']||0));
+  if(!actives.length){
+    zone.innerHTML = '<div class="vide">Aucune édition disponible pour le moment.</div>';
+    return;
+  }
+  zone.innerHTML = '<div class="grille">' + actives.map(r => {
+    const f = r.fields;
+    const couv = urlCouverture(f);
+    const pdf = pdfDe(f);
+    const visuel = couv
+      ? '<img src="'+escAttr(couv)+'" alt="Couverture : '+escAttr(f['Titre'])+'" loading="lazy">'
+      : '<span class="sans">📘</span>';
+    const actions = pdf
+      ? '<a class="bt bt-lire" href="'+escAttr(pdf.url)+'" target="_blank" rel="noopener">📖 Lire</a>'
+        + '<button class="bt bt-dl" type="button" data-url="'+escAttr(pdf.url)+'" data-nom="'+escAttr(nomFichier(f['Titre']))+'">⬇️ Télécharger</button>'
+      : '<span class="pas-pdf">PDF bientôt disponible</span>';
+    return '<div class="edition">'
+      + '<div class="couverture">'+visuel+'</div>'
+      + '<div class="corps"><h2>'+escHtml(f['Titre'])+'</h2>'
+      + (f['Description'] ? '<div class="desc">'+escHtml(f['Description'])+'</div>' : '<div class="desc"></div>')
+      + '<div class="actions">'+actions+'</div></div>'
+      + '</div>';
+  }).join('') + '</div>';
+}
+
+// Téléchargement : on tente d'enregistrer le fichier directement ;
+// si le navigateur le refuse, on ouvre le PDF (l'utilisateur peut l'enregistrer depuis la visionneuse).
+document.addEventListener('click', async function(e){
+  const b = e.target.closest('.bt-dl');
+  if(!b) return;
+  const url = b.dataset.url, nom = b.dataset.nom;
+  const texte = b.textContent;
+  b.textContent = '⏳ …';
+  try{
+    const r = await fetch(url);
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const blob = await r.blob();
+    const lien = document.createElement('a');
+    lien.href = URL.createObjectURL(blob);
+    lien.download = nom;
+    document.body.appendChild(lien); lien.click(); lien.remove();
+    setTimeout(()=>URL.revokeObjectURL(lien.href), 10000);
+  }catch(err){
+    window.open(url, '_blank', 'noopener');
+  }finally{
+    b.textContent = texte;
+  }
+});
+
+(async function(){
+  try{ afficherEditions(await chargerToutesLesEditions()); }
+  catch(e){ document.getElementById('liste-editions').innerHTML = '<div class="vide">Contenu momentanément indisponible.</div>'; }
+})();
+</script>
+
+</body>
+</html>
