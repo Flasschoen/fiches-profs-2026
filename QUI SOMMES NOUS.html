@@ -24,6 +24,15 @@ body{margin:0;font-family:'Work Sans',Arial,sans-serif;background:var(--page-bg)
 h1{font-family:'Fraunces',serif;font-weight:700;font-size:32px;color:var(--teal-dark);margin:0 0 18px;text-wrap:balance;}
 .corps{font-size:16px;line-height:1.75;color:var(--text-soft);white-space:pre-wrap;}
 .loading{color:var(--off);font-style:italic;}
+/* 2026-09-30 : texte mis en forme + titres centrés */
+h1{text-align:center;}
+.hidden{display:none !important;}
+.corps.riche{white-space:normal;}
+.corps.riche p{margin:0 0 12px;}
+.corps.riche ul,.corps.riche ol{margin:0 0 12px;padding-left:22px;}
+.corps.riche a{color:var(--teal);font-weight:600;}
+.bloc2{margin-top:30px;padding-top:24px;border-top:1px solid var(--line);}
+.bloc2 h2{font-family:'Fraunces',serif;font-weight:700;font-size:23px;color:var(--teal-dark);margin:0 0 12px;text-align:center;}
 </style>
 </head>
 <body>
@@ -37,6 +46,7 @@ h1{font-family:'Fraunces',serif;font-weight:700;font-size:32px;color:var(--teal-
   <div class="page-card">
     <h1 id="page-titre">Qui sommes-nous ?</h1>
     <div class="corps loading" id="page-texte">⏳ Chargement…</div>
+    <div class="bloc2 hidden" id="bloc2"><h2 id="bloc2-titre"></h2><div class="corps riche" id="bloc2-texte"></div></div>
   </div>
 </div>
 
@@ -48,6 +58,36 @@ const RECORD_ID = 'rechbJ7YtQt9V1fhX'; // fiche "Qui sommes-nous"
 
 function escHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
+// Nettoyage du texte mis en forme (liste blanche) avant affichage
+const RT_TAGS = {B:1,STRONG:1,I:1,EM:1,U:1,P:1,BR:1,DIV:1,SPAN:1,FONT:1,UL:1,OL:1,LI:1,A:1,H3:1,H4:1,BLOCKQUOTE:1};
+function rtNettoyer(html){
+  const tpl = document.createElement('template');
+  tpl.innerHTML = String(html||'');
+  (function walk(n){
+    Array.from(n.childNodes).forEach(c=>{
+      if(c.nodeType===3) return;
+      if(c.nodeType!==1 || !RT_TAGS[c.tagName]){
+        if(c.nodeType===1 && !/^(SCRIPT|STYLE|IFRAME|OBJECT|EMBED)$/.test(c.tagName)){ walk(c); while(c.firstChild) n.insertBefore(c.firstChild,c); }
+        c.remove(); return;
+      }
+      Array.from(c.attributes).forEach(at=>{
+        const nm=at.name.toLowerCase();
+        if(c.tagName==='A' && nm==='href'){ if(!/^(https?:|mailto:|tel:)/i.test(at.value.trim())) c.removeAttribute('href'); return; }
+        if(c.tagName==='FONT' && (nm==='color'||nm==='size')) return;
+        if(nm==='style'){
+          const keep=[]; at.value.split(';').forEach(d=>{ const p=d.split(':'); if(p.length<2) return; const k=p[0].trim().toLowerCase(), v=p.slice(1).join(':').trim();
+            if(/^(color|background-color|font-weight|font-style|text-decoration|text-decoration-line|font-size|text-align)$/.test(k) && !/url\(|expression/i.test(v)) keep.push(k+':'+v); });
+          if(keep.length) c.setAttribute('style',keep.join(';')); else c.removeAttribute('style'); return;
+        }
+        c.removeAttribute(at.name);
+      });
+      if(c.tagName==='A'){ c.setAttribute('target','_blank'); c.setAttribute('rel','noopener'); }
+      walk(c);
+    });
+  })(tpl.content);
+  return tpl.innerHTML.trim();
+}
+
 async function chargerContenu(){
   const el = document.getElementById('page-texte');
   try{
@@ -56,10 +96,19 @@ async function chargerContenu(){
     const data = await r.json();
     const f = data.fields || {};
     if(f['Titre']) document.getElementById('page-titre').textContent = f['Titre'];
-    el.textContent = f['Texte'] || 'à compléter';
+    if(f['Texte HTML']){ el.innerHTML = rtNettoyer(f['Texte HTML']); el.classList.add('riche'); }
+    else el.textContent = f['Texte'] || 'à compléter';
+    const t2 = rtNettoyer(f['Texte bloc 2 HTML'] || '');
+    if(t2 || f['Titre bloc 2']){
+      const h = document.getElementById('bloc2-titre');
+      h.textContent = f['Titre bloc 2'] || ''; h.classList.toggle('hidden', !f['Titre bloc 2']);
+      document.getElementById('bloc2-texte').innerHTML = t2;
+      document.getElementById('bloc2').classList.remove('hidden');
+    }
     el.classList.remove('loading');
   }catch(e){
     el.textContent = 'Contenu momentanément indisponible.';
+    el.classList.remove('loading');
   }
 }
 chargerContenu();
