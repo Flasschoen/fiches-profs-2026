@@ -24,10 +24,21 @@ body{margin:0;font-family:'Work Sans',Arial,sans-serif;background:var(--page-bg)
 h1{font-family:'Fraunces',serif;font-weight:700;font-size:32px;color:var(--teal-dark);margin:0 0 18px;text-wrap:balance;}
 .corps{font-size:16px;line-height:1.75;color:var(--text-soft);white-space:pre-wrap;}
 .loading{color:var(--off);font-style:italic;}
+.hidden{display:none !important;}
 .dl-row{margin-top:26px;}
 .btn-dl{display:inline-flex;align-items:center;gap:10px;background:var(--gold);color:var(--teal-dark);border:none;border-radius:8px;padding:13px 26px;font-size:15px;font-weight:700;text-decoration:none;font-family:inherit;}
 .btn-dl:hover{background:var(--gold-light);}
 .dl-note{margin-top:12px;font-size:13.5px;color:var(--off);}
+/* 2026-09-29 : photo, texte mis en forme, bloc 2 */
+.photo{margin:0 0 22px;}
+.photo img{display:block;max-width:100%;max-height:260px;border-radius:10px;border:1px solid var(--line);object-fit:cover;}
+.corps.riche{white-space:normal;}
+.corps.riche p{margin:0 0 12px;}
+.corps.riche ul,.corps.riche ol{margin:0 0 12px;padding-left:22px;}
+.corps.riche a{color:var(--teal);font-weight:600;}
+.bloc2{margin-top:30px;padding-top:24px;border-top:1px solid var(--line);}
+.bloc2 h2{font-family:'Fraunces',serif;font-weight:700;font-size:23px;color:var(--teal-dark);margin:0 0 12px;}
+@media (max-width:600px){ .page-card{padding:24px 20px;} h1{font-size:26px;} }
 </style>
 </head>
 <body>
@@ -40,7 +51,9 @@ h1{font-family:'Fraunces',serif;font-weight:700;font-size:32px;color:var(--teal-
 <div class="wrap">
   <div class="page-card">
     <h1 id="page-titre">Profs Relais</h1>
+    <div class="photo hidden" id="page-photo"></div>
     <div class="corps loading" id="page-texte">⏳ Chargement…</div>
+    <div class="bloc2 hidden" id="bloc2"><h2 id="bloc2-titre"></h2><div class="corps riche" id="bloc2-texte"></div></div>
     <div class="dl-row" id="dl-row"></div>
   </div>
 </div>
@@ -54,6 +67,36 @@ const RECORD_ID = 'rec1PtwBK5fkT6TYv'; // fiche "Infos"
 function escHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function escAttr(s){ return escHtml(s).replace(/"/g,'&quot;'); }
 
+// Nettoyage du texte mis en forme (liste blanche) avant affichage
+const RT_TAGS = {B:1,STRONG:1,I:1,EM:1,U:1,P:1,BR:1,DIV:1,SPAN:1,FONT:1,UL:1,OL:1,LI:1,A:1,H3:1,H4:1,BLOCKQUOTE:1};
+function rtNettoyer(html){
+  const tpl = document.createElement('template');
+  tpl.innerHTML = String(html||'');
+  (function walk(n){
+    Array.from(n.childNodes).forEach(c=>{
+      if(c.nodeType===3) return;
+      if(c.nodeType!==1 || !RT_TAGS[c.tagName]){
+        if(c.nodeType===1 && !/^(SCRIPT|STYLE|IFRAME|OBJECT|EMBED)$/.test(c.tagName)){ walk(c); while(c.firstChild) n.insertBefore(c.firstChild,c); }
+        c.remove(); return;
+      }
+      Array.from(c.attributes).forEach(at=>{
+        const nm=at.name.toLowerCase();
+        if(c.tagName==='A' && nm==='href'){ if(!/^(https?:|mailto:|tel:)/i.test(at.value.trim())) c.removeAttribute('href'); return; }
+        if(c.tagName==='FONT' && (nm==='color'||nm==='size')) return;
+        if(nm==='style'){
+          const keep=[]; at.value.split(';').forEach(d=>{ const p=d.split(':'); if(p.length<2) return; const k=p[0].trim().toLowerCase(), v=p.slice(1).join(':').trim();
+            if(/^(color|background-color|font-weight|font-style|text-decoration|text-decoration-line|font-size|text-align)$/.test(k) && !/url\(|expression/i.test(v)) keep.push(k+':'+v); });
+          if(keep.length) c.setAttribute('style',keep.join(';')); else c.removeAttribute('style'); return;
+        }
+        c.removeAttribute(at.name);
+      });
+      if(c.tagName==='A'){ c.setAttribute('target','_blank'); c.setAttribute('rel','noopener'); }
+      walk(c);
+    });
+  })(tpl.content);
+  return tpl.innerHTML.trim();
+}
+
 async function chargerContenu(){
   const elTexte = document.getElementById('page-texte');
   try{
@@ -62,19 +105,43 @@ async function chargerContenu(){
     const data = await r.json();
     const f = data.fields || {};
     if(f['Titre']) document.getElementById('page-titre').textContent = f['Titre'];
-    elTexte.textContent = f['Texte'] || 'à compléter';
+
+    const photo = f['Photo'] && f['Photo'][0];
+    if(photo && photo.url){
+      const src = (photo.thumbnails && photo.thumbnails.large && photo.thumbnails.large.url) || photo.url;
+      const el = document.getElementById('page-photo');
+      el.innerHTML = '<img src="'+escAttr(src)+'" alt="">';
+      el.classList.remove('hidden');
+    }
+
+    if(f['Texte HTML']){
+      elTexte.innerHTML = rtNettoyer(f['Texte HTML']);
+      elTexte.classList.add('riche');
+    } else {
+      elTexte.textContent = f['Texte'] || 'à compléter';
+    }
     elTexte.classList.remove('loading');
+
+    const t2 = rtNettoyer(f['Texte bloc 2 HTML'] || '');
+    if(t2 || f['Titre bloc 2']){
+      document.getElementById('bloc2-titre').textContent = f['Titre bloc 2'] || '';
+      document.getElementById('bloc2-titre').classList.toggle('hidden', !f['Titre bloc 2']);
+      document.getElementById('bloc2-texte').innerHTML = t2;
+      document.getElementById('bloc2').classList.remove('hidden');
+    }
 
     const att = f['Fichier Excel'] && f['Fichier Excel'][0];
     const dlRow = document.getElementById('dl-row');
+    const libelle = f['Libellé bouton'] || '📥 Télécharger le tableau Profs Relais';
     if(att && att.url){
-      dlRow.innerHTML = '<a class="btn-dl" href="'+escAttr(att.url)+'" download target="_blank" rel="noopener">📥 Télécharger le tableau Excel</a>'
+      dlRow.innerHTML = '<a class="btn-dl" href="'+escAttr(att.url)+'" download target="_blank" rel="noopener">'+escHtml(libelle)+'</a>'
         + '<div class="dl-note">'+escHtml(att.filename||'')+'</div>';
     } else {
       dlRow.innerHTML = '<div class="dl-note">Le tableau téléchargeable sera bientôt disponible ici.</div>';
     }
   }catch(e){
     elTexte.textContent = 'Contenu momentanément indisponible.';
+    elTexte.classList.remove('loading');
   }
 }
 chargerContenu();
