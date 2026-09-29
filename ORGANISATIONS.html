@@ -135,7 +135,12 @@ table.results th .tri-ind{margin-left:4px;font-size:10px;opacity:.9;}
   }
   body.impression-listing #zone-impression-presence{
     display: block !important;
-    position: absolute; left: 0; top: 0; width: 100%; padding: 14px;
+    position: absolute; left: 0; top: 0; width: 100%;
+    /* Marc, 26/09/2026 : marges d'impression de la feuille de présence augmentées
+       de 5mm sur les 4 côtés (14px de base + 5mm), suite à un retour de Marc
+       ("les pages sont mal imprimées"). calc() garde l'ancien réglage intact et
+       ajoute exactement 5mm, quelle que soit l'unité d'origine. */
+    padding: calc(14px + 5mm);
   }
 }
 /* Marc, 22/09/2026 : feuille de présence — une page A4 par groupe, lisible (police
@@ -166,7 +171,7 @@ table.results th .tri-ind{margin-left:4px;font-size:10px;opacity:.9;}
   <div class="logo">EDUCPASS</div>
   <div class="title">🗂️ ORGANISATIONS — 2026</div>
   <span id="fil-ariane"></span>
-  <a class="btn" href="../TABLEAU%20DE%20BORD.html" style="background:var(--navy-dark);color:#fff;text-decoration:none;display:inline-block;" title="Retour au Tableau de Bord">🏠 Tableau de Bord</a>
+  <a class="btn" href="../../TABLEAU DE BORD.html" data-tdb="1" style="background:var(--navy-dark);color:#fff;text-decoration:none;display:inline-block;" title="Retour au Tableau de Bord">🏠 Tableau de Bord</a>
   <button class="btn" onclick="allerAccueil()" title="Retour au choix de catégorie">🔝 Accueil Organisations</button>
   <button class="btn" onclick="logoutPin()">🔒 <span id="header-agent">—</span></button>
 </div>
@@ -451,6 +456,7 @@ table.results th .tri-ind{margin-left:4px;font-size:10px;opacity:.9;}
       <select id="listing-filtre-groupe" class="util-input" style="width:auto;display:inline-block;" onchange="onChangeFiltreGroupe()"></select>
       <button class="btn btn-blue" onclick="imprimerFeuillePresence('tout')">🖨️ Imprimer tout (par groupe)</button>
       <button class="btn btn-blue" onclick="imprimerFeuillePresence('groupe')">🖨️ Imprimer ce groupe</button>
+      <button class="btn btn-blue" onclick="imprimerFeuillePresence('alpha')">🖨️ Imprimer tout (alphabétique, tous groupes)</button>
     </div>
     <div id="listing-resume-filtre" class="no-print" style="font-weight:700;color:#1e3a6e;margin-bottom:10px;min-height:18px;"></div>
     <div style="overflow-x:auto;">
@@ -2335,7 +2341,9 @@ function construireHtmlFeuillePresence(listeRes, noms, nomEvenement){
 
   return groupesTries.map(g => {
     const libelle = (g === '(sans groupe)') ? g : ('Groupe ' + g);
-    const resGroupe = parGroupe[g];
+    // Marc, 26/09/2026 : impression triée par ordre alphabétique du Prof (comme le tri
+    // déjà possible à l'écran sur cette colonne), au lieu de l'ordre brut des réservations.
+    const resGroupe = parGroupe[g].slice().sort((a,b) => String(noms[a.id]||'').localeCompare(String(noms[b.id]||''), 'fr', {sensitivity:'base'}));
     // Marc, 22/09/2026 : totaux du groupe (Profs/Adultes/Enfants/Visites guidées/Solde),
     // comme la ligne TOTAUX du Listing à l'écran — manquaient à l'impression.
     let totProfs=0, totAdultes=0, totEnfants=0, totVisites=0, totSolde=0;
@@ -2376,9 +2384,56 @@ function construireHtmlFeuillePresence(listeRes, noms, nomEvenement){
   }).join('');
 }
 
-// Orchestrateur du bouton "🖨️ Imprimer tout (par groupe)" / "🖨️ Imprimer ce groupe".
+// Marc, 26/09/2026 : variante "tous groupes confondus" — une seule page, toutes les
+// réservations non annulées triées par ordre alphabétique du Prof, sans regroupement
+// par groupe (la colonne Groupe reste affichée sur chaque ligne à titre indicatif).
+function construireHtmlFeuillePresenceAlpha(listeRes, noms, nomEvenement){
+  const resTries = listeRes.slice().sort((a,b) => String(noms[a.id]||'').localeCompare(String(noms[b.id]||''), 'fr', {sensitivity:'base'}));
+  let totProfs=0, totAdultes=0, totEnfants=0, totVisites=0, totSolde=0;
+  const lignes = resTries.map(rec => {
+    const f = rec.fields;
+    const solde = soldeAPayerNumerique(f);
+    const paye = solde <= 0;
+    const g = groupeNormalise(f);
+    const libelleGroupe = (g === '(sans groupe)') ? g : ('Groupe ' + g);
+    const nProfs = Number(f['Nbr Profs'])||0, nAdultes = Number(f['Nbr Adultes'])||0,
+          nEnfants = Number(f['Nbr Enfants'])||0, nVisites = Number(f['Nbr Visites guidées'])||0;
+    totProfs += nProfs; totAdultes += nAdultes; totEnfants += nEnfants; totVisites += nVisites; totSolde += solde;
+    return '<tr>' +
+      '<td>' + escHtml(f['Référence']||'') + '</td>' +
+      '<td>' + escHtml(noms[rec.id]||'—') + '</td>' +
+      '<td>' + escHtml(libelleGroupe) + '</td>' +
+      '<td>' + nProfs + '</td>' +
+      '<td>' + nAdultes + '</td>' +
+      '<td>' + nEnfants + '</td>' +
+      '<td>' + nVisites + '</td>' +
+      '<td>' + formatEuros(solde) + '</td>' +
+      '<td>' + (paye ? '✅ Payé' : '❌ Pas payé') + '</td>' +
+      '<td style="text-align:center;"><span class="feuille-presence-case"></span></td>' +
+      '</tr>';
+  }).join('');
+  const totalPersonnes = totProfs + totAdultes + totEnfants;
+  const ligneTotal = '<tr style="font-weight:700;background:#eef2f8;">' +
+    '<td colspan="3">TOTAL GÉNÉRAL</td>' +
+    '<td>' + totProfs + '</td><td>' + totAdultes + '</td><td>' + totEnfants + '</td><td>' + totVisites + '</td>' +
+    '<td>' + formatEuros(totSolde) + '</td><td colspan="2"></td></tr>';
+  return '<div class="feuille-presence-page">' +
+    '<div class="feuille-presence-entete">' +
+    '<div class="feuille-presence-titre">' + escHtml(nomEvenement||'') + ' — Liste complète (ordre alphabétique, tous groupes confondus)</div>' +
+    '<div class="feuille-presence-soustitre">' + totalPersonnes + ' personne(s) au total — feuille de présence à compléter le jour de l\'événement</div>' +
+    '</div>' +
+    '<table class="feuille-presence-table"><thead><tr>' +
+    '<th>Référence</th><th>Prof</th><th>Groupe</th><th>Profs</th><th>Adultes</th><th>Enfants</th><th>Visites guidées</th><th>Solde à payer</th><th>Payé</th><th>Présent</th>' +
+    '</tr></thead><tbody>' + lignes + '</tbody><tfoot>' + ligneTotal + '</tfoot></table>' +
+    '</div>';
+}
+
+// Orchestrateur du bouton "🖨️ Imprimer tout (par groupe)" / "🖨️ Imprimer ce groupe" /
+// "🖨️ Imprimer tout (alphabétique, tous groupes)".
 // portee = 'tout' -> une page par groupe présent dans l'événement (hors filtre en cours).
 // portee = 'groupe' -> uniquement le groupe actuellement sélectionné dans le filtre.
+// portee = 'alpha' -> une seule page, toutes les réservations, triées par Prof (A à Z),
+//                     tous groupes confondus (hors filtre en cours).
 async function imprimerFeuillePresence(portee){
   if(portee === 'groupe' && !filtreGroupeCourant){
     alert('Sélectionnez d\'abord un groupe dans la liste déroulante "Filtrer par groupe" avant d\'utiliser "Imprimer ce groupe".');
@@ -2399,7 +2454,9 @@ async function imprimerFeuillePresence(portee){
   try{
     const noms = await chargerNomsProfsPour(listeNonAnnulee);
     const nomEvenement = (evenementActuel.fields && evenementActuel.fields['Nom']) || '';
-    const html = construireHtmlFeuillePresence(listeNonAnnulee, noms, nomEvenement);
+    const html = (portee === 'alpha')
+      ? construireHtmlFeuillePresenceAlpha(listeNonAnnulee, noms, nomEvenement)
+      : construireHtmlFeuillePresence(listeNonAnnulee, noms, nomEvenement);
     document.getElementById('zone-impression-presence').innerHTML = html;
     document.body.classList.add('impression-listing');
     window.print();
@@ -2495,6 +2552,12 @@ document.addEventListener('DOMContentLoaded', function(){
   const _elMontantVerse = document.getElementById('util-montant-verse');
   if(_elMontantVerse) _elMontantVerse.addEventListener('input', planifierAutosaveMontantVerse);
 });
+</script>
+
+<script>
+// 2026-09-29 : bouton « Tableau de Bord » valable partout — sur l'ordinateur (fichier local : MEMBRES - Documents\TABLEAU DE BORD.html)
+// et sur le site web (TABLEAU DE BORD.html dans le même dossier que cet outil).
+document.querySelectorAll('a[data-tdb]').forEach(function(a){ a.setAttribute('href', location.protocol==='file:' ? '../../TABLEAU DE BORD.html' : 'TABLEAU DE BORD.html'); });
 </script>
 </body>
 </html>

@@ -60,7 +60,7 @@ textarea.edit-input{width:100%;font-family:inherit;font-size:13.5px;padding:6px;
 <div class="hdr-bar">
   <div class="logo">EDUCPASS</div>
   <div class="title">🎫 CARTES DE VISITE — PARTENAIRES</div>
-  <a class="btn" href="../TABLEAU DE BORD.html" style="background:var(--navy-dark);color:#fff;" title="Retour au Tableau de Bord">🗂️ Tableau de Bord</a>
+  <a class="btn" href="../../TABLEAU DE BORD.html" data-tdb="1" style="background:var(--navy-dark);color:#fff;" title="Retour au Tableau de Bord">🗂️ Tableau de Bord</a>
   <button class="btn" onclick="logoutPin()" style="background:#555;color:#fff;">🔒 <span id="header-agent">—</span></button>
 </div>
 
@@ -677,5 +677,11 @@ document.addEventListener('DOMContentLoaded', function(){
   </div>
 </div>
 
+
+<script>
+// 2026-09-29 : bouton « Tableau de Bord » valable partout — sur l'ordinateur (fichier local : MEMBRES - Documents\TABLEAU DE BORD.html)
+// et sur le site web (TABLEAU DE BORD.html dans le même dossier que cet outil).
+document.querySelectorAll('a[data-tdb]').forEach(function(a){ a.setAttribute('href', location.protocol==='file:' ? '../../TABLEAU DE BORD.html' : 'TABLEAU DE BORD.html'); });
+</script>
 </body>
 </html>

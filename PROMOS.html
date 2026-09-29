@@ -70,7 +70,7 @@ legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
   <div class="logo">EDUCPASS</div>
   <div class="title">🏷️ PROMOS — 2026</div>
   <button class="btn" id="btn-pin-mgr" onclick="showGestionPins()" style="display:none;">🔑 PINs</button>
-  <a class="btn" href="../TABLEAU DE BORD.html" style="background:var(--navy-dark);color:#fff;text-decoration:none;display:inline-block;" title="Retour au Tableau de Bord">🗂️ Tableau de Bord</a>
+  <a class="btn" href="../../TABLEAU DE BORD.html" data-tdb="1" style="background:var(--navy-dark);color:#fff;text-decoration:none;display:inline-block;" title="Retour au Tableau de Bord">🗂️ Tableau de Bord</a>
   <button class="btn" onclick="logoutPin()">🔒 <span id="header-agent">—</span></button>
 </div>
 
@@ -577,6 +577,12 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('overlay-pin').classList.remove('hidden');
   }
 });
+</script>
+
+<script>
+// 2026-09-29 : bouton « Tableau de Bord » valable partout — sur l'ordinateur (fichier local : MEMBRES - Documents\TABLEAU DE BORD.html)
+// et sur le site web (TABLEAU DE BORD.html dans le même dossier que cet outil).
+document.querySelectorAll('a[data-tdb]').forEach(function(a){ a.setAttribute('href', location.protocol==='file:' ? '../../TABLEAU DE BORD.html' : 'TABLEAU DE BORD.html'); });
 </script>
 </body>
 </html>
