@@ -292,7 +292,7 @@ h1.title{
 </header>
 
 <div class="wrap">
-  <h1 class="title">Educpass le premier passeport pour les enseignant(e) et educateur(trice)…</h1>
+  <h1 class="title" id="phrase-accueil">Educpass le premier passeport pour les enseignant(e) et educateur(trice)…</h1>
   <!-- 2026-09-29 : sous-titre de travail « Aperçu de la nouvelle page d'accueil… » retiré (demande Marc, avant présentation à l'équipe) -->
 
   <div class="hero-3col">
@@ -652,6 +652,46 @@ function goToSlideAuto(i){
 
 // ── Bloc sponsor ACTION : logo + texte du bouton chargés depuis Airtable
 //    (table "Contenu Accueil", back-office CONTENU ACCUEIL.html, 2026-09-25) ──
+// ── Phrase d'accueil (haut de page), modifiable dans le Back-office — 2026-09-30 ──
+const PHRASE_ID = 'recTGPzNrAAUhpKxi';
+function phraseNettoyer(html){
+  const OK = {B:1,STRONG:1,I:1,EM:1,U:1,SPAN:1,FONT:1,BR:1,A:1};
+  const tpl = document.createElement('template');
+  tpl.innerHTML = String(html||'').replace(/<\/(p|div|li|h3|h4)>\s*<(p|div|li|h3|h4)[^>]*>/gi,'<br>');
+  (function walk(n){
+    Array.from(n.childNodes).forEach(c=>{
+      if(c.nodeType===3) return;
+      if(c.nodeType!==1 || !OK[c.tagName]){
+        if(c.nodeType===1 && !/^(SCRIPT|STYLE|IFRAME|OBJECT|EMBED)$/.test(c.tagName)){ walk(c); while(c.firstChild) n.insertBefore(c.firstChild,c); }
+        c.remove(); return;
+      }
+      Array.from(c.attributes).forEach(at=>{
+        const nm=at.name.toLowerCase();
+        if(c.tagName==='A' && nm==='href'){ if(!/^(https?:|mailto:|tel:)/i.test(at.value.trim())) c.removeAttribute('href'); return; }
+        if(c.tagName==='FONT' && (nm==='color'||nm==='size')) return;
+        if(nm==='style'){
+          const keep=[]; at.value.split(';').forEach(d=>{ const p=d.split(':'); if(p.length<2) return; const k=p[0].trim().toLowerCase(), v=p.slice(1).join(':').trim();
+            if(/^(color|background-color|font-weight|font-style|text-decoration|text-decoration-line|font-size)$/.test(k) && !/url\(|expression/i.test(v)) keep.push(k+':'+v); });
+          if(keep.length) c.setAttribute('style',keep.join(';')); else c.removeAttribute('style'); return;
+        }
+        c.removeAttribute(at.name);
+      });
+      if(c.tagName==='A'){ c.setAttribute('target','_blank'); c.setAttribute('rel','noopener'); }
+      walk(c);
+    });
+  })(tpl.content);
+  return tpl.innerHTML.replace(/^(\s*<br>)+|(<br>\s*)+$/g,'').trim();
+}
+async function chargerPhraseAccueil(){
+  try{
+    const data = await atFetch(CONTENU_API + '/' + PHRASE_ID);
+    const html = phraseNettoyer((data.fields||{})['Texte HTML']);
+    if(html && html.replace(/<[^>]*>/g,'').trim()) document.getElementById('phrase-accueil').innerHTML = html;
+  }catch(e){
+    // Silencieux : la phrase écrite dans la page reste affichée.
+  }
+}
+
 async function chargerSponsor(){
   try{
     const data = await atFetch(CONTENU_API + '/' + SPONSOR_ACTION_ID);
@@ -699,6 +739,7 @@ document.addEventListener('DOMContentLoaded', function(){
   renderNav();
   loadAllBannieres();
   chargerSponsor();
+  chargerPhraseAccueil();
 
   // Arrivée depuis un lien externe du type "ACCUEIL.html#inscription" (ex:
   // bouton du texte "Qui sommes-nous ?") : ouvre directement le menu
