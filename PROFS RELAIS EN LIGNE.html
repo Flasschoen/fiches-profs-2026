@@ -3,49 +3,71 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Profs Relais — Educpass</title>
+<title>Inscription groupée Profs Relais — Educpass</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap">
 <style>
+/* Formulaire en ligne Profs Relais — créé le 2026-09-30 */
 :root{
   --paper:#faf5e8; --paper-2:#f1e9d6; --page-bg:#e9dcb8;
   --teal:#0f3d3e; --teal-dark:#0a2b2c; --green-dark:#164a2e;
   --gold:#c89b3c; --gold-light:#e6c878; --line:#d8cca4;
-  --text:#2a2118; --text-soft:#5c5344; --off:#8a7f6a;
+  --text:#2a2118; --text-soft:#5c5344; --off:#8a7f6a; --err:#b03a2e; --ok:#1f7a45;
 }
 *{box-sizing:border-box;}
 body{margin:0;font-family:'Work Sans',Arial,sans-serif;background:var(--page-bg);color:var(--text);}
 .topbar{background:var(--teal);color:var(--paper);padding:14px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
-.topbar .logo{font-family:'Fraunces',serif;font-weight:700;font-size:19px;letter-spacing:.5px;}
 .topbar a.back{color:var(--gold-light);text-decoration:none;font-weight:600;font-size:14px;margin-left:auto;}
 .topbar a.back:hover{text-decoration:underline;}
-.wrap{max-width:760px;margin:0 auto;padding:40px 24px 60px;}
-.page-card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:36px 40px;box-shadow:0 6px 24px rgba(19,36,32,.10);}
-h1{font-family:'Fraunces',serif;font-weight:700;font-size:32px;color:var(--teal-dark);margin:0 0 18px;text-wrap:balance;}
-.corps{font-size:16px;line-height:1.75;color:var(--text-soft);white-space:pre-wrap;}
-.loading{color:var(--off);font-style:italic;}
+.wrap{max-width:900px;margin:0 auto;padding:32px 20px 70px;}
+.page-card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:30px 34px;box-shadow:0 6px 24px rgba(19,36,32,.10);margin-bottom:20px;}
+h1{font-family:'Fraunces',serif;font-weight:700;font-size:30px;color:var(--teal-dark);margin:0 0 10px;text-align:center;text-wrap:balance;}
+h2{font-family:'Fraunces',serif;font-weight:700;font-size:21px;color:var(--teal-dark);margin:0 0 14px;}
+.intro{color:var(--text-soft);font-size:15px;line-height:1.65;text-align:center;margin:0;}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px 16px;}
+.grid.g4{grid-template-columns:repeat(4,1fr);}
+.f{display:flex;flex-direction:column;gap:5px;}
+.f.span2{grid-column:span 2;}
+.f label{font-size:13px;font-weight:600;color:var(--teal-dark);}
+.f label .req{color:var(--err);}
+.f input,.f select{font:inherit;font-size:15px;padding:10px 11px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--text);width:100%;}
+.f input:focus,.f select:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(15,61,62,.12);}
+.f .aide{font-size:12px;color:var(--off);}
+.f.invalide input,.f.invalide select{border-color:var(--err);background:#fff6f5;}
+.prof{border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:14px;background:#fffdf7;}
+.prof.moi{border-color:var(--gold);box-shadow:0 0 0 2px rgba(200,155,60,.25);}
+.prof-hdr{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
+.prof-num{font-family:'Fraunces',serif;font-weight:700;font-size:17px;color:var(--teal-dark);}
+.prof-moi{font-size:13px;color:var(--text-soft);display:flex;align-items:center;gap:6px;cursor:pointer;}
+.prof-suppr{margin-left:auto;background:none;border:1px solid #e3c8c3;color:var(--err);border-radius:7px;padding:5px 10px;font:inherit;font-size:13px;cursor:pointer;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;border-radius:9px;padding:12px 22px;font:inherit;font-size:15px;font-weight:700;cursor:pointer;}
+.btn-add{background:#fff;border:2px dashed var(--gold);color:var(--teal-dark);width:100%;}
+.btn-send{background:var(--gold);color:var(--teal-dark);font-size:16px;padding:14px 30px;}
+.btn-send:hover{background:var(--gold-light);}
+.btn:disabled{opacity:.55;cursor:not-allowed;}
+.calcul{position:sticky;bottom:0;z-index:5;background:var(--teal);color:var(--paper);border-radius:12px;padding:14px 18px;display:flex;flex-wrap:wrap;gap:6px 22px;align-items:center;box-shadow:0 -4px 18px rgba(0,0,0,.15);margin-top:6px;}
+.calcul b{color:var(--gold-light);font-size:17px;}
+.calcul .total{margin-left:auto;font-size:15px;}
+.calcul .total b{font-size:21px;}
+.calcul .warn{flex-basis:100%;font-size:13px;color:#ffd8a8;}
+.cgv{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--text-soft);margin:16px 0;}
+.cgv input{margin-top:3px;width:18px;height:18px;}
+.cgv a{color:var(--teal);font-weight:600;}
+.msg{margin-top:14px;font-size:14.5px;font-weight:600;}
+.msg.err{color:var(--err);} .msg.ok{color:var(--ok);}
+.centre{text-align:center;}
+.banque{background:var(--paper-2);border:1px solid var(--line);border-radius:10px;padding:14px 18px;font-size:15px;line-height:1.8;}
+.banque b{color:var(--teal-dark);}
 .hidden{display:none !important;}
-.dl-row{margin-top:26px;}
-.btn-dl{display:inline-flex;align-items:center;gap:10px;background:var(--gold);color:var(--teal-dark);border:none;border-radius:8px;padding:13px 26px;font-size:15px;font-weight:700;text-decoration:none;font-family:inherit;}
-.btn-dl:hover{background:var(--gold-light);}
-.dl-note{margin-top:12px;font-size:13.5px;color:var(--off);}
-/* 2026-09-29 : photo, texte mis en forme, bloc 2 */
-.photo{margin:0 0 22px;}
-.photo img{display:block;max-width:100%;max-height:260px;border-radius:10px;border:1px solid var(--line);object-fit:cover;}
-.corps.riche{white-space:normal;}
-.corps.riche p{margin:0 0 12px;}
-.corps.riche ul,.corps.riche ol{margin:0 0 12px;padding-left:22px;}
-.corps.riche a{color:var(--teal);font-weight:600;}
-.bloc2{margin-top:30px;padding-top:24px;border-top:1px solid var(--line);}
-.bloc2 h2{font-family:'Fraunces',serif;font-weight:700;font-size:23px;color:var(--teal-dark);margin:0 0 12px;}
-/* 2026-09-30 : titres, photo et bouton centrés */
-h1,.bloc2 h2{text-align:center;}
-.photo img{margin:0 auto;}
-.dl-row{text-align:center;}
-.dl-btns{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;}
-.btn-ligne{background:var(--teal);color:var(--paper);}
-.btn-ligne:hover{background:var(--teal-dark);}
-@media (max-width:600px){ .page-card{padding:24px 20px;} h1{font-size:26px;} }
+.loading{color:var(--off);font-style:italic;text-align:center;}
+@media (max-width:700px){
+  .wrap{padding:20px 12px 60px;}
+  .page-card{padding:22px 16px;}
+  h1{font-size:24px;}
+  .grid,.grid.g4{grid-template-columns:1fr;}
+  .f.span2{grid-column:auto;}
+  .calcul .total{margin-left:0;}
+}
 </style>
 </head>
 <body>
@@ -56,106 +78,299 @@ h1,.bloc2 h2{text-align:center;}
 </div>
 
 <div class="wrap">
+
   <div class="page-card">
-    <h1 id="page-titre">Profs Relais</h1>
-    <div class="photo hidden" id="page-photo"></div>
-    <div class="corps loading" id="page-texte">⏳ Chargement…</div>
-    <div class="bloc2 hidden" id="bloc2"><h2 id="bloc2-titre"></h2><div class="corps riche" id="bloc2-texte"></div></div>
-    <div class="dl-row" id="dl-row"></div>
+    <h1>Inscription groupée Profs Relais</h1>
+    <p class="intro">Remplissez ce formulaire pour inscrire les enseignants de votre établissement (minimum <b>10 enseignants</b>).
+      Le montant à verser se calcule automatiquement. Vous recevrez un récapitulatif par e-mail.</p>
+  </div>
+
+  <form id="form-relais" novalidate>
+
+    <div class="page-card">
+      <h2>🏫 L'établissement</h2>
+      <div class="grid">
+        <div class="f span2"><label>Nom de l'établissement <span class="req">*</span></label><input id="e-nom" required></div>
+        <div class="f span2"><label>Adresse complète (rue, n°, code postal, ville) <span class="req">*</span></label><input id="e-adresse" required></div>
+        <div class="f"><label>Téléphone de l'établissement <span class="req">*</span></label><input id="e-tel" type="tel" required></div>
+        <div class="f"><label>E-mail de l'établissement <span class="req">*</span></label><input id="e-mail" type="email" required></div>
+      </div>
+    </div>
+
+    <div class="page-card">
+      <h2>🧭 Vous, le prof relais</h2>
+      <div class="grid">
+        <div class="f"><label>Nom <span class="req">*</span></label><input id="r-nom" required></div>
+        <div class="f"><label>Prénom <span class="req">*</span></label><input id="r-prenom" required></div>
+        <div class="f"><label>Téléphone (GSM) <span class="req">*</span></label><input id="r-tel" type="tel" required></div>
+        <div class="f"><label>E-mail <span class="req">*</span></label><input id="r-mail" type="email" required><span class="aide">Le récapitulatif vous sera envoyé à cette adresse.</span></div>
+      </div>
+    </div>
+
+    <div class="page-card">
+      <h2>👩‍🏫 Les enseignants</h2>
+      <p style="margin:-6px 0 16px;font-size:14px;color:var(--text-soft);">Une fiche par enseignant. Si vous prenez aussi votre passeport, remplissez votre propre fiche et cochez « C'est moi ».
+        Le n° de matricule (11 chiffres) est facultatif : uniquement pour un renouvellement.</p>
+      <div id="liste-profs"></div>
+      <button type="button" class="btn btn-add" id="btn-ajout">➕ Ajouter un enseignant</button>
+
+      <div class="calcul" id="calcul">
+        <span>Enseignants : <b id="c-nb">0</b></span>
+        <span>Offerts : <b id="c-offerts">0</b></span>
+        <span>Payants : <b id="c-payants">0</b> × <b id="c-prix">…</b></span>
+        <span class="total">Total à verser : <b id="c-total">0,00 €</b></span>
+        <span class="warn" id="c-warn"></span>
+      </div>
+    </div>
+
+    <div class="page-card">
+      <h2>✅ Envoi</h2>
+      <label class="cgv"><input type="checkbox" id="cgv"> <span>J'ai lu et j'accepte les <a href="conditions-generales.html" target="_blank" rel="noopener">conditions générales et le règlement d'ordre intérieur</a> d'Educpass, et je confirme avoir l'accord de chaque enseignant inscrit. <span style="color:var(--err)">*</span></span></label>
+      <div class="centre"><button type="submit" class="btn btn-send" id="btn-envoi">📨 Envoyer l'inscription groupée</button></div>
+      <div class="msg centre" id="msg"></div>
+    </div>
+  </form>
+
+  <div class="page-card hidden" id="confirmation">
+    <h1>✅ Merci, votre demande est envoyée !</h1>
+    <p class="intro" style="margin-bottom:18px;">Référence : <b id="conf-ref"></b><br>Un récapitulatif a été envoyé à <b id="conf-mail"></b>.</p>
+    <div class="banque">
+      Montant à verser : <b id="conf-total"></b><br>
+      Bénéficiaire : <b>EDUCPASS-France</b><br>
+      IBAN : <b>FR76 1027 8027 2100 0443 9580 186</b><br>
+      BIC : <b>CMCIFR2A</b><br>
+      Communication : <b id="conf-comm"></b>
+    </div>
+    <p class="intro" style="margin-top:16px;">Les passeports seront activés dès réception du paiement.</p>
   </div>
 </div>
 
 <script>
 const PROXY = 'https://educpass-profs-proxy.marc-flasschoen.workers.dev';
 const BASE  = 'appWCfo8WBkMGUuc2';
-const CONTENU_TBL = 'tblBV7NGCb0km4MbL';
-const RECORD_ID = 'rec1PtwBK5fkT6TYv'; // fiche "Infos"
+const CONTENU_TBL = 'tblBV7NGCb0km4MbL';     // Contenu Profs Relais (prix par enseignant)
+const CONTENU_REC = 'rec1PtwBK5fkT6TYv';
+const DEMANDES_TBL = 'tbliem1jhYNvdJX64';    // Demandes Profs Relais
+const MAIL_EDUCPASS = 'marc.flasschoen@educpass.eu';
+const PRIX_DEFAUT = 40;
+const MINIMUM = 10;
 
-function escHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function escAttr(s){ return escHtml(s).replace(/"/g,'&quot;'); }
+const NIVEAUX = ['Maternelle','Élémentaire','Collège','Lycée général et technologique','Lycée professionnel','Enseignement supérieur','Enseignement spécialisé','Formation continue / adultes','Autre'];
+const BRANCHES = ['Maternelle','Élémentaire','Direction','Français / Lettres','Lettres classiques (Latin/Grec)','Mathématiques','Histoire-Géographie','Enseignement moral et civique','Sciences de la Vie et de la Terre (SVT)','Physique-Chimie','Technologie','Sciences de l\'ingénieur','Langues vivantes','Éducation musicale','Arts plastiques','EPS','Sciences Économiques et Sociales (SES)','Philosophie','Documentation (CDI)','Enseignement professionnel/technique','Vie scolaire / CPE','Administration','Autre'];
 
-// Nettoyage du texte mis en forme (liste blanche) avant affichage
-const RT_TAGS = {B:1,STRONG:1,I:1,EM:1,U:1,P:1,BR:1,DIV:1,SPAN:1,FONT:1,UL:1,OL:1,LI:1,A:1,H3:1,H4:1,BLOCKQUOTE:1};
-function rtNettoyer(html){
-  const tpl = document.createElement('template');
-  tpl.innerHTML = String(html||'');
-  (function walk(n){
-    Array.from(n.childNodes).forEach(c=>{
-      if(c.nodeType===3) return;
-      if(c.nodeType!==1 || !RT_TAGS[c.tagName]){
-        if(c.nodeType===1 && !/^(SCRIPT|STYLE|IFRAME|OBJECT|EMBED)$/.test(c.tagName)){ walk(c); while(c.firstChild) n.insertBefore(c.firstChild,c); }
-        c.remove(); return;
-      }
-      Array.from(c.attributes).forEach(at=>{
-        const nm=at.name.toLowerCase();
-        if(c.tagName==='A' && nm==='href'){ if(!/^(https?:|mailto:|tel:)/i.test(at.value.trim())) c.removeAttribute('href'); return; }
-        if(c.tagName==='FONT' && (nm==='color'||nm==='size')) return;
-        if(nm==='style'){
-          const keep=[]; at.value.split(';').forEach(d=>{ const p=d.split(':'); if(p.length<2) return; const k=p[0].trim().toLowerCase(), v=p.slice(1).join(':').trim();
-            if(/^(color|background-color|font-weight|font-style|text-decoration|text-decoration-line|font-size|text-align)$/.test(k) && !/url\(|expression/i.test(v)) keep.push(k+':'+v); });
-          if(keep.length) c.setAttribute('style',keep.join(';')); else c.removeAttribute('style'); return;
-        }
-        c.removeAttribute(at.name);
-      });
-      if(c.tagName==='A'){ c.setAttribute('target','_blank'); c.setAttribute('rel','noopener'); }
-      walk(c);
-    });
-  })(tpl.content);
-  return tpl.innerHTML.trim();
+let prix = PRIX_DEFAUT;
+let compteur = 0;
+
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function euros(n){ return (Math.round(n*100)/100).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €'; }
+function options(list){ return '<option value="">— Choisir —</option>'+list.map(v=>'<option>'+esc(v)+'</option>').join(''); }
+
+// ── Règle de calcul : 1 passeport offert par tranche de 10 payants (le prof relais d'abord) ──
+function calculer(n){
+  const offerts = Math.floor(n/11);
+  const payants = n - offerts;
+  return { n, offerts, payants, total: payants*prix };
 }
 
-async function chargerContenu(){
-  const elTexte = document.getElementById('page-texte');
+function ficheHtml(id){
+  return '<div class="prof" id="prof-'+id+'" data-id="'+id+'">'
+    + '<div class="prof-hdr"><span class="prof-num">Enseignant</span>'
+    +   '<label class="prof-moi"><input type="radio" name="moi" value="'+id+'"> C\'est moi (prof relais)</label>'
+    +   '<button type="button" class="prof-suppr" data-suppr="'+id+'">🗑️ Retirer</button></div>'
+    + '<div class="grid g4">'
+    +   '<div class="f"><label>Nom <span class="req">*</span></label><input data-k="nom" required></div>'
+    +   '<div class="f"><label>Prénom <span class="req">*</span></label><input data-k="prenom" required></div>'
+    +   '<div class="f"><label>Date de naissance <span class="req">*</span></label><input data-k="naissance" type="date" required></div>'
+    +   '<div class="f"><label>N° matricule</label><input data-k="matricule" inputmode="numeric" placeholder="facultatif"></div>'
+    +   '<div class="f span2"><label>Rue <span class="req">*</span></label><input data-k="rue" required></div>'
+    +   '<div class="f"><label>N° <span class="req">*</span></label><input data-k="nmaison" required></div>'
+    +   '<div class="f"><label>Code postal <span class="req">*</span></label><input data-k="cp" inputmode="numeric" required></div>'
+    +   '<div class="f"><label>Ville <span class="req">*</span></label><input data-k="ville" required></div>'
+    +   '<div class="f"><label>E-mail <span class="req">*</span></label><input data-k="email" type="email" required></div>'
+    +   '<div class="f span2"><label>Téléphone (GSM)</label><input data-k="tel" type="tel"></div>'
+    +   '<div class="f span2"><label>Niveau <span class="req">*</span></label><select data-k="niveau" required>'+options(NIVEAUX)+'</select></div>'
+    +   '<div class="f span2"><label>Branche <span class="req">*</span></label><select data-k="branche" required>'+options(BRANCHES)+'</select></div>'
+    + '</div></div>';
+}
+function ajouterFiche(){
+  const id = ++compteur;
+  document.getElementById('liste-profs').insertAdjacentHTML('beforeend', ficheHtml(id));
+  renumeroter();
+  return id;
+}
+function fiches(){ return Array.from(document.querySelectorAll('#liste-profs .prof')); }
+function renumeroter(){
+  const fs = fiches();
+  fs.forEach((f,i)=>{ f.querySelector('.prof-num').textContent = 'Enseignant '+(i+1); });
+  majCalcul();
+}
+function majCalcul(){
+  const c = calculer(fiches().length);
+  document.getElementById('c-nb').textContent = c.n;
+  document.getElementById('c-offerts').textContent = c.offerts;
+  document.getElementById('c-payants').textContent = c.payants;
+  document.getElementById('c-prix').textContent = euros(prix);
+  document.getElementById('c-total').textContent = euros(c.total);
+  const moi = document.querySelector('input[name="moi"]:checked');
+  document.querySelectorAll('.prof').forEach(f=>f.classList.toggle('moi', !!moi && f.dataset.id===moi.value));
+  let w = '';
+  if(c.n < MINIMUM) w = '⚠️ Minimum '+MINIMUM+' enseignants ('+(MINIMUM-c.n)+' à ajouter).';
+  else if(c.offerts === 0) w = '💡 À partir de 11 enseignants, 1 passeport est offert (celui du prof relais en priorité).';
+  else w = '🎁 '+c.offerts+' passeport(s) offert(s)'+(moi ? ', dont le vôtre.' : '.');
+  document.getElementById('c-warn').textContent = w;
+}
+
+document.getElementById('btn-ajout').addEventListener('click', ()=>{ const id=ajouterFiche(); document.querySelector('#prof-'+id+' input').focus(); });
+document.getElementById('liste-profs').addEventListener('click', e=>{
+  const b = e.target.closest('[data-suppr]');
+  if(!b) return;
+  const f = document.getElementById('prof-'+b.dataset.suppr);
+  const rempli = Array.from(f.querySelectorAll('input:not([type=radio]),select')).some(x=>x.value.trim());
+  if(rempli && !confirm('Retirer cet enseignant ?')) return;
+  f.remove(); renumeroter();
+});
+document.getElementById('liste-profs').addEventListener('change', e=>{ if(e.target.name==='moi') majCalcul(); });
+document.getElementById('form-relais').addEventListener('input', e=>{ const f=e.target.closest('.f'); if(f) f.classList.remove('invalide'); });
+
+// ── Validation ──
+const RE_MAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+function champOk(el){
+  const v = el.value.trim();
+  if(el.required && !v) return false;
+  if(v && el.type==='email' && !RE_MAIL.test(v)) return false;
+  if(v && el.dataset.k==='matricule' && !/^\d{11}$/.test(v.replace(/[\s.\-]/g,''))) return false;
+  if(v && el.type==='date'){ const d=new Date(v); if(isNaN(d) || d.getFullYear()<1930 || d>new Date()) return false; }
+  return true;
+}
+function valider(){
+  let premier = null, nbErr = 0;
+  document.querySelectorAll('#form-relais .f input, #form-relais .f select').forEach(el=>{
+    const ok = champOk(el);
+    el.closest('.f').classList.toggle('invalide', !ok);
+    if(!ok){ nbErr++; if(!premier) premier = el; }
+  });
+  return {premier, nbErr};
+}
+
+function lireFiches(){
+  const moi = document.querySelector('input[name="moi"]:checked');
+  const liste = fiches().map(f=>{
+    const o = {};
+    f.querySelectorAll('[data-k]').forEach(el=>{ o[el.dataset.k] = el.value.trim(); });
+    if(o.matricule) o.matricule = o.matricule.replace(/[\s.\-]/g,'');
+    o.profRelais = !!moi && f.dataset.id===moi.value;
+    o.gratuit = false;
+    return o;
+  });
+  // Passeports offerts : le prof relais d'abord, puis les derniers inscrits.
+  let reste = calculer(liste.length).offerts;
+  const relais = liste.find(p=>p.profRelais);
+  if(reste && relais){ relais.gratuit = true; reste--; }
+  for(let i=liste.length-1; i>=0 && reste>0; i--){ if(!liste[i].gratuit){ liste[i].gratuit = true; reste--; } }
+  return liste;
+}
+
+function reference(){
+  const d = new Date(), p = n=>String(n).padStart(2,'0');
+  return 'PR-'+String(d.getFullYear()).slice(2)+p(d.getMonth()+1)+p(d.getDate())+'-'+Math.random().toString(36).slice(2,6).toUpperCase();
+}
+function dateFr(iso){ if(!iso) return ''; const [y,m,j]=iso.split('-'); return j+'/'+m+'/'+y; }
+
+function recapTexte(d){
+  const L = [];
+  L.push('Inscription groupée Profs Relais — référence '+d.ref);
+  L.push('');
+  L.push('ÉTABLISSEMENT : '+d.ecole.nom);
+  L.push('Adresse : '+d.ecole.adresse);
+  L.push('Tél : '+d.ecole.tel+' — E-mail : '+d.ecole.mail);
+  L.push('');
+  L.push('PROF RELAIS : '+d.relais.nom+' — '+d.relais.tel+' — '+d.relais.mail);
+  L.push('');
+  L.push('ENSEIGNANTS ('+d.profs.length+') :');
+  d.profs.forEach((p,i)=>{
+    L.push((i+1)+'. '+p.nom.toUpperCase()+' '+p.prenom+(p.profRelais?' (prof relais)':'')+(p.gratuit?' — OFFERT':'')
+      +' — né(e) le '+dateFr(p.naissance)+(p.matricule?' — matricule '+p.matricule:''));
+    L.push('   '+p.rue+' '+p.nmaison+', '+p.cp+' '+p.ville+' — '+p.email+(p.tel?' — '+p.tel:''));
+    L.push('   '+p.niveau+' / '+p.branche);
+  });
+  L.push('');
+  L.push('Payants : '+d.calc.payants+' × '+euros(prix)+' — Offerts : '+d.calc.offerts);
+  L.push('TOTAL À VERSER : '+euros(d.calc.total));
+  L.push('');
+  L.push('Virement : EDUCPASS-France — IBAN FR76 1027 8027 2100 0443 9580 186 — BIC CMCIFR2A');
+  L.push('Communication : '+d.ref+' '+d.ecole.nom);
+  return L.join('\n');
+}
+
+async function envoyerMail(to, subject, body){
+  const r = await fetch(PROXY+'/send-email', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({to, subject, body})});
+  if(!r.ok) throw new Error('mail '+r.status);
+}
+
+document.getElementById('form-relais').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const msg = document.getElementById('msg');
+  msg.className = 'msg centre'; msg.textContent = '';
+  const v = valider();
+  if(fiches().length < MINIMUM){ msg.className='msg centre err'; msg.textContent='❌ Il faut au minimum '+MINIMUM+' enseignants.'; return; }
+  if(v.nbErr){ msg.className='msg centre err'; msg.textContent='❌ '+v.nbErr+' champ(s) à compléter ou à corriger (en rouge).'; v.premier.scrollIntoView({behavior:'smooth',block:'center'}); v.premier.focus({preventScroll:true}); return; }
+  if(!document.getElementById('cgv').checked){ msg.className='msg centre err'; msg.textContent='❌ Merci d\'accepter les conditions générales.'; return; }
+
+  const d = {
+    ref: reference(),
+    ecole: { nom: val('e-nom'), adresse: val('e-adresse'), tel: val('e-tel'), mail: val('e-mail') },
+    relais: { nom: (val('r-nom').toUpperCase()+' '+val('r-prenom')).trim(), tel: val('r-tel'), mail: val('r-mail') },
+    profs: lireFiches(),
+  };
+  d.calc = calculer(d.profs.length);
+  const recap = recapTexte(d);
+
+  const btn = document.getElementById('btn-envoi');
+  btn.disabled = true; msg.textContent = '⏳ Envoi en cours…';
   try{
-    const r = await fetch(`${PROXY}/v0/${BASE}/${CONTENU_TBL}/${RECORD_ID}`);
-    if(!r.ok) throw new Error('Airtable '+r.status);
-    const data = await r.json();
-    const f = data.fields || {};
-    if(f['Titre']) document.getElementById('page-titre').textContent = f['Titre'];
-
-    const photo = f['Photo'] && f['Photo'][0];
-    if(photo && photo.url){
-      const src = (photo.thumbnails && photo.thumbnails.large && photo.thumbnails.large.url) || photo.url;
-      const el = document.getElementById('page-photo');
-      el.innerHTML = '<img src="'+escAttr(src)+'" alt="">';
-      el.classList.remove('hidden');
-    }
-
-    if(f['Texte HTML']){
-      elTexte.innerHTML = rtNettoyer(f['Texte HTML']);
-      elTexte.classList.add('riche');
-    } else {
-      elTexte.textContent = f['Texte'] || 'à compléter';
-    }
-    elTexte.classList.remove('loading');
-
-    const t2 = rtNettoyer(f['Texte bloc 2 HTML'] || '');
-    if(t2 || f['Titre bloc 2']){
-      document.getElementById('bloc2-titre').textContent = f['Titre bloc 2'] || '';
-      document.getElementById('bloc2-titre').classList.toggle('hidden', !f['Titre bloc 2']);
-      document.getElementById('bloc2-texte').innerHTML = t2;
-      document.getElementById('bloc2').classList.remove('hidden');
-    }
-
-    const att = f['Fichier Excel'] && f['Fichier Excel'][0];
-    const dlRow = document.getElementById('dl-row');
-    const libelle = f['Libellé bouton'] || '📥 Télécharger le tableau Profs Relais';
-    // 2026-09-30 : formulaire en ligne proposé à côté du tableau Excel
-    const btnEnLigne = '<a class="btn-dl btn-ligne" href="PROFS RELAIS EN LIGNE.html">✏️ Remplir le tableau en ligne</a>';
-    if(att && att.url){
-      dlRow.innerHTML = '<div class="dl-btns">'+btnEnLigne
-        + '<a class="btn-dl" href="'+escAttr(att.url)+'" download target="_blank" rel="noopener">'+escHtml(libelle)+'</a></div>'
-        + '<div class="dl-note">Tableau Excel : '+escHtml(att.filename||'')+'</div>';
-    } else {
-      dlRow.innerHTML = '<div class="dl-btns">'+btnEnLigne+'</div>';
-    }
-  }catch(e){
-    elTexte.textContent = 'Contenu momentanément indisponible.';
-    elTexte.classList.remove('loading');
+    const now = new Date(), p = n=>String(n).padStart(2,'0');
+    const fields = {
+      'Référence': d.ref, 'Statut': 'En attente',
+      'Date demande': now.getFullYear()+'-'+p(now.getMonth()+1)+'-'+p(now.getDate()),
+      'Nom école': d.ecole.nom, 'Adresse école': d.ecole.adresse, 'Tél école': d.ecole.tel, 'Mail école': d.ecole.mail,
+      'Prof relais': d.relais.nom, 'Tél prof relais': d.relais.tel, 'Mail prof relais': d.relais.mail,
+      'Nombre enseignants': d.calc.n, 'Nombre offerts': d.calc.offerts,
+      'Prix par enseignant': prix, 'Total à verser': d.calc.total,
+      'Participants (données)': JSON.stringify(d.profs), 'Récapitulatif': recap,
+    };
+    const r = await fetch(`${PROXY}/v0/${BASE}/${DEMANDES_TBL}`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({records:[{fields}], typecast:true})});
+    if(!r.ok){ const t = await r.text().catch(()=> ''); throw new Error('Enregistrement impossible ('+r.status+') '+t.slice(0,120)); }
+  }catch(err){
+    btn.disabled = false; msg.className='msg centre err';
+    msg.textContent = '❌ La demande n\'a pas pu être envoyée. Réessayez dans un instant ou contactez-nous. ('+err.message+')';
+    return;
   }
-}
-chargerContenu();
-</script>
+  // E-mails (une erreur d'envoi n'annule pas la demande, déjà enregistrée)
+  const sujet = 'Inscription groupée Profs Relais — '+d.ecole.nom+' ('+d.ref+')';
+  const mails = await Promise.allSettled([
+    envoyerMail(MAIL_EDUCPASS, sujet, 'Nouvelle demande reçue via le formulaire en ligne (statut « En attente » dans Airtable, à traiter dans l\'outil TABLEAU PROFS RELAIS).\n\n'+recap),
+    envoyerMail(d.relais.mail, 'Votre inscription groupée Educpass — '+d.ref, 'Bonjour,\n\nNous avons bien reçu votre inscription groupée. Voici le récapitulatif :\n\n'+recap+'\n\nLes passeports seront activés dès réception du paiement.\n\nMerci et à bientôt,\nL\'équipe Educpass'),
+  ]);
+  document.getElementById('form-relais').classList.add('hidden');
+  document.getElementById('conf-ref').textContent = d.ref;
+  document.getElementById('conf-mail').textContent = d.relais.mail;
+  if(mails[1].status==='rejected') document.getElementById('conf-mail').textContent = d.relais.mail+' (l\'envoi a échoué : notez bien votre référence)';
+  document.getElementById('conf-total').textContent = euros(d.calc.total);
+  document.getElementById('conf-comm').textContent = d.ref+' '+d.ecole.nom;
+  document.getElementById('confirmation').classList.remove('hidden');
+  window.scrollTo({top:0, behavior:'smooth'});
+});
+function val(id){ return document.getElementById(id).value.trim(); }
 
+// ── Démarrage : 10 fiches + prix lu dans Airtable (modifiable dans le Back-office) ──
+for(let i=0;i<MINIMUM;i++) ajouterFiche();
+(async function(){
+  try{
+    const r = await fetch(`${PROXY}/v0/${BASE}/${CONTENU_TBL}/${CONTENU_REC}`);
+    if(r.ok){ const f=(await r.json()).fields||{}; const p=Number(f['Prix par enseignant']); if(p>0) prix=p; }
+  }catch(e){}
+  majCalcul();
+})();
+</script>
 </body>
 </html>
