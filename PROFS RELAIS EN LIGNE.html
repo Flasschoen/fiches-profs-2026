@@ -125,6 +125,9 @@ h2{font-family:'Fraunces',serif;font-weight:700;font-size:21px;color:var(--teal-
 
     <div class="page-card">
       <h2>✅ Envoi</h2>
+      <div class="banque" id="tarif-info" style="margin-bottom:12px;">⏳ Calcul du tarif…</div>
+      <div class="banque" id="banque-info" style="margin-bottom:6px;"></div>
+      <p style="font-size:13px;color:var(--off);margin:0 0 4px;">Le virement se fait après l'envoi du formulaire, avec la référence qui vous sera donnée.</p>
       <label class="cgv"><input type="checkbox" id="cgv"> <span>J'ai lu et j'accepte les <a href="conditions-generales.html" target="_blank" rel="noopener">conditions générales et le règlement d'ordre intérieur</a> d'Educpass, et je confirme avoir l'accord de chaque enseignant inscrit. <span style="color:var(--err)">*</span></span></label>
       <div class="centre"><button type="submit" class="btn btn-send" id="btn-envoi">📨 Envoyer l'inscription groupée</button></div>
       <div class="msg centre" id="msg"></div>
@@ -136,9 +139,9 @@ h2{font-family:'Fraunces',serif;font-weight:700;font-size:21px;color:var(--teal-
     <p class="intro" style="margin-bottom:18px;">Référence : <b id="conf-ref"></b><br>Un récapitulatif a été envoyé à <b id="conf-mail"></b>.</p>
     <div class="banque">
       Montant à verser : <b id="conf-total"></b><br>
-      Bénéficiaire : <b>EDUCPASS-France</b><br>
-      IBAN : <b>FR76 1027 8027 2100 0443 9580 186</b><br>
-      BIC : <b>CMCIFR2A</b><br>
+      Bénéficiaire : <b class="bq-benef"></b><br>
+      IBAN : <b class="bq-iban"></b><br>
+      BIC : <b class="bq-bic"></b><br>
       Communication : <b id="conf-comm"></b>
     </div>
     <p class="intro" style="margin-top:16px;">Les passeports seront activés dès réception du paiement.</p>
@@ -152,18 +155,68 @@ const CONTENU_TBL = 'tblBV7NGCb0km4MbL';     // Contenu Profs Relais (prix par e
 const CONTENU_REC = 'rec1PtwBK5fkT6TYv';
 const DEMANDES_TBL = 'tbliem1jhYNvdJX64';    // Demandes Profs Relais
 const MAIL_EDUCPASS = 'marc.flasschoen@educpass.eu';
-const PRIX_DEFAUT = 40;
+const PRODUITS_TBL = 'tblnEHRqjZ3XjW6vV';   // Produits
+const PRODUIT_DIGITAL = 'recZs18IUYEsgtzjE';  // FORMULE DIGITALE ACTIF (prix normal)
+const PROMOS_TBL = 'tblxFU8yFFDPNSXSO';      // Promos (codes promo)
+const BASE_DEFAUT = 45, REDUC_DEFAUT = 5;      // secours si Airtable ne répond pas
+let banque = { benef:'EDUCPASS-France', iban:'FR76 1027 8027 2100 0443 9580 186', bic:'CMCIFR2A' };
+let tarif = { base:BASE_DEFAUT, reduc:REDUC_DEFAUT, promo:null };
 const MINIMUM = 10;
 
 const NIVEAUX = ['Maternelle','Élémentaire','Collège','Lycée général et technologique','Lycée professionnel','Enseignement supérieur','Enseignement spécialisé','Formation continue / adultes','Autre'];
 const BRANCHES = ['Maternelle','Élémentaire','Direction','Français / Lettres','Lettres classiques (Latin/Grec)','Mathématiques','Histoire-Géographie','Enseignement moral et civique','Sciences de la Vie et de la Terre (SVT)','Physique-Chimie','Technologie','Sciences de l\'ingénieur','Langues vivantes','Éducation musicale','Arts plastiques','EPS','Sciences Économiques et Sociales (SES)','Philosophie','Documentation (CDI)','Enseignement professionnel/technique','Vie scolaire / CPE','Administration','Autre'];
 
-let prix = PRIX_DEFAUT;
+let prix = BASE_DEFAUT - REDUC_DEFAUT;
 let compteur = 0;
 
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function euros(n){ return (Math.round(n*100)/100).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €'; }
 function options(list){ return '<option value="">— Choisir —</option>'+list.map(v=>'<option>'+esc(v)+'</option>').join(''); }
+
+// ── Tarif : (prix normal OU prix promo) − réduction prof relais ──
+//    Promo = la plus avantageuse des promos actives aujourd'hui ouvertes à « Tous les membres ».
+function dateLocale(iso){ if(!iso) return null; const d=new Date(iso+'T00:00:00'); return isNaN(d)?null:d; }
+function prixApresPromo(base, f){
+  const v = Number(f['Valeur'])||0;
+  const p = f['Type']==='Pourcentage' ? base*(1-v/100) : base-v;
+  return Math.max(0, Math.round(p*100)/100);
+}
+function meilleurePromo(recs, base, aujourdhui){
+  const j = new Date(aujourdhui||Date.now()); j.setHours(0,0,0,0);
+  let best = null;
+  (recs||[]).forEach(r=>{
+    const f = r.fields||{};
+    if(!f['CodePromo'] || !(Number(f['Valeur'])>0)) return;
+    const deb = dateLocale(f['Date début']), fin = dateLocale(f['Date Fin']);
+    if(deb && j<deb) return;
+    if(fin && j>fin) return;
+    const elig = f['Éligibilité'] || 'Tous les membres';
+    if(elig !== 'Tous les membres') return;
+    const p = prixApresPromo(base, f);
+    if(!best || p < best.prixPromo) best = { code:f['CodePromo'], type:f['Type'], valeur:Number(f['Valeur']), fin:f['Date Fin']||'', prixPromo:p };
+  });
+  return best;
+}
+function calculerPrix(){
+  const depart = tarif.promo ? tarif.promo.prixPromo : tarif.base;
+  prix = Math.max(0, Math.round((depart - tarif.reduc)*100)/100);
+}
+function texteTarif(){
+  if(tarif.promo){
+    const pr = tarif.promo;
+    return 'Promotion en cours « '+pr.code+' » (−'+(pr.type==='Pourcentage'? pr.valeur+' %' : euros(pr.valeur))+(pr.fin?', jusqu\'au '+dateFr(pr.fin):'')+') : '
+      + euros(tarif.base)+' → '+euros(pr.prixPromo)+', moins la réduction Profs Relais de '+euros(tarif.reduc)+' = '+euros(prix)+' par enseignant.';
+  }
+  return 'Tarif normal : '+euros(tarif.base)+' − réduction Profs Relais '+euros(tarif.reduc)+' = '+euros(prix)+' par enseignant.';
+}
+function afficherTarifEtBanque(){
+  document.getElementById('tarif-info').innerHTML = '💶 <b>Votre tarif</b><br>'+esc(texteTarif())
+    + '<br><span style="font-size:13px;color:var(--off);">1 passeport offert par tranche de 10 payants (celui du prof relais en priorité). Les réductions ne sont pas cumulables avec d\'autres codes.</span>';
+  document.getElementById('banque-info').innerHTML = '🏦 <b>Coordonnées bancaires</b><br>Bénéficiaire : <b>'+esc(banque.benef)+'</b><br>IBAN : <b>'+esc(banque.iban)+'</b>'+(banque.bic?'<br>BIC : <b>'+esc(banque.bic)+'</b>':'');
+  document.querySelectorAll('.bq-benef').forEach(e=>e.textContent=banque.benef);
+  document.querySelectorAll('.bq-iban').forEach(e=>e.textContent=banque.iban);
+  document.querySelectorAll('.bq-bic').forEach(e=>e.textContent=banque.bic||'—');
+}
 
 // ── Règle de calcul : 1 passeport offert par tranche de 10 payants (le prof relais d'abord) ──
 function calculer(n){
@@ -294,10 +347,11 @@ function recapTexte(d){
     L.push('   '+p.niveau+' / '+p.branche);
   });
   L.push('');
+  L.push(texteTarif());
   L.push('Payants : '+d.calc.payants+' × '+euros(prix)+' — Offerts : '+d.calc.offerts);
   L.push('TOTAL À VERSER : '+euros(d.calc.total));
   L.push('');
-  L.push('Virement : EDUCPASS-France — IBAN FR76 1027 8027 2100 0443 9580 186 — BIC CMCIFR2A');
+  L.push('Virement : '+banque.benef+' — IBAN '+banque.iban+(banque.bic?' — BIC '+banque.bic:''));
   L.push('Communication : '+d.ref+' '+d.ecole.nom);
   return L.join('\n');
 }
@@ -337,6 +391,7 @@ document.getElementById('form-relais').addEventListener('submit', async e=>{
       'Nombre enseignants': d.calc.n, 'Nombre offerts': d.calc.offerts,
       'Prix par enseignant': prix, 'Total à verser': d.calc.total,
       'Participants (données)': JSON.stringify(d.profs), 'Récapitulatif': recap,
+      'Remarque': texteTarif(),
     };
     const r = await fetch(`${PROXY}/v0/${BASE}/${DEMANDES_TBL}`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({records:[{fields}], typecast:true})});
     if(!r.ok){ const t = await r.text().catch(()=> ''); throw new Error('Enregistrement impossible ('+r.status+') '+t.slice(0,120)); }
@@ -365,10 +420,22 @@ function val(id){ return document.getElementById(id).value.trim(); }
 // ── Démarrage : 10 fiches + prix lu dans Airtable (modifiable dans le Back-office) ──
 for(let i=0;i<MINIMUM;i++) ajouterFiche();
 (async function(){
-  try{
-    const r = await fetch(`${PROXY}/v0/${BASE}/${CONTENU_TBL}/${CONTENU_REC}`);
-    if(r.ok){ const f=(await r.json()).fields||{}; const p=Number(f['Prix par enseignant']); if(p>0) prix=p; }
-  }catch(e){}
+  const lire = async url => { try{ const r=await fetch(url); return r.ok ? await r.json() : null; }catch(e){ return null; } };
+  const [contenu, produit, promos] = await Promise.all([
+    lire(`${PROXY}/v0/${BASE}/${CONTENU_TBL}/${CONTENU_REC}`),
+    lire(`${PROXY}/v0/${BASE}/${PRODUITS_TBL}/${PRODUIT_DIGITAL}`),
+    lire(`${PROXY}/v0/${BASE}/${PROMOS_TBL}?pageSize=100`),
+  ]);
+  const c = (contenu&&contenu.fields)||{};
+  if(Number(c['Réduction prof relais'])>=0 && c['Réduction prof relais']!=null) tarif.reduc = Number(c['Réduction prof relais']);
+  if(c['Bénéficiaire']) banque.benef = c['Bénéficiaire'];
+  if(c['IBAN']) banque.iban = c['IBAN'];
+  if(c['BIC']!=null) banque.bic = c['BIC'];
+  const pb = produit && produit.fields && Number(produit.fields['Prix']);
+  if(pb>0) tarif.base = pb;
+  tarif.promo = promos ? meilleurePromo(promos.records, tarif.base) : null;
+  calculerPrix();
+  afficherTarifEtBanque();
   majCalcul();
 })();
 </script>
