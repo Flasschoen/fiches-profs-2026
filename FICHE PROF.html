@@ -41,7 +41,7 @@ body{margin:0;font-family:Calibri,Arial,sans-serif;background:var(--bg);color:#2
 .hdr-bar{background:var(--navy);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .hdr-bar .logo{font-weight:900;letter-spacing:1px;}
 .hdr-bar .title{font-weight:700;flex:1;}
-.btn{border:none;border-radius:4px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;background:#eee;color:#222;margin:3px 6px 3px 0;}
+.btn{border:none;border-radius:4px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;background:#eee;color:#222;}
 .btn:hover{filter:brightness(0.95);}
 .btn-orange{background:var(--orange);color:#fff;}
 .btn-navy{background:var(--navy-dark);color:#fff;}
@@ -51,8 +51,6 @@ body{margin:0;font-family:Calibri,Arial,sans-serif;background:var(--bg);color:#2
 .btn-yellow{background:#fff3b0;color:#6b5900;}
 .btn-green{background:#d4f4d4;color:#1e6b1e;}
 .btn-blue{background:#d4e6f9;color:#1a4d80;}
-.btn-red-pale{background:#f3d6d3;color:#8a2f1f;}
-.btn-purple-pale{background:#e3d9f3;color:#4a3480;}
 .btn:disabled{opacity:.5;cursor:not-allowed;}
 .toolbar{background:#fff;border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .toolbar input[type=text],.toolbar select{padding:6px 8px;border:1px solid #bbb;border-radius:4px;font-size:13px;}
@@ -69,25 +67,11 @@ table.results tr:nth-child(even){background:#f7faff;}
 table.results tr:hover{background:#eaf1ff;cursor:pointer;}
 .filters-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
 .filters-row select,.filters-row input{padding:5px 7px;border:1px solid #bbb;border-radius:4px;font-size:12.5px;}
-/* Fond pastel = case pilotée par un menu d'opérateur (=,>,≥,<,≤) juste à côté
-   (2026-08-29). Une couleur par critère pour repérer d'un coup d'œil quel
-   menu déroulant va avec quelle case. */
-#flt-code-op,#flt-code{background:#dceefa;}
-#flt-annee-op,#flt-annee{background:#fff2b8;}
-#flt-matricule-op,#flt-matricule{background:#fde3cc;}
-#flt-membre-op,#flt-membre{background:#e6f9e6;}
-#flt-datemodif-op,#flt-datemodif{background:#e6e0f8;}
 .fiche-box{background:#fff;border-radius:6px;box-shadow:0 1px 6px rgba(30,58,110,.12);padding:16px 20px;max-width:1100px;}
 .fiche-hdr{font-size:20px;font-weight:900;color:var(--navy);margin-bottom:4px;}
 .fiche-sub{color:#777;font-size:13px;margin-bottom:14px;}
 fieldset{border:1px solid var(--line);border-radius:6px;margin-bottom:14px;padding:10px 14px 14px;}
 legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
-/* Section "Campagne promotion" (2026-08-29) : cadre mauve pastel + pas de
-   flèches sur les cases nombre (comme la case Code de la recherche). */
-fieldset.fieldset-mauve{background:#f5eefc;}
-fieldset.fieldset-mauve input[type=number]{-moz-appearance:textfield;}
-fieldset.fieldset-mauve input[type=number]::-webkit-outer-spin-button,
-fieldset.fieldset-mauve input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
 .frow{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px 14px;}
 .fitem label{display:block;font-size:11.5px;color:#555;margin-bottom:2px;font-weight:600;}
 .fitem input,.fitem select,.fitem textarea{width:100%;padding:6px 7px;border:1px solid #bbb;border-radius:4px;font-size:13px;font-family:inherit;}
@@ -108,7 +92,7 @@ fieldset.fieldset-mauve input[type=number]::-webkit-inner-spin-button{-webkit-ap
 .fitem input#f-code{-moz-appearance:textfield;}
 .hidden{display:none !important;}
 .pin-box,.pin-mgr-box{background:#fff;border-radius:8px;padding:32px 40px;box-shadow:0 2px 20px rgba(0,0,0,.25);text-align:center;min-width:320px;}
-#overlay-pin,#overlay-pin-mgr,#overlay-resa,#overlay-email,#overlay-replace{position:fixed;inset:0;background:rgba(20,30,50,.55);display:flex;align-items:center;justify-content:center;z-index:999;}
+#overlay-pin,#overlay-pin-mgr,#overlay-resa,#overlay-email{position:fixed;inset:0;background:rgba(20,30,50,.55);display:flex;align-items:center;justify-content:center;z-index:999;}
 #overlay-loading{position:fixed;inset:0;background:rgba(20,30,50,.35);display:flex;align-items:center;justify-content:center;z-index:1000;pointer-events:none;}
 .loading-box{background:#fff;border-radius:10px;padding:26px 40px;box-shadow:0 4px 28px rgba(0,0,0,.3);font-size:19px;font-weight:700;color:var(--navy);text-align:center;min-width:320px;}
 .resa-mgr-box{background:#fff;border-radius:8px;padding:22px 28px;box-shadow:0 2px 20px rgba(0,0,0,.25);max-width:900px;width:92vw;max-height:85vh;overflow:auto;text-align:left;}
@@ -142,7 +126,6 @@ fieldset.fieldset-mauve input[type=number]::-webkit-inner-spin-button{-webkit-ap
   <div class="title">📋 FICHE PROF — 2026</div>
   <button class="btn" id="btn-delete-header" onclick="deleteMember()" style="display:none;background:var(--err);color:#fff;">🗑️ Supprimer</button>
   <button class="btn" id="btn-pin-mgr" onclick="showGestionPins()" style="display:none;">🔑 PINs</button>
-  <a class="btn" href="../../TABLEAU DE BORD.html" data-tdb="1" style="background:var(--navy-dark);color:#fff;text-decoration:none;display:inline-block;" title="Retour au Tableau de Bord">🗂️ Tableau de Bord</a>
   <button class="btn" onclick="logoutPin()">🔒 <span id="header-agent">—</span></button>
 </div>
 
@@ -154,11 +137,10 @@ fieldset.fieldset-mauve input[type=number]::-webkit-inner-spin-button{-webkit-ap
 
 <div class="wrap">
 
-  <div class="toolbar" id="toolbar-profs">
+  <div class="toolbar">
     <input type="text" id="rch" placeholder="Rechercher : nom, prénom, N° membre, matricule, ville..." style="min-width:320px;" oninput="onSearchInput()">
     <button class="btn" onclick="doSearch()">🔍 Rechercher</button>
     <button class="btn" onclick="showView('liste')">📄 Liste des résultats</button>
-    <button class="btn" id="btn-replace" onclick="openReplaceOverlay()" style="display:none;">🔁 Rechercher/Remplacer</button>
     <span id="rch-count" class="result-count"></span>
   </div>
 
@@ -169,19 +151,10 @@ fieldset.fieldset-mauve input[type=number]::-webkit-inner-spin-button{-webkit-ap
       <input type="text" id="f-val1" placeholder="valeur…" oninput="renderTable()">
       <select id="f-champ2" onchange="renderTable()"><option value="">Filtrer par champ (parmi les résultats)…</option></select>
       <input type="text" id="f-val2" placeholder="valeur…" oninput="renderTable()">
-      <select id="f-coche" title="Une fois cochés (envoi fait), les membres disparaissent automatiquement de la liste" onchange="renderTable()">
-        <option value="non" selected>✓ Actifs (masque les cochés)</option>
-        <option value="oui">✓ Cochés seulement (relecture)</option>
-        <option value="tous">✓ Tous (y compris cochés)</option>
-      </select>
-      <button class="btn" id="btn-export" onclick="exportFiltered()" style="display:none;">⬇️ Exporter CSV</button>
-      <button class="btn btn-save" id="btn-bulk-email" onclick="openBulkEmailOverlay()" style="display:none;">📤 Envoyer un mail aux cochés (<span id="bulk-email-count">0</span>)</button>
+      <button class="btn" onclick="exportFiltered()">⬇️ Exporter CSV</button>
     </div>
     <div class="filters-row" style="margin-top:-4px;">
       <span style="font-size:12px;color:#777;align-self:center;">Critères exacts (combinables, interrogent toute la base) :</span>
-      <select id="flt-code-op" title="Comparaison Code" onchange="onSearchInput()" style="max-width:48px;">
-        <option value="=">=</option><option value=">">&gt;</option><option value=">=">&ge;</option><option value="<">&lt;</option><option value="<=">&le;</option>
-      </select>
       <input type="text" id="flt-code" placeholder="Code" title="Code" style="max-width:80px;" oninput="onSearchInput()">
       <select id="flt-annee-op" title="Comparaison Année" onchange="onSearchInput()" style="max-width:48px;">
         <option value="=">=</option><option value=">">&gt;</option><option value=">=">&ge;</option><option value="<">&lt;</option><option value="<=">&le;</option>
@@ -191,35 +164,24 @@ fieldset.fieldset-mauve input[type=number]::-webkit-inner-spin-button{-webkit-ap
         <option value="=">=</option><option value=">">&gt;</option><option value=">=">&ge;</option><option value="<">&lt;</option><option value="<=">&le;</option>
       </select>
       <input type="text" id="flt-matricule" placeholder="N° matricule" title="N° matricule" style="max-width:105px;" oninput="onSearchInput()">
-      <div style="display:flex;flex-direction:column;gap:2px;">
-        <span style="font-size:11px;color:#666;">Date de dernière modification :</span>
-        <div style="display:flex;gap:8px;">
-          <select id="flt-datemodif-op" title="Comparaison Date de modification" onchange="onSearchInput()" style="max-width:48px;">
-            <option value="=">=</option><option value=">">&gt;</option><option value=">=">&ge;</option><option value="<">&lt;</option><option value="<=">&le;</option>
-          </select>
-          <input type="date" id="flt-datemodif" title="Date de modification" style="max-width:145px;" oninput="onSearchInput()">
-        </div>
-      </div>
       <select id="flt-membre-op" title="Comparaison N° membre" onchange="onSearchInput()" style="max-width:48px;">
         <option value="=">=</option><option value=">">&gt;</option><option value=">=">&ge;</option><option value="<">&lt;</option><option value="<=">&le;</option>
       </select>
       <input type="text" id="flt-membre" placeholder="N° membre" title="N° membre" style="max-width:95px;" oninput="onSearchInput()">
       <input type="text" id="flt-newsletter" placeholder="Newsletter" title="Newsletter (0 ou 1)" style="max-width:90px;" oninput="onSearchInput()">
       <input type="text" id="flt-codesms" placeholder="Code SMS" title="Code SMS (0 ou 1) — GSM valide" style="max-width:90px;" oninput="onSearchInput()">
-      <input type="text" id="flt-codenews" placeholder="Code NEWS" title="Code NEWS (0 ou 1) — Envoi NEWS" style="max-width:95px;" oninput="onSearchInput()">
+      <input type="text" id="flt-codenews" placeholder="Code NEWS" title="Code NEWS (0 ou 1) — Non Educ News" style="max-width:95px;" oninput="onSearchInput()">
       <input type="text" id="flt-tri2" placeholder="Tri 2" title="Clé de tri 2" style="max-width:80px;" oninput="onSearchInput()">
       <input type="text" id="flt-tri3" placeholder="Tri 3" title="Clé de tri 3" style="max-width:80px;" oninput="onSearchInput()">
-      <input type="text" id="flt-tri4" placeholder="Tri 4" title="Clé de tri 4" style="max-width:80px;" oninput="onSearchInput()">
     </div>
     <div style="font-size:11.5px;color:#999;margin:-6px 0 8px 2px;">
-      💡 Ces cases se combinent entre elles (ex. Année=26 + Newsletter=1 = tous les profs de l'année 26 inscrits à la newsletter) — pas besoin de remplir la barre de recherche du haut. Pour Code / Année / N° matricule / N° membre / Date de modification, le menu déroulant juste avant permet aussi &gt;, &ge;, &lt; ou &le; (ex. N° membre &gt; 400000, ou Date de modification &ge; une date choisie). Pour N° matricule, taper juste les premiers chiffres (ex. 1850315) recherche tous les matricules commençant par ce préfixe — la recherche par matricule ne se fait que dans cette case.
+      💡 Ces cases se combinent entre elles (ex. Année=26 + Newsletter=1 = tous les profs de l'année 26 inscrits à la newsletter) — pas besoin de remplir la barre de recherche du haut. Pour Année / N° matricule / N° membre, le menu déroulant juste avant permet aussi &gt;, &ge;, &lt; ou &le; (ex. N° membre &gt; 400000).
     </div>
     <div style="max-height:65vh;overflow:auto;">
       <table class="results" id="tbl-results">
         <thead><tr>
-          <th title="Cocher au fur et à mesure des envois de mail">✓</th>
-          <th id="th-membre" onclick="sortTable('membre')">N° membre</th><th id="th-matricule" onclick="sortTable('matricule')">Matricule</th><th id="th-nom" onclick="sortTable('nom')">Nom</th><th id="th-prenom" onclick="sortTable('prenom')">Prénom</th><th id="th-ville" onclick="sortTable('ville')">Ville</th><th id="th-selection" onclick="sortTable('selection')">Sélection</th>
-          <th id="th-tri4" onclick="sortTable('tri4')">Tri 4</th><th id="th-code" onclick="sortTable('code')">Code</th><th id="th-annee" onclick="sortTable('annee')">Année</th><th id="th-niveau" onclick="sortTable('niveau')">Niveau</th><th id="th-branche" onclick="sortTable('branche')">Branche</th>
+          <th id="th-membre" onclick="sortTable('membre')">N° membre</th><th id="th-nom" onclick="sortTable('nom')">Nom</th><th id="th-prenom" onclick="sortTable('prenom')">Prénom</th><th id="th-ville" onclick="sortTable('ville')">Ville</th><th id="th-cp" onclick="sortTable('cp')">CP</th>
+          <th id="th-statut" onclick="sortTable('statut')">Statut</th><th id="th-code" onclick="sortTable('code')">Code</th><th id="th-annee" onclick="sortTable('annee')">Année</th><th id="th-niveau" onclick="sortTable('niveau')">Niveau</th><th id="th-branche" onclick="sortTable('branche')">Branche</th>
           <th id="th-email" onclick="sortTable('email')">Email</th><th id="th-gsm" onclick="sortTable('gsm')">GSM</th>
         </tr></thead>
         <tbody id="tbl-body"></tbody>
@@ -237,13 +199,10 @@ fieldset.fieldset-mauve input[type=number]::-webkit-inner-spin-button{-webkit-ap
         <button class="btn btn-save" id="btn-save" onclick="saveMember()">💾 Enregistrer</button>
         <button class="btn btn-cancel" onclick="cancelAndReset()">↩️ Annuler</button>
         <button class="btn btn-blue" onclick="openResaOverlay()">📋 Réservation/Confirmation</button>
-        <button class="btn btn-green" onclick="openPaiementsOverlay()">💳 Paiements</button>
         <button class="btn btn-yellow" id="btn-email-adresse" onclick="openEmailOverlay('adresse')">📮 RETOUR POSTAL</button>
         <button class="btn btn-green" id="btn-email-paiement" onclick="openEmailOverlay('paiement')">💰 Paiement reçu</button>
         <button class="btn btn-warn" id="btn-email-rappel" onclick="openEmailOverlay('rappel')">⚠️ Rappel paiement</button>
         <button class="btn btn-blue" id="btn-email-france" onclick="openEmailOverlay('franceRenouv')">🇫🇷 Paiement FRANCE</button>
-        <button class="btn btn-red-pale" id="btn-email-echec" onclick="openEmailOverlay('echecPaiement')">❌ Paiement échoué</button>
-        <button class="btn btn-purple-pale" id="btn-reset-password" onclick="resetPasswordDefault()" style="display:none;">🔑 Réinitialiser mot de passe</button>
       </div>
 
       <div id="fiche-sections"></div>
@@ -282,32 +241,6 @@ fieldset.fieldset-mauve input[type=number]::-webkit-inner-spin-button{-webkit-ap
     </div>
   </div>
 
-  <!-- ============== FENÊTRE PAIEMENTS (bouton paiement manuel sur la fiche) ============== -->
-  <div id="overlay-paiement" class="hidden">
-    <div class="resa-mgr-box">
-      <h2>💳 Paiements</h2>
-      <div class="note-box">Alimente directement la table Airtable "Paiements" (la même table que l'écran séparé PAIEMENTS.html — rapport journalier + synchro Mollie). Sert à la saisie rapide d'un paiement (ex. virement manuel reçu) pendant qu'on regarde la fiche de ce prof.</div>
-      <div class="frow" style="margin-bottom:10px;">
-        <div class="fitem" style="grid-column:1/-1;">
-          <label>Choisir un paiement lié à ce prof</label>
-          <select id="paiement-select" onchange="onPaiementSelect()">
-            <option value="">— Sélectionnez —</option>
-          </select>
-        </div>
-      </div>
-      <div id="paiement-panel" class="hidden">
-        <div class="frow" id="paiement-fields"></div>
-        <div style="margin-top:10px;">
-          <button class="btn btn-save" onclick="savePaiement()">💾 Enregistrer le paiement</button>
-          <button class="btn btn-cancel" onclick="closePaiementPanel()">↩️ Fermer le formulaire</button>
-        </div>
-      </div>
-      <div style="margin-top:16px;text-align:right;">
-        <button class="btn btn-cancel" onclick="closePaiementsOverlay()">✖ Fermer la fenêtre</button>
-      </div>
-    </div>
-  </div>
-
   <!-- ============== FENÊTRE APERÇU EMAIL (avant envoi) ============== -->
   <div id="overlay-email" class="hidden">
     <div class="email-box">
@@ -323,75 +256,6 @@ fieldset.fieldset-mauve input[type=number]::-webkit-inner-spin-button{-webkit-ap
         <button class="btn btn-save" id="btn-email-send" onclick="sendEmailNow()">📤 Envoyer</button>
         <button class="btn btn-cancel" onclick="closeEmailOverlay()">✖ Annuler</button>
       </div>
-    </div>
-  </div>
-
-  <!-- ============== FENÊTRE ENVOI GROUPÉ (même mail à tous les membres cochés) ============== -->
-  <div id="overlay-bulk" class="hidden">
-    <div class="resa-mgr-box" style="max-width:640px;">
-      <h2>📤 Envoi groupé — mail aux membres cochés</h2>
-      <div class="note-box">
-        Le même modèle sera envoyé, un par un, à chaque membre coché — chacun reçoit sa propre version (nom, prénom... personnalisés automatiquement). Rien n'est envoyé tant que tu n'as pas cliqué sur "Envoyer" ci-dessous et confirmé.
-      </div>
-      <div class="frow">
-        <div class="fitem" style="grid-column:1/-1;">
-          <label>Modèle de mail</label>
-          <select id="bulk-template" onchange="updateBulkPreview()">
-            <option value="adresse">📮 Adresse incorrecte</option>
-            <option value="paiement">💰 Paiement reçu</option>
-            <option value="rappel">⚠️ Rappel paiement</option>
-            <option value="franceRenouv">🇫🇷 Paiement FRANCE (renouvellement 2027)</option>
-            <option value="echecPaiement">❌ Paiement échoué</option>
-          </select>
-        </div>
-      </div>
-      <label>Objet</label>
-      <input type="text" id="bulk-subject" readonly>
-      <label>Aperçu (exemple avec le 1er destinataire — chacun recevra sa propre version)</label>
-      <textarea id="bulk-body-preview" readonly></textarea>
-      <label>Destinataires</label>
-      <div id="bulk-recipients" style="font-size:12.5px;color:#333;max-height:140px;overflow:auto;border:1px solid #ddd;border-radius:6px;padding:6px 8px;"></div>
-      <div class="email-status" id="bulk-status" style="margin-top:10px;"></div>
-      <div style="margin-top:14px;">
-        <button class="btn btn-save" id="btn-bulk-send" onclick="sendBulkEmails()">📤 Envoyer à tous les cochés</button>
-        <button class="btn btn-cancel" onclick="closeBulkOverlay()">✖ Annuler</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ============== FENÊTRE RECHERCHER / REMPLACER (en masse) ============== -->
-  <div id="overlay-replace" class="hidden">
-    <div class="resa-mgr-box" style="max-width:640px;">
-      <h2>🔁 Rechercher / Remplacer</h2>
-      <div class="note-box">
-        S'applique à TOUS les résultats actuellement affichés dans la Liste (après recherche + filtres actifs). Lance d'abord ta recherche (ex. Code, Année...), ferme cette fenêtre si besoin pour l'ajuster, puis reviens ici. Le "Champ à vérifier" est optionnel : laisse-le vide pour appliquer à tous les résultats de la recherche, ou choisis-le pour ne remplacer que les lignes où ce champ a la "Valeur actuelle" indiquée. Le "Champ à modifier" peut être différent : c'est là que la "Nouvelle valeur" sera écrite.
-      </div>
-      <div id="rep-scope" style="font-size:12.5px;color:#555;margin-bottom:10px;"></div>
-      <div class="frow">
-        <div class="fitem">
-          <label>Champ à vérifier (optionnel)</label>
-          <select id="rep-champ-check"><option value="">— Aucun (tous les résultats) —</option></select>
-        </div>
-        <div class="fitem">
-          <label>Valeur actuelle (optionnel)</label>
-          <input type="text" id="rep-ancienne" placeholder="laisser vide = tous les résultats">
-        </div>
-        <div class="fitem" style="grid-column:1/-1;">
-          <label>Champ à modifier (destination)</label>
-          <select id="rep-champ"><option value="">— Choisir un champ —</option></select>
-        </div>
-        <div class="fitem" style="grid-column:1/-1;">
-          <label>Nouvelle valeur</label>
-          <input type="text" id="rep-nouvelle" placeholder="valeur à appliquer">
-        </div>
-      </div>
-      <div style="margin-top:12px;">
-        <button class="btn btn-blue" onclick="previewReplace()">👁️ Prévisualiser</button>
-        <button class="btn btn-save" id="btn-rep-apply" onclick="applyReplace()" disabled>✅ Appliquer</button>
-        <button class="btn btn-cancel" onclick="closeReplaceOverlay()">✖ Fermer</button>
-      </div>
-      <div class="email-status" id="rep-status" style="margin-top:10px;"></div>
-      <div id="rep-preview" style="font-size:12.5px;color:#333;margin-top:8px;"></div>
     </div>
   </div>
 
@@ -517,19 +381,9 @@ const SECTIONS = [
     ['fldbSgslspYE5le4Z','annee','Année','numtext'],
     ['fldU5X9CD1DCoHZy0','selection','Sélection','text'],
     ['fldzx5EdPg3ugcQXd','tri3','Clé de tri 3','text'],
-    ['fldz5Hi1nDNLvSH5N','tri4','Clé de tri 4','text'],
     ['fldYpwabCtlt9esnQ','paye','Payé','number'],
     ['fldqIs6Y2ebWFDg62','datepaiement','Date de paiement','date'],
     ['fldMYWTiBVzMG41fN','transaction','Transaction','text'],
-  ]},
-  {title:'Campagne promotion', color:'mauve', fields:[
-    ['flda3oigFxtPsB253','dateenvoinews','Date envoi 1','date'],
-    ['fldY3ZyTFLKajj1WT','dateenvoi2','Date envoi 2','date'],
-    ['fldNcrgYuNmvWyyF4','envoi2','Envoi 2','number'],
-    ['fldgMqgleSXMPJG4T','newsletter','Newsletter','number'],
-    ['fldb2FG2H2Cf1eHZK','noneducnews','Envoi NEWS','number'],
-    ['fld2B6aVy4t1FiI73','codeed','Code ED','number'],
-    ['fldtl5JQnfY9dMYJn','codesms','Code SMS','number:readonly'],
   ]},
   {title:'Cadeaux & envois', fields:[
     ['fldnxZJW1MYYDijOV','brochures','Brochures','number'],
@@ -548,6 +402,11 @@ const SECTIONS = [
     ['fldHjzw84pj5a17nS','ambassadeur','Ambassadeur','number'],
     ['fldMfJ9IAlOt9YWue','coderappel','Code Rappel','number'],
     ['fldvpfUh1tvugwPwu','dateenvoirappel','Date envoi rappel','date'],
+    ['flda3oigFxtPsB253','dateenvoinews','Date envoi News','date'],
+    ['fldNcrgYuNmvWyyF4','envoi2','Envoi 2','number'],
+    ['fldgMqgleSXMPJG4T','newsletter','Newsletter','number'],
+    ['fldb2FG2H2Cf1eHZK','noneducnews','Non Educ News','number'],
+    ['fld2B6aVy4t1FiI73','codeed','Code ED','number'],
   ]},
   {title:'Système', fields:[
     ['fld27fyNwjrxACB8H','mdpcrypte','Mot de passe (crypté)','text'],
@@ -581,7 +440,7 @@ const RESA_SECTIONS = [
 
 // Colonnes filtrables dans la vue liste (id, libellé)
 const FILTER_FIELDS = [
-  ['Nom','nom'],['Prénom','prenom'],['N° matricule','matricule'],['Ville','ville'],['Sélection','selection'],['Clé de tri 4','tri4'],
+  ['Nom','nom'],['Prénom','prenom'],['N° matricule','matricule'],['Ville','ville'],['CP','cp'],['Statut','statut'],
   ['Code','code'],['Année','annee'],['Niveau','niveau'],['Branche','branche'],
   ['Langue','langue'],['Fédération','federation'],['Email','email'],['GSM','gsm']
 ];
@@ -623,46 +482,6 @@ async function atFetch(url, opts){
   return r.json();
 }
 
-// ══════════════════════════════════════════════════════════
-//  RÉINITIALISATION DE MOT DE PASSE (2026-09-14)
-//  ------------------------------------------------------------
-//  Génère un hash strictement au même format que celui vérifié par le
-//  Worker Cloudflare (pbkdf2$<itérations>$<sel base64>$<hash base64>,
-//  PBKDF2-SHA256, 100000 itérations) — voir genererHashMotDePasse() dans
-//  le Worker. Réservé à MARC (bouton masqué sinon, voir _setAgentSession).
-//  IMPORTANT : ce nombre (100000) doit rester identique à celui du Worker.
-//  Cloudflare Workers plafonne PBKDF2 à 100000 itérations ; comme c'est le
-//  Worker qui vérifie ensuite le mot de passe à la connexion, un hash généré
-//  ici avec plus d'itérations serait ensuite impossible à vérifier (la
-//  connexion de l'enseignant échouerait avec une erreur serveur).
-// ══════════════════════════════════════════════════════════
-function _bytesToBase64(octets){
-  let binaire = '';
-  for (let i = 0; i < octets.length; i++) binaire += String.fromCharCode(octets[i]);
-  return btoa(binaire);
-}
-
-async function genererHashMotDePasse(motDePasse, iterations = 100000){
-  const sel = crypto.getRandomValues(new Uint8Array(16));
-  const materiau = await crypto.subtle.importKey('raw', new TextEncoder().encode(motDePasse), 'PBKDF2', false, ['deriveBits']);
-  const bitsDerives = await crypto.subtle.deriveBits({name:'PBKDF2', salt:sel, iterations, hash:'SHA-256'}, materiau, 256);
-  return 'pbkdf2$'+iterations+'$'+_bytesToBase64(sel)+'$'+_bytesToBase64(new Uint8Array(bitsDerives));
-}
-
-async function resetPasswordDefault(){
-  if(sessionStorage.getItem('auth_agent')!=='MARC') return;
-  if(!curId){ setSt('Aucune fiche chargée.'); return; }
-  const nom = document.getElementById('fiche-titre').textContent;
-  const MOT_DE_PASSE_DEFAUT = 'Educpass';
-  if(!confirm('Réinitialiser le mot de passe de "'+nom+'" au mot de passe par défaut "'+MOT_DE_PASSE_DEFAUT+'" ?\n\nL\'enseignant pourra le modifier lui-même une fois connecté (espace "Mon compte").\n\nÀ communiquer uniquement par écrit (email), jamais par téléphone.')) return;
-  setSt('⏳ Réinitialisation en cours...');
-  try{
-    const hash = await genererHashMotDePasse(MOT_DE_PASSE_DEFAUT);
-    await atFetch(API+'/'+curId, {method:'PATCH', body: JSON.stringify({fields:{'Mot de passe (hash sécurisé)': hash}})});
-    setSt('✅ Mot de passe réinitialisé à "'+MOT_DE_PASSE_DEFAUT+'".');
-  }catch(e){ setSt('❌ '+e.message); }
-}
-
 // Plafond de sécurité : au-delà, on arrête de charger (Airtable pagine par 100).
 // Relevé le 2026-08-18 (300 -> 15000) pour permettre à Marc d'extraire de grandes
 // listes (ex : tous les profs actifs pour un envoi de newsletter/brochure postale).
@@ -692,15 +511,14 @@ function onSearchInput(){
 
 // Critères exacts combinables (interrogent Airtable directement, pas seulement
 // les résultats déjà chargés) : Code, Newsletter, Code SMS, Code NEWS
-// (= champ "Envoi NEWS", renommé le 2026-08-29, ex-"Non Educ News"), Clé de
-// tri 2 (numériques, égalité) et Clé de tri 3 (texte, égalité). Code / Année /
-// N° matricule / N° membre supportent en plus un opérateur de comparaison
-// (=, >, >=, <, <=) via un menu déroulant dédié.
+// (= champ "Non Educ News"), Clé de tri 2 (numériques, égalité) et Clé de tri 3
+// (texte, égalité). Année / N° matricule / N° membre supportent en plus un
+// opérateur de comparaison (=, >, >=, <, <=) via un menu déroulant dédié.
 function buildStructuredConditions(){
   const conds = [];
   const numericMap = [
-    ['flt-newsletter','Newsletter'],
-    ['flt-codesms','Code SMS'], ['flt-codenews','Envoi NEWS'], ['flt-tri2','Clé de tri 2'],
+    ['flt-code','Code'], ['flt-newsletter','Newsletter'],
+    ['flt-codesms','Code SMS'], ['flt-codenews','Non Educ News'], ['flt-tri2','Clé de tri 2'],
   ];
   numericMap.forEach(([id,fieldName])=>{
     const el = document.getElementById(id);
@@ -714,15 +532,11 @@ function buildStructuredConditions(){
   if(tri3 && tri3.value.trim()!==''){
     conds.push(`{Clé de tri 3}="${esc(tri3.value.trim())}"`);
   }
-  const tri4 = document.getElementById('flt-tri4');
-  if(tri4 && tri4.value.trim()!==''){
-    conds.push(`{Clé de tri 4}="${esc(tri4.value.trim())}"`);
-  }
   // Critères avec opérateur de comparaison choisi par Marc (=, >, >=, <, <=).
   const ALLOWED_OPS = ['=','>','>=','<','<='];
   const rangeMap = [
-    ['flt-code','flt-code-op','Code'],
     ['flt-annee','flt-annee-op','Année'],
+    ['flt-matricule','flt-matricule-op','N° matricule'],
     ['flt-membre','flt-membre-op','N° membre'],
   ];
   rangeMap.forEach(([valId,opId,fieldName])=>{
@@ -742,58 +556,6 @@ function buildStructuredConditions(){
       conds.push(`{${fieldName}}${op}${n}`);
     }
   });
-  // N° matricule : recherche par PRÉFIXE plutôt que par égalité stricte
-  // (2026-08-29, demande de Marc) — tape juste les 7 premiers chiffres
-  // (catégorie + date de naissance AAMMJJ, voir plus bas) au lieu du
-  // matricule complet ; tape le matricule complet et ça reste équivalent à
-  // une égalité exacte. Le menu d'opérateur reste disponible pour une
-  // comparaison numérique classique (>, >=, <, <=) si besoin — seul "="
-  // bascule en recherche par préfixe.
-  const matricEl = document.getElementById('flt-matricule');
-  if(matricEl && matricEl.value.trim()!==''){
-    const v = matricEl.value.trim();
-    const opEl = document.getElementById('flt-matricule-op');
-    let op = opEl ? opEl.value : '=';
-    if(!ALLOWED_OPS.includes(op)) op = '=';
-    if(op === '='){
-      conds.push(`LEFT({N° matricule}&"",${v.length})="${esc(v)}"`);
-    } else {
-      const n = Number(v);
-      conds.push(isNaN(n) ? `{N° matricule}="${esc(v)}"` : `{N° matricule}${op}${n}`);
-    }
-  }
-  // Date de modification : même menu d'opérateur (=, >, >=, <, <=), mais
-  // comparaison de date via IS_SAME/IS_AFTER/IS_BEFORE (Airtable ne compare
-  // pas un champ date directement avec >/< comme un nombre). Granularité
-  // jour (2026-08-29), pas l'heure exacte.
-  const dateRangeMap = [
-    ['flt-datemodif','flt-datemodif-op','Date de modification'],
-  ];
-  dateRangeMap.forEach(([valId,opId,fieldName])=>{
-    const valEl = document.getElementById(valId);
-    if(!valEl) return;
-    const raw = valEl.value.trim();
-    if(raw==='') return;
-    const iso = parseFlexibleDate(raw);
-    if(!iso) return; // date invalide/incomplète : critère ignoré plutôt que de casser la recherche
-    const opEl = document.getElementById(opId);
-    let op = opEl ? opEl.value : '=';
-    if(!ALLOWED_OPS.includes(op)) op = '=';
-    const f = `{${fieldName}}`, d = `"${iso}"`;
-    switch(op){
-      case '>': conds.push(`IS_AFTER(${f},${d})`); break;
-      case '<': conds.push(`IS_BEFORE(${f},${d})`); break;
-      case '>=': conds.push(`OR(IS_SAME(${f},${d},'day'),IS_AFTER(${f},${d}))`); break;
-      case '<=': conds.push(`OR(IS_SAME(${f},${d},'day'),IS_BEFORE(${f},${d}))`); break;
-      default: conds.push(`IS_SAME(${f},${d},'day')`);
-    }
-  });
-  // (2026-08-29, demande de Marc) La recherche par matricule ne doit
-  // s'opérer que via la case "N° matricule" elle-même, pas via d'autres
-  // cases — l'ancien encodeur "Catégorie matricule" + "Date de naissance"
-  // (qui reconstituait aussi un préfixe de matricule depuis 2 autres cases)
-  // a donc été retiré ; voir le bloc "N° matricule" ci-dessus qui gère
-  // maintenant seul la recherche par préfixe.
   return conds;
 }
 
@@ -859,9 +621,9 @@ function populateFilterSelects(){
 function valueForKey(fields, key){
   // Retrouve la valeur affichable pour une clé de filtre/colonne à partir des fields Airtable
   const map = {
-    nom:'Nom', prenom:'Prénom', matricule:'N° matricule', ville:'Ville', cp:'CP', selection:'Sélection', statut:'Statut', code:'Code',
+    nom:'Nom', prenom:'Prénom', matricule:'N° matricule', ville:'Ville', cp:'CP', statut:'Statut', code:'Code',
     annee:'Année', niveau:'Niveau', branche:'Branche', langue:'Langue', federation:'Fédération',
-    tri2:'Clé de tri 2', tri3:'Clé de tri 3', tri4:'Clé de tri 4', email:'Email', gsm:'GSM'
+    tri2:'Clé de tri 2', tri3:'Clé de tri 3', email:'Email', gsm:'GSM'
   };
   const name = map[key];
   let v = fields[name];
@@ -873,17 +635,16 @@ function valueForKey(fields, key){
 // sortState.col = clé de la colonne triée (ou null = ordre naturel du fetch),
 // sortState.dir = 1 (croissant) ou -1 (décroissant).
 let sortState = { col: null, dir: 1 };
-const SORT_KEYS = ['membre','matricule','nom','prenom','ville','selection','tri4','code','annee','niveau','branche','email','gsm'];
+const SORT_KEYS = ['membre','nom','prenom','ville','cp','statut','code','annee','niveau','branche','email','gsm'];
 
 function getSortValue(f, key){
   switch(key){
     case 'membre': return f['N° membre'];
-    case 'matricule': return f['N° matricule'];
     case 'nom': return f['Nom'];
     case 'prenom': return f['Prénom'];
     case 'ville': return f['Ville'];
-    case 'selection': return f['Sélection'];
-    case 'tri4': return f['Clé de tri 4'];
+    case 'cp': return f['CP'];
+    case 'statut': return (f['Statut']&&f['Statut'].name)||'';
     case 'code': return f['Code'];
     case 'annee': return f['Année'];
     case 'niveau': return f['Niveau'];
@@ -926,17 +687,9 @@ function renderTable(){
   // filtres génériques ci-dessous s'appliquent en plus, localement, sur ces résultats.
   const c1=document.getElementById('f-champ1').value, v1=document.getElementById('f-val1').value.toLowerCase();
   const c2=document.getElementById('f-champ2').value, v2=document.getElementById('f-val2').value.toLowerCase();
-  // 'non' (défaut) = masque automatiquement les membres déjà cochés (envoi fait) de la
-  // liste ; 'oui' = affiche seulement les cochés (relecture) ; 'tous' = pas de filtre.
-  // (2026-09-05, demande de Marc : la ligne doit disparaître dès qu'on la coche.)
-  const coche = document.getElementById('f-coche').value;
   let rows = lastResults;
   if(c1 && v1) rows = rows.filter(r=>valueForKey(r.fields,c1).toLowerCase().includes(v1));
   if(c2 && v2) rows = rows.filter(r=>valueForKey(r.fields,c2).toLowerCase().includes(v2));
-  if(coche==='oui' || coche==='non'){
-    const checkedSetFilter = loadMailCheckedSet();
-    rows = rows.filter(r=> checkedSetFilter.has(r.id) === (coche==='oui'));
-  }
   if(sortState.col){
     rows = rows.slice().sort((a,b)=>sortState.dir*compareValues(getSortValue(a.fields,sortState.col), getSortValue(b.fields,sortState.col)));
   }
@@ -944,59 +697,33 @@ function renderTable(){
 
   const tbody = document.getElementById('tbl-body');
   tbody.innerHTML = '';
-  const checkedSet = loadMailCheckedSet();
   rows.forEach(r=>{
     const f = r.fields;
     const tr = document.createElement('tr');
     tr.onclick = ()=>loadMember(r.id);
-    // Case à cocher "envoi fait" : sa propre case (pas de clic->fiche), état persisté.
-    const tdCheck = document.createElement('td');
-    tdCheck.onclick = (e)=>{ e.stopPropagation(); };
-    const cb = document.createElement('input');
-    cb.type = 'checkbox';
-    cb.checked = checkedSet.has(r.id);
-    cb.onclick = (e)=>{
-      e.stopPropagation();
-      setMailChecked(r.id, cb.checked);
-      renderTable(); // réaffiche la liste : la ligne cochée disparaît aussitôt (vue "Actifs" par défaut)
-    };
-    tdCheck.appendChild(cb);
-    tr.appendChild(tdCheck);
     const cols = [
-      [f['N° membre'], ''], [f['N° matricule'], ''], [f['Nom'], ''], [f['Prénom'], ''], [f['Ville'], ''], [f['Sélection'], ''],
-      [f['Clé de tri 4'], ''], [f['Code'], ''], [f['Année'], ''],
+      [f['N° membre'], ''], [f['Nom'], ''], [f['Prénom'], ''], [f['Ville'], ''], [f['CP'], ''],
+      [(f['Statut']&&f['Statut'].name)||'', ''], [f['Code'], ''], [f['Année'], ''],
       [f['Niveau'], 'col-niveau'], [f['Branche'], 'col-branche'],
       [f['Email'], ''], [f['GSM'], ''],
     ];
-    tr.insertAdjacentHTML('beforeend', cols.map(([v,cls])=>'<td'+(cls?' class="'+cls+'"':'')+'>'+(v==null?'':String(v).replace(/</g,'&lt;'))+'</td>').join(''));
+    tr.innerHTML = cols.map(([v,cls])=>'<td'+(cls?' class="'+cls+'"':'')+'>'+(v==null?'':String(v).replace(/</g,'&lt;'))+'</td>').join('');
     tbody.appendChild(tr);
   });
   window._lastFiltered = rows;
-  updateBulkButton();
 }
 
 function exportFiltered(){
-  if(sessionStorage.getItem('auth_agent')!=='MARC') return; // réservé à MARC (2026-08-29)
   const rows = window._lastFiltered || [];
   if(!rows.length){ setSt("Aucun résultat à exporter — lance une recherche d'abord."); return; }
-  // N° matricule (identifiant WinDev) et Clé de tri 4 inclus (2026-08-28) pour
-  // permettre l'export de listes marquées (ex. "DEL") destinées au nettoyage
-  // côté WinDev — le matricule est l'identifiant dont WinDev a besoin pour
-  // retrouver la bonne fiche.
-  // "Case cochée" incluse dans l'export (2026-09-05, demande de Marc) : Oui/Non selon
-  // l'état de la case ✓ de chaque ligne (persistée dans ce navigateur).
-  // Rue / N° maison / Téléphone ajoutés (2026-09-08, demande de Marc) : pour pouvoir
-  // envoyer un courrier postal (Nom/Prénom/Rue/N° maison/CP/Ville), un mail général
-  // (Email) ou un SMS (GSM) à partir du même export, sans devoir rouvrir Airtable.
-  const headers = ['N° membre','N° matricule','Nom','Prénom','Rue','N° maison','CP','Ville','Statut','Code','Année','Clé de tri 4','Niveau','Branche','Langue','Fédération','Téléphone','GSM','Email','Case cochée'];
+  const headers = ['N° membre','Nom','Prénom','Ville','CP','Statut','Code','Année','Niveau','Branche','Langue','Fédération','Email','GSM'];
   const lines = [headers.join(';')];
-  const checkedSetExport = loadMailCheckedSet();
   rows.forEach(r=>{
     const f=r.fields;
-    const vals=[f['N° membre'],f['N° matricule'],f['Nom'],f['Prénom'],f['Rue'],f['N° maison'],f['CP'],f['Ville'],
-      (f['Statut']&&f['Statut'].name)||'',f['Code'],f['Année'],f['Clé de tri 4'],f['Niveau'],f['Branche'],
+    const vals=[f['N° membre'],f['Nom'],f['Prénom'],f['Ville'],f['CP'],
+      (f['Statut']&&f['Statut'].name)||'',f['Code'],f['Année'],f['Niveau'],f['Branche'],
       (f['Langue']&&f['Langue'].name)||'',(f['Fédération']&&f['Fédération'].name)||'',
-      f['Téléphone'],f['GSM'],f['Email'], checkedSetExport.has(r.id)?'Oui':'Non'];
+      f['Email'],f['GSM']];
     lines.push(vals.map(v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"').join(';'));
   });
   const blob = new Blob(['﻿'+lines.join('\r\n')], {type:'text/csv;charset=utf-8;'});
@@ -1004,153 +731,6 @@ function exportFiltered(){
   a.href = URL.createObjectURL(blob);
   a.download = 'export_profs_'+new Date().toISOString().slice(0,10)+'.csv';
   document.body.appendChild(a); a.click(); a.remove();
-}
-
-// ══════════════════════════════════════════════════════════
-//  RECHERCHER / REMPLACER EN MASSE — agit sur window._lastFiltered (les
-//  résultats actuellement affichés dans la Liste, recherche + filtres locaux
-//  compris). Champs uniques/sensibles exclus du sélecteur par sécurité
-//  (N° matricule, mot de passe crypté). Écrit directement dans Airtable via
-//  des PATCH groupés (10 fiches par appel, comme l'autorise l'API), avec
-//  prévisualisation obligatoire + confirmation avant toute écriture (2026-08-28).
-// ══════════════════════════════════════════════════════════
-const REPLACE_EXCLUDE_KEYS = ['matricule','mdpcrypte'];
-let REPLACE_FIELDS = [];
-let _replaceMatches = null;
-
-function buildReplaceFieldList(){
-  if(REPLACE_FIELDS.length) return;
-  SECTIONS.forEach(sec=>{
-    sec.fields.forEach(([fid,key,label,type])=>{
-      if(REPLACE_EXCLUDE_KEYS.includes(key)) return;
-      if(type.endsWith(':readonly')) return; // champ calculé (formule) : Airtable refuse l'écriture
-      REPLACE_FIELDS.push({key, rawLabel:label, label: sec.title+' — '+label, type});
-    });
-  });
-}
-
-function populateReplaceSelect(){
-  buildReplaceFieldList();
-  [['rep-champ', false], ['rep-champ-check', true]].forEach(([id, isCheck])=>{
-    const sel = document.getElementById(id);
-    if(sel.options.length>1) return;
-    REPLACE_FIELDS.forEach(f=>{
-      const o=document.createElement('option'); o.value=f.key; o.textContent=f.label; sel.appendChild(o);
-    });
-  });
-}
-
-// fdef du champ à MODIFIER (destination — où "Nouvelle valeur" sera écrite)
-function getReplaceFieldDef(){
-  const key = document.getElementById('rep-champ').value;
-  return REPLACE_FIELDS.find(f=>f.key===key) || null;
-}
-// fdef du champ à VÉRIFIER (optionnel — pour filtrer sur "Valeur actuelle")
-function getCheckFieldDef(){
-  const key = document.getElementById('rep-champ-check').value;
-  return REPLACE_FIELDS.find(f=>f.key===key) || null;
-}
-
-function openReplaceOverlay(){
-  if(sessionStorage.getItem('auth_agent')!=='MARC') return; // réservé à MARC (2026-08-29)
-  populateReplaceSelect();
-  document.getElementById('rep-champ-check').value = '';
-  document.getElementById('rep-champ').value = '';
-  document.getElementById('rep-ancienne').value = '';
-  document.getElementById('rep-nouvelle').value = '';
-  document.getElementById('rep-preview').innerHTML = '';
-  document.getElementById('rep-status').textContent = '';
-  document.getElementById('btn-rep-apply').disabled = true;
-  _replaceMatches = null;
-  const n = (window._lastFiltered||[]).length;
-  document.getElementById('rep-scope').textContent = n
-    ? n+' résultat(s) actuellement affiché(s) dans la Liste.'
-    : "Aucun résultat affiché — ferme cette fenêtre, lance d'abord une recherche dans la Liste, puis rouvre Rechercher/Remplacer.";
-  document.getElementById('overlay-replace').classList.remove('hidden');
-}
-function closeReplaceOverlay(){
-  document.getElementById('overlay-replace').classList.add('hidden');
-}
-
-function coerceReplaceValue(fdef, raw){
-  if(fdef.type==='number' || fdef.type==='numtext'){
-    if(raw===''){ return {error:'Nouvelle valeur numérique manquante pour « '+fdef.rawLabel+' ».'}; }
-    const n = Number(raw);
-    if(isNaN(n)) return {error:'Valeur numérique invalide pour « '+fdef.rawLabel+' » : "'+raw+'"'};
-    return {value:n};
-  }
-  if(fdef.type==='date'){
-    if(raw===''){ return {value:''}; }
-    const iso = parseFlexibleDate(raw);
-    if(!iso) return {error:'Date invalide : "'+raw+'" (attendu AAAA-MM-JJ ou JJ/MM/AAAA)'};
-    return {value:iso};
-  }
-  return {value:raw};
-}
-
-function previewReplace(){
-  const fdef = getReplaceFieldDef();
-  const checkDef = getCheckFieldDef();
-  const status = document.getElementById('rep-status');
-  const preview = document.getElementById('rep-preview');
-  status.textContent = ''; preview.innerHTML = '';
-  document.getElementById('btn-rep-apply').disabled = true;
-  _replaceMatches = null;
-  if(!fdef){ status.textContent = '❌ Choisis le champ à modifier (destination).'; return; }
-  const rows = window._lastFiltered || [];
-  if(!rows.length){ status.textContent = "❌ Aucun résultat affiché dans la Liste — lance d'abord une recherche."; return; }
-  const oldValRaw = document.getElementById('rep-ancienne').value;
-  const newValRaw = document.getElementById('rep-nouvelle').value;
-  if(checkDef && oldValRaw===''){
-    status.textContent = '❌ Champ à vérifier choisi mais "Valeur actuelle" vide — indique la valeur à rechercher, ou retire le champ à vérifier.';
-    return;
-  }
-  const coerced = coerceReplaceValue(fdef, newValRaw);
-  if(coerced.error){ status.textContent = '❌ '+coerced.error; return; }
-  const matches = rows.filter(r=>{
-    if(!checkDef || oldValRaw===''){ return true; }
-    let cur = r.fields[checkDef.rawLabel];
-    if(cur && typeof cur==='object' && cur.name) cur = cur.name;
-    return String(cur==null?'':cur) === oldValRaw;
-  });
-  _replaceMatches = {fdef, newValue: coerced.value, records: matches};
-  if(!matches.length){
-    status.textContent = checkDef
-      ? '⚠️ Aucun des '+rows.length+' résultat(s) affiché(s) n\'a actuellement « '+checkDef.rawLabel+' » = "'+oldValRaw+'".'
-      : '⚠️ Aucun résultat affiché.';
-    return;
-  }
-  const sample = matches.slice(0,8).map(r=>{
-    const f=r.fields;
-    return (f['N° membre']!=null?f['N° membre']:'?')+' — '+(f['Nom']||'')+' '+(f['Prénom']||'');
-  }).join('<br>');
-  const condTxt = checkDef ? ' (où « '+checkDef.rawLabel+' » = "'+oldValRaw+'")' : ' (tous les résultats affichés)';
-  preview.innerHTML = '<b>'+matches.length+' fiche(s) sur '+rows.length+' affichée(s) seront modifiées</b>'+condTxt+' — « '+fdef.rawLabel+' » → "'+newValRaw+'" :<br>'+sample+(matches.length>8?'<br>… (+'+(matches.length-8)+' autre(s))':'');
-  document.getElementById('btn-rep-apply').disabled = false;
-}
-
-async function applyReplace(){
-  if(!_replaceMatches || !_replaceMatches.records.length) return;
-  const {fdef, newValue, records} = _replaceMatches;
-  if(!confirm('Confirmer le remplacement sur '+records.length+' fiche(s) ?\n\nChamp modifié : '+fdef.rawLabel+'\nNouvelle valeur : "'+newValue+'"\n\nCette action écrit directement dans Airtable et est difficile à annuler pour des mises à jour en masse.')) return;
-  const status = document.getElementById('rep-status');
-  document.getElementById('btn-rep-apply').disabled = true;
-  let done = 0, errors = 0;
-  for(let i=0;i<records.length;i+=10){
-    const chunk = records.slice(i,i+10);
-    const body = {records: chunk.map(r=>({id:r.id, fields:{[fdef.rawLabel]: newValue}}))};
-    try{
-      await atFetch(API, {method:'PATCH', body: JSON.stringify(body)});
-      chunk.forEach(r=>{ r.fields[fdef.rawLabel] = newValue; });
-      done += chunk.length;
-    }catch(e){ errors += chunk.length; }
-    status.textContent = '⏳ '+done+'/'+records.length+' mise(s) à jour...'+(errors?(' ('+errors+' erreur(s))'):'');
-    await new Promise(res=>setTimeout(res,260));
-  }
-  renderTable();
-  status.textContent = errors
-    ? '⚠️ Terminé avec erreurs : '+done+' fiche(s) mise(s) à jour, '+errors+' échec(s) — relance une recherche pour vérifier l\'état exact.'
-    : '✅ '+done+' fiche(s) mise(s) à jour avec succès.';
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1173,7 +753,6 @@ function buildFicheForm(){
   wrap.innerHTML = '';
   SECTIONS.forEach(sec=>{
     const fs = document.createElement('fieldset');
-    if(sec.color) fs.classList.add('fieldset-'+sec.color);
     const lg = document.createElement('legend'); lg.textContent = sec.title; fs.appendChild(lg);
     const row = document.createElement('div'); row.className='frow';
     sec.fields.forEach(([fid,key,label,type])=>{
@@ -1189,15 +768,12 @@ function buildFicheForm(){
         input = document.createElement('textarea');
       } else {
         input = document.createElement('input');
-        input.type = (type.startsWith('number')) ? 'number' : (type==='date' ? 'date' : 'text');
+        input.type = (type==='number') ? 'number' : (type==='date' ? 'date' : 'text');
         if(key==='naissance'){ input.placeholder = 'AAAA-MM-JJ ou JJ/MM/AAAA'; }
       }
       input.id = 'f-'+key;
       input.dataset.fieldId = fid;
       input.oninput = markDirty;
-      // Champ calculé par Airtable (formule) : affichage seul, Airtable
-      // refuse toute écriture dessus (ex. "Code SMS", 2026-08-29).
-      if(type.endsWith(':readonly')) input.disabled = true;
       if(FLD_YELLOW.includes(key)) input.classList.add('fld-yellow');
       if(FLD_GREEN.includes(key)) input.classList.add('fld-green');
       if(key==='matricule') input.classList.add('fld-matricule');
@@ -1220,24 +796,6 @@ function buildFicheForm(){
 }
 
 function markDirty(){ _dirty = true; }
-
-// Cases à cocher "envoi fait" dans la liste RECHERCHE > Membres trouvés (2026-09-05,
-// demande de Marc) : lui permet de cocher chaque membre 1 à 1 après lui avoir envoyé un
-// mail. Case vide par défaut, état mémorisé dans ce navigateur (localStorage), par
-// membre (record Airtable), donc conservé même après avoir refermé/rouvert la page.
-const MAIL_CHECK_KEY = 'profsMailChecked';
-function loadMailCheckedSet(){
-  try{ return new Set(JSON.parse(localStorage.getItem(MAIL_CHECK_KEY) || '[]')); }
-  catch(e){ return new Set(); }
-}
-function saveMailCheckedSet(set){
-  try{ localStorage.setItem(MAIL_CHECK_KEY, JSON.stringify(Array.from(set))); }catch(e){}
-}
-function setMailChecked(id, val){
-  const set = loadMailCheckedSet();
-  if(val) set.add(id); else set.delete(id);
-  saveMailCheckedSet(set);
-}
 
 // Fond coloré du champ "Problème" selon sa valeur (2026-08-25, demande de Marc) :
 // rouge = un problème (Problème, PROBLEME code 900/999...), vert = PAS DE PROBLEME,
@@ -1284,17 +842,12 @@ function setDeleteVisible(v){
   const d2 = document.getElementById('btn-delete-bottom'); if(d2) d2.style.display = v ? '' : 'none';
 }
 
-async function loadMember(id, opts){
-  opts = opts || {};
-  // opts.silent : utilisé juste après un enregistrement réussi (saveMember) pour recharger
-  // la fiche SANS écraser le message "✅ ... enregistré" avec "⏳ Chargement..." puis vide.
-  // (2026-09-05, bug remonté par Marc : la confirmation de sauvegarde disparaissait
-  // aussitôt, obligeant à cliquer "Enregistrer" une seconde fois pour être sûr.)
+async function loadMember(id){
   if(_dirty && !confirm('Des modifications non enregistrées seront perdues. Continuer ?')) return;
   clearTimeout(_searchTimer); // une recherche différée en attente ne doit plus renvoyer vers la liste une fois la fiche ouverte
   _memberLoading = true;
   setSaveDisabled(true);
-  if(!opts.silent) setSt('⏳ Chargement du prof...');
+  setSt('⏳ Chargement du prof...');
   try{
     const data = await atFetch(API+'/'+id);
     curId = id;
@@ -1306,9 +859,8 @@ async function loadMember(id, opts){
     fillForm(data.fields);
     updateProblemeColor();
     await refreshResaSelect(data.fields);
-    await refreshPaiementSelect(data.fields);
     showView('fiche');
-    if(!opts.silent) setSt('');
+    setSt('');
   }catch(e){ setSt('❌ '+e.message); }
   finally{ _memberLoading=false; setSaveDisabled(false); }
 }
@@ -1330,7 +882,6 @@ async function saveMember(){
   const fields = {};
   let numError = null, dateError = null;
   SECTIONS.forEach(sec=>sec.fields.forEach(([fid,key,label,type])=>{
-    if(type.endsWith(':readonly')) return; // champ calculé (formule) : Airtable refuse l'écriture
     const el = fld(null,key); if(!el) return;
     let v = el.value;
     if(v===''){ return; } // on n'écrase pas avec du vide, sauf choix explicite futur
@@ -1352,20 +903,15 @@ async function saveMember(){
   try{
     if(curId){
       await atFetch(API+'/'+curId, {method:'PATCH', body: JSON.stringify({fields})});
-      // Important : on repasse _dirty à false AVANT de recharger la fiche (loadMember),
-      // sinon loadMember() croit qu'il reste des modifications non enregistrées et
-      // affiche une confirmation "seront perdues, continuer ?" juste après la sauvegarde —
-      // c'est ce qui donnait l'impression qu'il fallait enregistrer deux fois.
-      _dirty = false;
-      await loadMember(curId, {silent:true});
       setSt('✅ Prof enregistré.');
+      await loadMember(curId);
     } else {
       const res = await atFetch(API, {method:'POST', body: JSON.stringify({records:[{fields}]})});
       curId = res.records[0].id;
-      _dirty = false;
-      await loadMember(curId, {silent:true});
       setSt('✅ Nouveau prof créé (N° membre attribué par Airtable ou à saisir manuellement).');
+      await loadMember(curId);
     }
+    _dirty = false;
   }catch(e){ setSt('❌ '+e.message); }
   finally{
     document.getElementById('sync-pending').classList.remove('show');
@@ -1422,75 +968,63 @@ function closeResaOverlay(){
 // ══════════════════════════════════════════════════════════
 let _emailType = null;
 
-function fullAddress(g){
-  g = g || gv; // g = accesseur de champ ; par défaut gv() (fiche ouverte à l'écran),
-  // ou un accesseur basé sur les fields Airtable bruts d'un autre membre (envoi groupé).
-  const rue = g('rue') || '', nmaison = g('nmaison') || '';
-  const cp = g('cp') || '', ville = g('ville') || '';
+function fullAddress(){
+  const rue = gv('rue') || '', nmaison = gv('nmaison') || '';
+  const cp = gv('cp') || '', ville = gv('ville') || '';
   const line1 = (rue + ' ' + nmaison).trim();
   const line2 = (cp + ' ' + ville).trim();
   return [line1, line2].filter(Boolean).join(', ');
 }
 
-// Chaque body() accepte un accesseur optionnel g(key) -> valeur. Pour l'envoi individuel
-// depuis la fiche ouverte (inchangé), g est absent et on retombe sur gv(). Pour l'envoi
-// groupé (2026-09-05, demande de Marc : "envoyer le même mail à plusieurs cochés"), on
-// passe templateFieldGetter(fields) du membre concerné, pour que chacun reçoive sa propre
-// version (son nom, prénom, montant payé, adresse...) au lieu de celle de la fiche ouverte.
 const EMAIL_TEMPLATES = {
   adresse: {
     titre: '📮 Aperçu — Adresse incorrecte',
     subject: 'Educpass — Vérification de votre adresse',
-    body: (g) => { g = g || gv; return 'Bonjour ' + (g('prenom')||'') + ' ' + (g('nom')||'') + ',\n\n' +
+    body: () => 'Bonjour ' + (gv('prenom')||'') + ' ' + (gv('nom')||'') + ',\n\n' +
       'notre courrier postal nous est retourné avec la mention "n\'habite plus à cette adresse ou adresse incorrecte".\n\n' +
-      'Les coordonnées que nous avons dans notre fichier sont : ' + fullAddress(g) + '.\n\n' +
+      'Les coordonnées que nous avons dans notre fichier sont : ' + fullAddress() + '.\n\n' +
       'Pourriez-vous nous renseigner ?\n\n' +
       'En vous remerciant d\'avance.\n\n' +
-      'Le Secrétariat d\'Educpass.'; }
+      'Le Secrétariat d\'Educpass.'
   },
   paiement: {
     titre: '💰 Aperçu — Paiement reçu',
     subject: 'Educpass — Confirmation de réception de paiement',
-    body: (g) => { g = g || gv; return 'Bonjour ' + (g('prenom')||'') + ' ' + (g('nom')||'') + ',\n\n' +
-      'nous avons bien reçu votre paiement ' + (g('paye')||'0') + ' €.\n\n' +
+    body: () => 'Bonjour ' + (gv('prenom')||'') + ' ' + (gv('nom')||'') + ',\n\n' +
+      'nous avons bien reçu votre paiement ' + (gv('paye')||'0') + ' €.\n\n' +
       'Nous allons actualiser votre compte dans les prochaines minutes.\n\n' +
       'Nous vous souhaitons de belles découvertes avec Educpass.\n\n' +
-      'L\'équipe d\'Educpass.'; }
+      'L\'équipe d\'Educpass.'
   },
   rappel: {
     titre: '⚠️ Aperçu — Rappel paiement',
     subject: 'Educpass — Rappel de paiement',
-    body: (g) => { g = g || gv; return 'RAPPEL DE PAIEMENT\n' +
-      'Bonjour ' + (g('prenom')||'') + ' ' + (g('nom')||'') + ',\n\n' +
+    body: () => 'RAPPEL DE PAIEMENT\n' +
+      'Bonjour ' + (gv('prenom')||'') + ' ' + (gv('nom')||'') + ',\n\n' +
       'Bienvenue chez EDUCPASS. Nous avons bien reçu votre inscription sur notre site et nous vous en remercions.\n\n' +
       'Sauf erreur de notre part, nous n\'avons pas enregistré le paiement de votre cotisation.\n\n' +
       'Pour ce faire, vous devez aller sur CONNEXION, vous connecter comme « membre » à l\'aide de votre matricule ou de votre adresse électronique + votre mot de passe que vous avez enregistré lors de votre inscription.\n\n' +
       'Une fois connecté, il suffit d\'aller sur COTISATION et effectuer le paiement avec la banque de votre choix ou un virement bancaire. Vous serez activé directement sauf avec les virements bancaires. Il faudra attendre 24 à 48h.\n\n' +
       'En cas de soucis, nous assurons une permanence 7 jours sur 7 de 10h à 18h au 0474/966.968. N\'hésitez pas à nous contacter par GSM ou par mail à info@educpass.eu.\n\n' +
-      'L\'équipe d\'Educpass.'; }
+      'L\'équipe d\'Educpass.'
   },
   franceRenouv: {
     titre: '🇫🇷 Aperçu — Paiement FRANCE (renouvellement cotisation 2027)',
-    subject: 'Educpass France — Renouvellement de cotisation 2027',
-    body: (g) => { g = g || gv; return 'Bonjour ' + (g('prenom')||'') + ' ' + (g('nom')||'') + ',\n\n' +
-      '**EDUCPASS-FRANCE** a été créé en juin dernier pour mieux répondre à l\'attente des enseignants français.\n\n' +
-      'Dorénavant vous serez rattaché à **EDUCPASS-France**, qui vous donnera les mêmes avantages. Pour janvier 2027, une nouvelle brochure réservée aux prestataires touristiques sera éditée avec plus de 70 partenaires français. Voici déjà quelques nouveaux partenaires : *Le Centre Minier Lewarde*, *le Parc animalier Sainte-Croix*, *le musée du Verre*, *le Blockhaus d\'Eperlecques*, *La Ligne Maginot*, *Cigoland*, *l\'Ecomusée les racines de la vie rurale*, *etc...* La liste complète sera publiée fin novembre 2026.\n\n' +
-      'Entre-temps, nous avons réalisé un partenariat **EXCEPTIONNEL** avec le **Crédit Mutuel** français, qui vous permet : [LOGO_CM]\n\n' +
-      '1) Si vous ouvrez un **compte bancaire** au **CREDIT MUTUEL**, ils vous verseront 50 € sur votre nouveau compte. Ce qui veut dire que votre **cotisation est remboursée 2 fois !!!** C\'est du jamais vu ! C\'est innovant.\n\n' +
-      '2) Pour ce faire, il suffira d\'aller dans une agence et de montrer votre **carte Educpass 2027** (qui s\'affichera après le paiement de votre cotisation) et l\'agent verra que nous avons *"une convention 50/50".* C\'est un produit exceptionnel réservé pour **EDUCPASS-FRANCE** asbl\n\n' +
-      '3) Il vous sera possible, dès à présent, d\'effectuer le paiement de votre cotisation **2027** de **25 €** au lieu de 45 € sur notre compte du **Crédit Mutuel FR76 1027 8027 2100 0443 9580 186** au nom de EDUCPASS-FRANCE en mentionnant votre n° de membre (voir carte) + Nom et prénom.\n\n' +
-      'Si vous avez des doutes, n\'hésitez pas à nous téléphoner au **06.30.96.41.67**, même le week-end ou au __Crédit Mutuel de Maubeuge__ au 0 820 352 150\n\n' +
-      '[SIGNATURE_EDUCPASS]'; }
-  },
-  echecPaiement: {
-    titre: '❌ Aperçu — Paiement échoué',
-    subject: 'Educpass — Paiement échoué',
-    body: (g) => { g = g || gv; return 'Bonjour ' + (g('prenom')||'') + ' ' + (g('nom')||'') + ',\n\n' +
-      'Nous avons constaté que le paiement de votre cotisation a échoué.\n\n' +
-      'Ce n\'est pas un problème : nous vous invitons à réessayer via COTISATION, ou à effectuer un virement bancaire sur notre compte IBAN BE58 7554 3146 8379 au nom d\'Educpass.\n\n' +
-      'N\'oubliez pas d\'indiquer en communication votre numéro de matricule' + (g('matricule') ? ' (' + g('matricule') + ')' : '') + ' ainsi que le code PROMO.\n\n' +
-      'Nous vous souhaitons une belle journée.\n\n' +
-      'Vanessa Vander Waeren\nTrésorière'; }
+    subject: 'Educpass France — Renouvellement de cotisation 2027 — Procédure',
+    body: () => 'Bonjour ' + (gv('prenom')||'') + ' ' + (gv('nom')||'') + ',\n\n' +
+      'EDUCPASS-FRANCE… RENOUVELLEMENT POUR 2027\n\n' +
+      'Si vous avez reçu un code par SMS, c\'est bien nous qui l\'avons envoyé !\n' +
+      'Il faut d\'abord se connecter à votre compte avant de mettre le code « RENTREE » !!!\n' +
+      'Vous paierez 25 € au lieu de 45 €…\n\n' +
+      'Pour rappel :\n' +
+      'Si vous avez reçu ce SMS, c\'est que vous êtes bien membre. La cotisation fonctionne toujours par année civile.\n' +
+      'Si vous avez payé et que dans le message de confirmation on parle des coupons 2026, c\'est normal. La carte sera activée au 1er septembre et les coupons seront activés en janvier 2027.\n' +
+      'Pour effectuer votre paiement nous avons ouvert un compte avec un IBAN FR. Vous pouvez effectuer votre paiement via un virement bancaire sur notre compte du Crédit Mutuel FR 76 107 8027 2100 0443 9580 186 au nom de EDUCPASS-FRANCE en mentionnant votre n° de matricule + le code promo.\n\n' +
+      '[LOGO_CM]\n\n' +
+      'Si vous ne voyez pas votre code PROMO, le voici : RENTREE.\n\n' +
+      'Pour janvier 2027, nous sommes en train d\'élaborer une brochure SORTIES SCOLAIRES France. Elle comprendra plus d\'une quarantaine de prestataires touristiques français. La liste sera publiée fin décembre 2026.\n\n' +
+      'Bonne rentrée à toutes et à tous.\n\n' +
+      '[SIGNATURE_EDUCPASS]'
   }
 };
 
@@ -1519,13 +1053,6 @@ function escapeHtml(s){
 
 function bodyToHtml(text){
   let html = escapeHtml(text);
-  // Mise en forme simple saisie dans l'aperçu texte : **gras**, *italique*, __souligné__ —
-  // convertie en vraies balises HTML seulement à l'envoi (même principe que les liens et
-  // images ci-dessous : le texte brut de l'aperçu reste modifiable normalement).
-  // Le gras (**) est traité avant l'italique (*) pour ne pas casser les doubles astérisques.
-  html = html.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
-  html = html.replace(/__(.+?)__/g, '<u>$1</u>');
-  html = html.replace(/\*(.+?)\*/g, '<i>$1</i>');
   Object.keys(EMAIL_LINK_KEYWORDS).forEach(function(word){
     const url = EMAIL_LINK_KEYWORDS[word];
     const re = new RegExp('\\b' + word + '\\b', 'g');
@@ -1598,123 +1125,6 @@ async function sendEmailNow(){
     statusEl.className = 'email-status err';
     document.getElementById('btn-email-send').disabled = false;
   }
-}
-
-// ══════════════════════════════════════════════════════════
-//  ENVOI GROUPÉ — même modèle de mail envoyé à tous les membres cochés dans
-//  RECHERCHE > Membres trouvés (2026-09-05, demande de Marc). Chaque destinataire
-//  reçoit sa propre version personnalisée (nom/prénom/paiement/adresse...), un par
-//  un, avec confirmation obligatoire avant l'envoi réel. En cas d'échec pour un
-//  destinataire (email invalide, erreur serveur...), sa case est décochée pour
-//  qu'il reste visible et que Marc puisse vérifier/réessayer ; les envois réussis
-//  restent cochés (donc masqués de la liste par la vue "Actifs" par défaut).
-// ══════════════════════════════════════════════════════════
-let _bulkRecipients = [];
-
-// Accesseur de champ à partir des fields Airtable bruts d'UN membre donné (et non de
-// la fiche actuellement ouverte à l'écran) — même clés que gv() côté fiche, pour que
-// les mêmes body() de EMAIL_TEMPLATES fonctionnent pour l'envoi individuel ET groupé.
-function templateFieldGetter(fields){
-  const MAP = { prenom:'Prénom', nom:'Nom', paye:'Payé', rue:'Rue', nmaison:'N° maison', cp:'CP', ville:'Ville', matricule:'N° matricule', email:'Email' };
-  return function(key){
-    const name = MAP[key];
-    let v = name ? fields[name] : null;
-    if(v && typeof v==='object' && v.name) v = v.name;
-    return (v==null || v==='') ? null : v;
-  };
-}
-
-// Destinataires potentiels de l'envoi groupé : les membres cochés parmi le dernier
-// résultat de recherche chargé (lastResults) — et non parmi les lignes actuellement
-// affichées (window._lastFiltered), puisque les cochés sont justement masqués par
-// défaut par la vue "Actifs". Seuls ceux avec une adresse email sont retenus.
-function getCheckedRecipients(){
-  const checkedSet = loadMailCheckedSet();
-  return lastResults.filter(r => checkedSet.has(r.id) && r.fields['Email']);
-}
-
-function updateBulkButton(){
-  const btn = document.getElementById('btn-bulk-email');
-  if(!btn) return;
-  const n = getCheckedRecipients().length;
-  document.getElementById('bulk-email-count').textContent = n;
-  btn.style.display = n>0 ? '' : 'none';
-}
-
-function openBulkEmailOverlay(){
-  _bulkRecipients = getCheckedRecipients();
-  if(!_bulkRecipients.length){
-    setSt('❌ Aucun membre coché (avec une adresse email) à qui envoyer.');
-    return;
-  }
-  updateBulkPreview();
-  const statusEl = document.getElementById('bulk-status');
-  statusEl.textContent = '';
-  statusEl.className = 'email-status';
-  document.getElementById('btn-bulk-send').disabled = false;
-  document.getElementById('overlay-bulk').classList.remove('hidden');
-}
-function closeBulkOverlay(){
-  document.getElementById('overlay-bulk').classList.add('hidden');
-}
-
-function updateBulkPreview(){
-  const type = document.getElementById('bulk-template').value;
-  const tpl = EMAIL_TEMPLATES[type];
-  if(!tpl || !_bulkRecipients.length) return;
-  document.getElementById('bulk-subject').value = tpl.subject;
-  const sample = _bulkRecipients[0];
-  document.getElementById('bulk-body-preview').value = tpl.body(templateFieldGetter(sample.fields));
-  const list = document.getElementById('bulk-recipients');
-  list.innerHTML = '<b>' + _bulkRecipients.length + ' destinataire(s) :</b><br>' +
-    _bulkRecipients.map(r => escapeHtml((r.fields['Prénom']||'')+' '+(r.fields['Nom']||'')+' — '+(r.fields['Email']||''))).join('<br>');
-}
-
-async function sendBulkEmails(){
-  const type = document.getElementById('bulk-template').value;
-  const tpl = EMAIL_TEMPLATES[type];
-  if(!tpl || !_bulkRecipients.length) return;
-  if(!confirm('Envoyer ce mail à ces ' + _bulkRecipients.length + ' membre(s) ? Cette action est irréversible.')) return;
-
-  const statusEl = document.getElementById('bulk-status');
-  document.getElementById('btn-bulk-send').disabled = true;
-  let ok = 0, fail = [];
-  for(let i=0; i<_bulkRecipients.length; i++){
-    const r = _bulkRecipients[i];
-    const g = templateFieldGetter(r.fields);
-    const to = r.fields['Email'];
-    const subject = tpl.subject;
-    const body = tpl.body(g);
-    const nomComplet = (r.fields['Prénom']||'') + ' ' + (r.fields['Nom']||'');
-    statusEl.textContent = '⏳ Envoi ' + (i+1) + '/' + _bulkRecipients.length + ' — ' + nomComplet + '...';
-    statusEl.className = 'email-status';
-    try{
-      const html = bodyToHtml(body);
-      const resp = await fetch(EMAIL_API, {
-        method: 'POST',
-        headers: HDRS,
-        body: JSON.stringify({ type, to, subject, body, html, recordId: r.id })
-      });
-      const data = await resp.json().catch(()=>({}));
-      if(!resp.ok || data.ok === false){ throw new Error(data.error || ('Erreur '+resp.status)); }
-      ok++;
-      // Envoi réussi : la case reste cochée (le membre reste masqué par la vue "Actifs").
-    }catch(e){
-      fail.push({ nom: nomComplet, msg: e.message });
-      // Échec : on décoche pour que la ligne redevienne visible (à vérifier/réessayer).
-      setMailChecked(r.id, false);
-    }
-  }
-  renderTable();
-  if(fail.length){
-    statusEl.textContent = '⚠️ ' + ok + ' envoyé(s), ' + fail.length + ' échec(s) : ' + fail.map(f=>f.nom+' ('+f.msg+')').join(', ');
-    statusEl.className = 'email-status err';
-  } else {
-    statusEl.textContent = '✅ ' + ok + ' email(s) envoyé(s) avec succès.';
-    statusEl.className = 'email-status ok';
-    setTimeout(closeBulkOverlay, 1800);
-  }
-  document.getElementById('btn-bulk-send').disabled = false;
 }
 
 function buildResaForm(){
@@ -1839,175 +1249,6 @@ async function saveResa(){
 }
 
 // ══════════════════════════════════════════════════════════
-//  PAIEMENTS — bouton "paiement manuel" sur la fiche prof (2026-09-09)
-//  Alimente directement la table Airtable "Paiements" (tblphJSzrHNaYPco1,
-//  base appWCfo8WBkMGUuc2), la même que l'écran séparé PAIEMENTS.html
-//  (rapport journalier + synchro Mollie, table complète avec lien Article).
-//  Ce bouton sert à la saisie RAPIDE d'un paiement pendant qu'on regarde
-//  la fiche d'un prof (ex. virement manuel reçu) — pas de sélection d'Article
-//  (Produits) ici, volontairement simplifié : le rapprochement avec un produit
-//  se fait dans PAIEMENTS.html si besoin. Origine par défaut = "Paiement manuel".
-// ══════════════════════════════════════════════════════════
-const PAIEMENT_TBL = 'tblphJSzrHNaYPco1';
-const PAIEMENT_API = `${PROXY}/v0/${BASE}/${PAIEMENT_TBL}`;
-
-const PAIEMENT_CHOICES = {
-  statut: ['Payé','En attente','Échoué','Remboursé','Annulé'],
-  origine: ['Synchro Mollie','Paiement manuel','Virement manuel']
-};
-
-const PAIEMENT_SECTIONS = [
-  ['fldDzVwLsQXS1lTjY','datepaiement','Date','date'],
-  ['fldCheCHHasdY9UYV','montant','Montant','number'],
-  ['fldJzlubpeWttG8Kx','statut','Statut','select:statut'],
-  ['flduJQ82yLCzgETNN','origine','Origine','select:origine'],
-  ['fldeVsI1Cv7Uab4OE','ntransaction','N° Transaction','text'],
-  ['fldyIxzRcnWmUnFXJ','libelle','Libellé','text'],
-  ['fldxaQxPAtWtorpRa','nmembre','N° Membre','number'],
-  ['fldtK43p1olrQvlE8','matricule','Matricule','text'],
-  ['fldpHUTtuiUBP2W5X','nom','Nom','text'],
-  ['fldzaNlFMjvd05baB','codepromo','Code Promo','text'],
-  ['fldy7E7V4DeMp2LOP','remarque','Remarque','textarea'],
-];
-
-let paiementLinkedIds = [];
-let curPaiementId = null;
-
-function openPaiementsOverlay(){
-  document.getElementById('overlay-paiement').classList.remove('hidden');
-}
-function closePaiementsOverlay(){
-  document.getElementById('overlay-paiement').classList.add('hidden');
-}
-
-function buildPaiementForm(){
-  const wrap = document.getElementById('paiement-fields');
-  wrap.innerHTML = '';
-  PAIEMENT_SECTIONS.forEach(([fid,key,label,type])=>{
-    const item = document.createElement('div'); item.className='fitem';
-    const lab = document.createElement('label'); lab.textContent = label; item.appendChild(lab);
-    let input;
-    if(type.startsWith('select:')){
-      const ck = type.split(':')[1];
-      input = document.createElement('select');
-      const empty=document.createElement('option'); empty.value=''; empty.textContent='—'; input.appendChild(empty);
-      PAIEMENT_CHOICES[ck].forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; input.appendChild(o); });
-    } else if(type==='textarea'){
-      input = document.createElement('textarea');
-    } else {
-      input = document.createElement('input');
-      input.type = (type==='number') ? 'number' : (type==='date' ? 'date' : 'text');
-    }
-    input.id = 'fp-'+key;
-    input.dataset.fieldId = fid;
-    item.appendChild(input);
-    wrap.appendChild(item);
-  });
-}
-
-function gpv(key){ const el=document.getElementById('fp-'+key); return el ? el.value : ''; }
-function spv(key, v){
-  const el = document.getElementById('fp-'+key); if(!el) return;
-  if(v && typeof v==='object' && v.name) v = v.name;
-  el.value = (v==null) ? '' : v;
-}
-
-async function refreshPaiementSelect(fields){
-  paiementLinkedIds = (fields['Paiements'] || []).slice();
-  const sel = document.getElementById('paiement-select');
-  sel.innerHTML = '<option value="">— Sélectionnez —</option>';
-  const optNew = document.createElement('option'); optNew.value='__new__'; optNew.textContent='+ Nouveau paiement'; sel.appendChild(optNew);
-  document.getElementById('paiement-panel').classList.add('hidden');
-  curPaiementId = null;
-  if(!paiementLinkedIds.length) return;
-  try{
-    const recs = await Promise.all(paiementLinkedIds.map(id=>atFetch(PAIEMENT_API+'/'+id)));
-    // Plus récents d'abord (date décroissante) — plus pratique pour retrouver le dernier paiement.
-    recs.sort((a,b)=> (b.fields['Date']||'').localeCompare(a.fields['Date']||''));
-    recs.forEach(r=>{
-      const o=document.createElement('option');
-      o.value=r.id;
-      const d = r.fields['Date'] || '(sans date)';
-      const m = (r.fields['Montant']!=null) ? r.fields['Montant']+' €' : '';
-      const s = (r.fields['Statut']&&r.fields['Statut'].name) || r.fields['Statut'] || '';
-      o.textContent = [d,m,s].filter(Boolean).join(' — ');
-      sel.appendChild(o);
-    });
-  }catch(e){ setSt('❌ Paiements : '+e.message); }
-}
-
-async function onPaiementSelect(){
-  const val = document.getElementById('paiement-select').value;
-  const panel = document.getElementById('paiement-panel');
-  if(!val){ panel.classList.add('hidden'); curPaiementId=null; return; }
-  buildPaiementForm();
-  if(val==='__new__'){
-    curPaiementId = null;
-    // Pré-remplissage pratique : coordonnées du prof + valeurs par défaut d'un paiement manuel.
-    const nmembreTxt = document.getElementById('f-nmembre-disp').textContent;
-    spv('nmembre', (nmembreTxt && nmembreTxt!=='—') ? nmembreTxt : '');
-    spv('matricule', gv('matricule'));
-    spv('nom', ((gv('prenom')||'')+' '+(gv('nom')||'')).trim());
-    spv('statut', 'Payé');
-    spv('origine', 'Paiement manuel');
-    spv('datepaiement', new Date().toISOString().slice(0,10));
-    panel.classList.remove('hidden');
-    return;
-  }
-  curPaiementId = val;
-  setSt('⏳ Chargement du paiement...');
-  try{
-    const data = await atFetch(PAIEMENT_API+'/'+val);
-    PAIEMENT_SECTIONS.forEach(([fid,key,label])=> spv(key, data.fields[label]));
-    panel.classList.remove('hidden');
-    setSt('');
-  }catch(e){ setSt('❌ '+e.message); }
-}
-
-function closePaiementPanel(){
-  document.getElementById('paiement-panel').classList.add('hidden');
-  document.getElementById('paiement-select').value = '';
-  curPaiementId = null;
-}
-
-async function savePaiement(){
-  if(!curId){ setSt('❌ Enregistre d\'abord la fiche du prof avant d\'ajouter un paiement.'); return; }
-  const montant = gpv('montant');
-  if(montant==='' || isNaN(Number(montant))){
-    alert('⚠️ Le montant est obligatoire et doit être un nombre.');
-    return;
-  }
-  const fields = {};
-  PAIEMENT_SECTIONS.forEach(([fid,key,label,type])=>{
-    let v = gpv(key);
-    if(v==='') return;
-    if(type==='number') v = Number(v);
-    fields[label] = v;
-  });
-  document.getElementById('sync-pending').classList.add('show');
-  try{
-    if(curPaiementId){
-      await atFetch(PAIEMENT_API+'/'+curPaiementId, {method:'PATCH', body: JSON.stringify({fields})});
-      setSt('✅ Paiement enregistré.');
-    } else {
-      fields['Membre'] = [curId];
-      const res = await atFetch(PAIEMENT_API, {method:'POST', body: JSON.stringify({records:[{fields}]})});
-      const newId = res.records[0].id;
-      setSt('✅ Nouveau paiement créé et lié au prof.');
-      const updated = await atFetch(API+'/'+curId);
-      // refreshPaiementSelect() remet curPaiementId à null (nouvelle liste rechargée) —
-      // on le réaffecte donc APRÈS, sinon le select ne repointerait jamais vers le
-      // paiement qu'on vient de créer.
-      await refreshPaiementSelect(updated.fields);
-      curPaiementId = newId;
-      document.getElementById('paiement-select').value = newId;
-      document.getElementById('paiement-panel').classList.remove('hidden');
-    }
-  }catch(e){ setSt('❌ '+e.message); }
-  finally{ document.getElementById('sync-pending').classList.remove('show'); }
-}
-
-// ══════════════════════════════════════════════════════════
 //  SYSTÈME PIN — AUTHENTIFICATION (identique au site Attractions)
 //  Valeurs par défaut au 1er déploiement — MARC peut les changer via 🔑
 // ══════════════════════════════════════════════════════════
@@ -2025,17 +1266,6 @@ function _setAgentSession(agent){
   document.getElementById('header-agent').textContent = agent;
   document.getElementById('btn-pin-mgr').style.display = (agent==='MARC') ? '' : 'none';
   setDeleteVisible(agent==='MARC');
-  // Rechercher/Remplacer et Exporter CSV réservés à MARC (2026-08-29) —
-  // écriture en masse dans Airtable et extraction de données jugées trop
-  // sensibles pour les autres sessions.
-  const btnReplace = document.getElementById('btn-replace');
-  if(btnReplace) btnReplace.style.display = (agent==='MARC') ? '' : 'none';
-  const btnExport = document.getElementById('btn-export');
-  if(btnExport) btnExport.style.display = (agent==='MARC') ? '' : 'none';
-  // Réinitialisation de mot de passe réservée à MARC (2026-09-14) — action sensible
-  // (remplace le mot de passe de l'enseignant), même logique que Supprimer/Exporter.
-  const btnResetPw = document.getElementById('btn-reset-password');
-  if(btnResetPw) btnResetPw.style.display = (agent==='MARC') ? '' : 'none';
   updateMatriculeEditable();
 }
 
@@ -2045,12 +1275,6 @@ function updateMatriculeEditable(){
   const canEdit = (agent==='MARC' || agent==='VANESSA');
   const el = document.getElementById('f-matricule');
   if(el) el.disabled = !canEdit;
-  // Date de naissance verrouillée à MARC uniquement (2026-08-29) : le
-  // matricule dépend de la date de naissance pour son contrôle, donc éviter
-  // toute modification accidentelle par les autres agents (Vanessa incluse).
-  const canEditNaissance = (agent==='MARC');
-  const elN = document.getElementById('f-naissance');
-  if(elN) elN.disabled = !canEditNaissance;
 }
 function loginPin(){
   const agent = document.getElementById('pin-agent').value;
@@ -2116,16 +1340,6 @@ function init(){
   populateFilterSelects();
   showView('liste');
   setSt('Tape un nom, une ville ou un N° de membre ci-dessus pour commencer une recherche.');
-  ouvrirDepuisURL();
-}
-
-// Ouvre directement une fiche si l'URL contient ?rec=recXXXXXXXXXXXXXX
-// (utilisé par le bouton "🔙 Retour à la fiche membre" de RESERVATIONS.html).
-function ouvrirDepuisURL(){
-  try{
-    const recId = new URLSearchParams(location.search).get('rec');
-    if(recId) loadMember(recId);
-  }catch(e){}
 }
 
 document.addEventListener('DOMContentLoaded', function(){
@@ -2137,123 +1351,6 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('overlay-pin').classList.remove('hidden');
   }
 });
-</script>
-
-<script>
-// 2026-09-29 : bouton « Tableau de Bord » valable partout — sur l'ordinateur (fichier local : MEMBRES - Documents\TABLEAU DE BORD.html)
-// et sur le site web (TABLEAU DE BORD.html dans le même dossier que cet outil).
-document.querySelectorAll('a[data-tdb]').forEach(function(a){ a.setAttribute('href', location.protocol==='file:' ? '../../TABLEAU DE BORD.html' : 'TABLEAU DE BORD.html'); });
-</script>
-<!-- EDU-CHARGEMENT-CENTRE (2026-09-29) : messages « en cours » en texte seul au centre de l'écran -->
-<style>
-#overlay-loading{background:transparent !important;}
-#overlay-loading .loading-box{background:transparent !important;box-shadow:none !important;border:none !important;padding:0 !important;min-width:0 !important;}
-#overlay-loading .loading-box,#sync-pending.show,#edu-centre{font-size:22px !important;font-weight:700 !important;color:var(--navy,#1e3a6e) !important;text-shadow:0 0 4px #fff,0 0 10px #fff,0 0 18px #fff;}
-#sync-pending.show{position:fixed !important;top:50%;left:50%;transform:translate(-50%,-50%);background:transparent !important;padding:0 !important;z-index:1001;animation:none !important;pointer-events:none;white-space:nowrap;}
-body.edu-ov #sync-pending.show{visibility:hidden;}
-#edu-centre{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1001;pointer-events:none;white-space:nowrap;display:none;}
-body.edu-cnt:not(.edu-ov):not(.edu-sp) #edu-centre{display:block;}
-</style>
-<div id="edu-centre">⏳ Chargement…</div>
-<script>
-(function(){
-  function tick(){
-    var b=document.body; if(!b) return;
-    var ov=document.getElementById('overlay-loading');
-    var sp=document.getElementById('sync-pending');
-    var cnt=false, els=document.querySelectorAll('[id$="-count"],[id^="count-"]');
-    for(var i=0;i<els.length;i++){ if((els[i].textContent||'').trim()==='⏳'){ cnt=true; break; } }
-    b.classList.toggle('edu-ov', !!(ov && !ov.classList.contains('hidden') && getComputedStyle(ov).display!=='none'));
-    b.classList.toggle('edu-sp', !!(sp && sp.classList.contains('show')));
-    b.classList.toggle('edu-cnt', cnt);
-  }
-  setInterval(tick, 150); tick();
-})();
-</script>
-
-<script>
-/* 2026-10-01 (demande de Marc) : textes de base des 5 mails du FICHIER PROFS modifiables
-   sans programmation, dans l'outil MAILS STANDARDS (table Airtable « Mails standards »,
-   Message ID FP_…). Relus avant chaque ouverture d'aperçu (individuel ou groupé).
-   Balises : [%Mbr:Prenom%] [%Mbr:Nom%] [%Mbr:Matricule%] [%Mbr:Adresse%] [%Mbr:CodePostal%]
-   [%Mbr:Localite%] [%Mbr:Email%] [%Cmd:Montant%]. Mise en forme gardée : gras / italique /
-   souligné (convertis en **, *, __ dans l'aperçu, comme avant). Si Airtable ne répond pas,
-   l'outil garde le texte intégré (secours). */
-(function(){
-  var FP_IDS = { adresse:'FP_AdresseIncorrecte', paiement:'FP_PaiementRecu', rappel:'FP_RappelPaiement',
-                 franceRenouv:'FP_FranceRenouvellement', echecPaiement:'FP_PaiementEchoue' };
-  var MAILS_URL = PROXY + '/v0/' + BASE + '/tblAMEhp4oxOO9hja';
-  var SECOURS = {}; Object.keys(EMAIL_TEMPLATES).forEach(function(k){ SECOURS[k] = { subject:EMAIL_TEMPLATES[k].subject, body:EMAIL_TEMPLATES[k].body }; });
-  var dernierChargement = 0;
-
-  function decoder(t){ var ta=document.createElement('textarea'); ta.innerHTML=t; return ta.value; }
-  window.fpHtmlVersTexte = function(h){
-    var s = String(h||'');
-    s = s.replace(/>\s*\n\s*</g,'><').replace(/\r?\n/g,' ');
-    s = s.replace(/<br\s*\/?>/gi,'\n').replace(/<\/p>/gi,'\n\n').replace(/<\/div>/gi,'\n').replace(/<\/li>/gi,'\n').replace(/<li[^>]*>/gi,'- ');
-    s = s.replace(/<(b|strong)(\s[^>]*)?>/gi,'**').replace(/<\/(b|strong)>/gi,'**');
-    s = s.replace(/<(i|em)(\s[^>]*)?>/gi,'*').replace(/<\/(i|em)>/gi,'*');
-    s = s.replace(/<u(\s[^>]*)?>/gi,'__').replace(/<\/u>/gi,'__');
-    s = s.replace(/<a\s[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, function(m,href,txt){
-      var t = decoder(txt.replace(/<[^>]+>/g,'')).trim(); href = decoder(href);
-      if(!href || t===href || /^(CONNEXION|COTISATION)$/.test(t)) return t;
-      return t + ' (' + href + ')';
-    });
-    s = s.replace(/<[^>]+>/g,'');
-    s = decoder(s).replace(/ /g,' ');
-    s = s.replace(/\*\*\s*\*\*/g,'').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n');
-    return s.trim();
-  };
-  window.fpFusionner = function(texte, g){
-    g = g || gv;
-    var v = function(k){ var x=g(k); return (x==null)?'':String(x); };
-    var rep = {
-      'Mbr:Prenom':v('prenom'), 'Mbr:Nom':v('nom'), 'Mbr:Matricule':v('matricule'), 'Mbr:Email':v('email'),
-      'Mbr:Adresse':(v('rue')+' '+v('nmaison')).trim(), 'Mbr:CodePostal':v('cp'), 'Mbr:Localite':v('ville'),
-      'Cmd:Montant':(v('paye')||'0')
-    };
-    var s = texte.replace(/\[%([A-Za-z]+:[A-Za-z]+)%\]/g, function(m,k){ return (k in rep) ? rep[k] : m; });
-    // nettoyage quand une donnée manque : « () », virgules orphelines, doubles espaces
-    s = s.replace(/[ \t]*\([ \t]*\)/g,'').replace(/,([ \t]*,)+/g,',').replace(/,[ \t]*\./g,'.').replace(/ :[ \t]*,[ \t]*/g,' : ').replace(/[ ]{2,}/g,' ');
-    return s;
-  };
-  window.fpChargerModeles = async function(force){
-    if(!force && Date.now()-dernierChargement < 20000) return;
-    try{
-      var f = encodeURIComponent("LEFT({Message ID},3)='FP_'");
-      var r = await fetch(MAILS_URL + '?pageSize=100&filterByFormula=' + f, { headers: HDRS });
-      if(!r.ok) throw new Error('HTTP ' + r.status);
-      var d = await r.json(); var parId = {};
-      (d.records||[]).forEach(function(rec){ var x=rec.fields||{}; if(x['Actif'] && x['Message ID']) parId[x['Message ID']] = x; });
-      Object.keys(FP_IDS).forEach(function(type){
-        var x = parId[FP_IDS[type]]; var tpl = EMAIL_TEMPLATES[type]; if(!tpl) return;
-        if(x && x['Corps HTML']){
-          var texte = fpHtmlVersTexte(x['Corps HTML']);
-          tpl.subject = x['Sujet'] || SECOURS[type].subject;
-          tpl.body = function(g){ return fpFusionner(texte, g); };
-          tpl.source = 'MAILS STANDARDS';
-        } else { tpl.subject = SECOURS[type].subject; tpl.body = SECOURS[type].body; tpl.source = 'texte intégré'; }
-      });
-      dernierChargement = Date.now();
-    }catch(e){
-      console.warn('[mails] modèles MAILS STANDARDS non chargés, texte intégré utilisé :', e);
-      try{ setSt('⚠️ Textes de base MAILS STANDARDS indisponibles — texte intégré utilisé.'); }catch(_){}
-    }
-  };
-  var _open = openEmailOverlay;
-  openEmailOverlay = async function(type){ await fpChargerModeles(); var r=_open.apply(this, arguments); fpLienModifier('email-titre', type); return r; };
-  var _openBulk = openBulkEmailOverlay;
-  openBulkEmailOverlay = async function(){ await fpChargerModeles(); return _openBulk.apply(this, arguments); };
-  function fpLienModifier(idTitre, type){
-    var t = document.getElementById(idTitre); if(!t) return;
-    var a = document.getElementById('fp-lien-modele');
-    if(!a){ a=document.createElement('a'); a.id='fp-lien-modele'; a.target='_blank'; a.href='MAILS STANDARDS.html';
-      a.setAttribute('style','display:inline-block;margin-left:10px;font-size:12px;font-weight:700;color:#1e3a6e;text-decoration:underline;');
-      a.textContent='✏️ Modifier le texte de base'; t.parentNode.insertBefore(a, t.nextSibling); }
-    a.title = 'Ouvre MAILS STANDARDS (onglet ' + (type==='franceRenouv'?'France':'Belge (FR)') + ', modèle ' + FP_IDS[type] + ')';
-  }
-  fpChargerModeles(true);
-})();
 </script>
 <script>/* EDU-AGENT-AUTO-FIN (2026-10-01) */
 (function(){
