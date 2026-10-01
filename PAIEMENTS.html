@@ -1,6 +1,33 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
+<head><script>/* EDU-GARDE-SESSION (2026-10-01) */(function(){
+if(location.protocol!=='https:'||!window.fetch) return;
+var orig=window.fetch.bind(window), affiche=false;
+function bandeau(expiree){ if(affiche) return; affiche=true; var go=function(){
+  var b=document.createElement('div'); b.id='edu-garde-session';
+  b.setAttribute('style','position:fixed;left:0;right:0;top:0;z-index:2147483646;background:#c0392b;color:#fff;font:700 15px Calibri,Arial,sans-serif;padding:12px 16px;display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap;box-shadow:0 3px 12px rgba(0,0,0,.35)');
+  b.innerHTML=(expiree?'🔒 Votre session a expiré : la dernière action n’a PAS été enregistrée. Rechargez la page (F5), reconnectez-vous avec le code reçu par mail, puis refaites-la.'
+                      :'📡 Connexion Internet interrompue : la dernière action n’a PAS été enregistrée. Vérifiez la connexion puis rechargez la page (F5).')
+    +'<button type="button" style="background:#fff;color:#c0392b;border:none;border-radius:6px;padding:6px 14px;font-weight:800;cursor:pointer">🔄 Recharger la page</button>';
+  b.querySelector('button').onclick=function(){ location.reload(); };
+  document.body.appendChild(b); };
+  if(document.body) go(); else document.addEventListener('DOMContentLoaded',go); }
+async function sonder(){ try{ var r=await orig('/api/moi',{redirect:'manual',cache:'no-store'});
+  if(r.type==='opaqueredirect'||r.status===401||r.status===403||r.status===302) return 'expiree';
+  var t=(r.headers.get('content-type')||''); if(t.indexOf('json')<0) return 'expiree'; return 'ok'; }catch(e){ return 'coupure'; } }
+window.fetch=async function(input,init){
+  var url=(typeof input==='string')?input:(input&&input.url)||'';
+  var api=/^\/api\//.test(url); try{ var u=new window.URL(url,location.href); api=(u.origin===location.origin&&u.pathname.indexOf('/api/')===0); }catch(e){} /* window.URL : l'outil Attractions a sa propre variable « URL » */
+  if(!api) return orig(input,init);
+  try{
+    var r=await orig(input,init);
+    if(r.redirected&&/cloudflareaccess\.com/.test(r.url)){ bandeau(true); }
+    else if(r.status===403||r.status===401){ var c=r.clone(); c.text().then(function(t){ if(/connexion Cloudflare Access|Session expir|Jeton|Signature/i.test(t)) bandeau(true); }).catch(function(){}); }
+    else if(r.ok&&(r.headers.get('content-type')||'').indexOf('text/html')===0){ bandeau(true); }
+    return r;
+  }catch(e){ sonder().then(function(s){ if(s!=='ok') bandeau(s==='expiree'); }); throw e; }
+};
+})();</script><script>/* EDU-AGENT-AUTO (2026-10-01) */(function(){try{var x=new XMLHttpRequest();x.open('GET','/api/moi',false);x.send(null);if(x.status===200){var d=JSON.parse(x.responseText);if(d&&d.agent){window.EDU_AGENT=d.agent;['auth_agent','auth_agent_inscriptions_a_valider','auth_agent_mails_standards','auth_agent_moyens_paiement','auth_agent_reservations','auth_agent_contenu_accueil','auth_agent_contenu_contacts','auth_agent_contenu_editions','auth_agent_contenu_profsrelais','auth_agent_contenu_videos','auth_agent_planning'].forEach(function(k){try{sessionStorage.setItem(k,d.agent);}catch(e){}});}}}catch(e){}})();</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PAIEMENTS — EDUCPASS 2026</title>
@@ -70,6 +97,20 @@ legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
 #overlay-mollie-sync{position:fixed;inset:0;background:rgba(20,30,50,.55);display:flex;align-items:center;justify-content:center;z-index:998;}
 .mollie-sync-box{background:#fff;border-radius:8px;padding:24px 28px;box-shadow:0 2px 20px rgba(0,0,0,.25);width:min(880px,92vw);}
 table.results td.mollie-chk{text-align:center;}
+/* Contrôle Mollie (2026-09-30) — mêmes couleurs que l'écran WinDev */
+#overlay-controle-mollie{position:fixed;inset:0;background:rgba(20,30,50,.55);display:flex;align-items:center;justify-content:center;z-index:998;}
+.cm-box{background:#fff;border-radius:8px;padding:18px 22px;box-shadow:0 2px 20px rgba(0,0,0,.25);width:min(1250px,96vw);max-height:92vh;display:flex;flex-direction:column;}
+.cm-legende{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 10px;}
+.cm-pastille{display:inline-flex;align-items:center;gap:6px;border:1px solid #ccd;border-radius:14px;padding:4px 12px;font-size:13px;cursor:pointer;user-select:none;}
+.cm-pastille input{margin:0;}
+.cm-pastille b{font-size:14px;}
+.cm-scroll{overflow:auto;flex:1;border:1px solid var(--line);}
+tr.cm-blanc td{background:#fff;}
+tr.cm-violet td{background:#8f8ff0;color:#fff;}
+tr.cm-orange td{background:#f5a64a;}
+tr.cm-rouge td{background:#e2574c;color:#fff;}
+tr.cm-ok td{background:#d9f2df;}
+.cm-sw{display:inline-block;width:14px;height:14px;border-radius:3px;border:1px solid #999;}
 </style>
 </head>
 <body>
@@ -105,6 +146,7 @@ table.results td.mollie-chk{text-align:center;}
       <input type="text" id="flt-recherche" placeholder="Rechercher : nom, matricule, N° membre, N° transaction..." style="min-width:260px;" oninput="renderPaiementsReport()">
       <button class="btn btn-save" onclick="newPaiement()">➕ Ajouter un paiement</button>
       <button class="btn" id="btn-synchro-mollie" onclick="synchroMollie()" title="Recherche les paiements Mollie payés des 30 derniers jours absents de cette table, pour validation avant import.">🔄 Synchro Mollie</button>
+      <button class="btn" style="background:#5b2c8a;color:#fff;" onclick="ouvrirControleMollie()" title="Tous les paiements Mollie (payés, en attente, échoués) avec leur état de synchronisation.">🟣 Contrôle Mollie</button>
       <span id="paiements-count" class="result-count"></span>
     </div>
 
@@ -146,6 +188,30 @@ table.results td.mollie-chk{text-align:center;}
     </div>
   </div>
 
+</div>
+
+<!-- ====================== OVERLAY CONTRÔLE MOLLIE (2026-09-30) ====================== -->
+<div id="overlay-controle-mollie" class="hidden">
+  <div class="cm-box">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <h2 style="margin:0;">🟣 Contrôle Mollie</h2>
+      <select id="cm-jours" onchange="chargerControleMollie()" style="padding:5px;">
+        <option value="7">7 derniers jours</option><option value="30" selected>30 derniers jours</option><option value="90">90 derniers jours</option>
+      </select>
+      <button class="btn btn-blue" onclick="chargerControleMollie()">🔄 Actualiser</button>
+      <span style="flex:1;"></span>
+      <button class="btn btn-save" id="cm-executer" onclick="executerControleMollie()">⚙️ Exécuter (synchroniser les violets)</button>
+      <button class="btn btn-cancel" onclick="fermerControleMollie()">Fermer</button>
+    </div>
+    <div class="cm-legende" id="cm-legende"></div>
+    <div id="cm-msg" style="font-size:13px;color:#555;min-height:18px;margin-bottom:6px;"></div>
+    <div class="cm-scroll">
+      <table class="results">
+        <thead><tr><th>Date paiement</th><th>Montant</th><th>Méthode</th><th>Statut</th><th>Détail</th><th>N° membre</th><th>Synchro</th><th>Id Mollie</th></tr></thead>
+        <tbody id="cm-body"></tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
 <!-- ====================== OVERLAY SYNCHRO MOLLIE (liste à valider) ====================== -->
@@ -215,7 +281,7 @@ table.results td.mollie-chk{text-align:center;}
 //  CONFIG AIRTABLE — même proxy Cloudflare Worker que FICHIER PROFS 2026.html,
 //  PRODUITS.html, PROMOS.html (jeton Airtable caché côté serveur).
 // ══════════════════════════════════════════════════════════
-const PROXY = 'https://educpass-profs-proxy.marc-flasschoen.workers.dev';
+const PROXY = '/api/profs';
 const BASE  = 'appWCfo8WBkMGUuc2';
 const HDRS  = {'Content-Type':'application/json'};
 
@@ -649,6 +715,94 @@ function parseMollieDescription(desc){
   return { nmembre: Number(m[1]), nom: m[2].trim(), matricule: m[3].trim() };
 }
 
+// ══════════════════════════════════════════════════════════
+//  CONTRÔLE MOLLIE (2026-09-30) — reprend l'écran WinDev « MOLLIE » :
+//  ⚪ blanc = payé + synchronisé · 🟣 violet = payé NON synchronisé · 🟠 orange = en attente / expiré
+//  🔴 rouge = échoué / annulé. « Exécuter » synchronise les violets (fiche Prof + ligne Paiements)
+//  via la route serveur /mollie/synchroniser (espace privé uniquement, revérifie chez Mollie).
+// ══════════════════════════════════════════════════════════
+const CM_COULEURS = [
+  {k:'violet', label:'Payés non synchronisés', sw:'#8f8ff0'},
+  {k:'orange', label:'En attente / expirés', sw:'#f5a64a'},
+  {k:'rouge',  label:'Échoués / annulés', sw:'#e2574c'},
+  {k:'blanc',  label:'Payés synchronisés', sw:'#ffffff'},
+];
+let cmPaiements = [];
+let cmFiltre = {violet:true, orange:true, rouge:true, blanc:true};
+function cmCouleur(p){
+  if(p._ok) return 'ok';
+  if(p.statut==='paid') return p.synchronise ? 'blanc' : 'violet';
+  if(p.statut==='open' || p.statut==='pending' || p.statut==='expired' || p.statut==='authorized') return 'orange';
+  return 'rouge';
+}
+function cmStatutFr(s){ return ({paid:'payé',open:'en attente',pending:'en cours',expired:'expiré',failed:'échoué',canceled:'annulé',authorized:'autorisé'})[s]||s; }
+function ouvrirControleMollie(){ document.getElementById('overlay-controle-mollie').classList.remove('hidden'); chargerControleMollie(); }
+function fermerControleMollie(){ document.getElementById('overlay-controle-mollie').classList.add('hidden'); loadPaiements(); }
+async function chargerControleMollie(){
+  const msg = document.getElementById('cm-msg');
+  document.getElementById('cm-body').innerHTML = '';
+  msg.textContent = '⏳ Lecture des paiements Mollie…';
+  try{
+    const jours = document.getElementById('cm-jours').value;
+    const resp = await fetch(MOLLIE_API + '?jours=' + jours + '&tous=1', {headers:HDRS});
+    const data = await resp.json().catch(()=>({}));
+    if(!resp.ok || data.ok===false){ msg.textContent = '❌ '+(data.error||('Erreur HTTP '+resp.status)); return; }
+    cmPaiements = (data.paiements||[]).map(p=>Object.assign({}, p, parseMollieDescription(p.description)));
+    if(cmPaiements.length && cmPaiements.every(p=>p.synchronise===undefined)){
+      msg.textContent = '⚠️ Le relais Mollie n\'a pas encore été mis à jour (couleurs indisponibles).'; return;
+    }
+    msg.textContent = '';
+    renderControleMollie();
+  }catch(e){ msg.textContent = '❌ Impossible de contacter le relais : '+e.message; }
+}
+function renderControleMollie(){
+  const n = {violet:0, orange:0, rouge:0, blanc:0, ok:0};
+  cmPaiements.forEach(p=>{ n[cmCouleur(p)]++; });
+  document.getElementById('cm-legende').innerHTML = CM_COULEURS.map(c=>
+    '<label class="cm-pastille"><input type="checkbox" '+(cmFiltre[c.k]?'checked':'')+' onchange="cmFiltre[\''+c.k+'\']=this.checked;renderControleMollie()"><span class="cm-sw" style="background:'+c.sw+'"></span>'+c.label+' : <b>'+(n[c.k]+(c.k==='blanc'?n.ok:0))+'</b></label>'
+  ).join('');
+  const btn = document.getElementById('cm-executer');
+  btn.disabled = n.violet===0;
+  btn.textContent = n.violet ? '⚙️ Exécuter ('+n.violet+' à synchroniser)' : '✅ Rien à synchroniser';
+  const tbody = document.getElementById('cm-body');
+  tbody.innerHTML = '';
+  cmPaiements.forEach(p=>{
+    const c = cmCouleur(p);
+    if(!cmFiltre[c==='ok'?'blanc':c]) return;
+    const d = (p.datePaiement||p.dateCreation||'');
+    const dd = d ? d.slice(0,10).split('-').reverse().join('/')+' '+d.slice(11,16) : '';
+    const tr = document.createElement('tr');
+    tr.className = 'cm-'+c;
+    tr.innerHTML = '<td>'+escHtml(dd)+'</td><td>'+fmtMontant(p.montant)+'</td><td>'+escHtml(p.methode||'')+'</td><td>'+escHtml(cmStatutFr(p.statut))+'</td>'
+      +'<td>'+escHtml(p.description||'')+'</td><td>'+escHtml(p.membre!=null?p.membre:(p.nmembre!=null?p.nmembre:''))+'</td>'
+      +'<td>'+(c==='blanc'||c==='ok'?'✔':(c==='violet'?'✖':''))+(p._err?' <span>⚠️ '+escHtml(p._err)+'</span>':'')+'</td>'
+      +'<td style="font-size:11px;">'+escHtml(p.id)+'</td>';
+    tbody.appendChild(tr);
+  });
+  if(!tbody.children.length) tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#777;padding:14px;">Aucun paiement à afficher.</td></tr>';
+}
+async function executerControleMollie(){
+  const aFaire = cmPaiements.filter(p=>cmCouleur(p)==='violet');
+  if(!aFaire.length) return;
+  if(!confirm('Synchroniser '+aFaire.length+' paiement(s) payé(s) ? Les fiches des enseignants seront mises à jour (carte et coupons visibles) et les paiements ajoutés dans cette table.')) return;
+  const msg = document.getElementById('cm-msg');
+  const btn = document.getElementById('cm-executer'); btn.disabled = true;
+  let ok=0, ko=0;
+  for(let i=0;i<aFaire.length;i++){
+    const p = aFaire[i];
+    msg.textContent = '⏳ Synchronisation '+(i+1)+' / '+aFaire.length+' …';
+    try{
+      const r = await fetch(PROXY + '/mollie/synchroniser', {method:'POST', headers:HDRS, body: JSON.stringify({paymentId:p.id})});
+      const d = await r.json().catch(()=>({}));
+      if(r.status===403) throw new Error('refusé : l\'exécution fonctionne uniquement dans l\'espace privé en ligne');
+      if(!r.ok || !d.ok) throw new Error(d.error || ('HTTP '+r.status));
+      p._ok = true; p._err = null; ok++;
+    }catch(e){ p._err = e.message; ko++; }
+    renderControleMollie();
+  }
+  msg.textContent = (ko ? '⚠️ ' : '✅ ') + ok + ' paiement(s) synchronisé(s)' + (ko ? ', ' + ko + ' en erreur (voir ⚠️ sur la ligne).' : '.');
+}
+
 async function synchroMollie(){
   document.getElementById('overlay-mollie-sync').classList.remove('hidden');
   document.getElementById('mollie-sync-content').classList.add('hidden');
@@ -853,6 +1007,95 @@ document.addEventListener('DOMContentLoaded', function(){
 // 2026-09-29 : bouton « Tableau de Bord » valable partout — sur l'ordinateur (fichier local : MEMBRES - Documents\TABLEAU DE BORD.html)
 // et sur le site web (TABLEAU DE BORD.html dans le même dossier que cet outil).
 document.querySelectorAll('a[data-tdb]').forEach(function(a){ a.setAttribute('href', location.protocol==='file:' ? '../../TABLEAU DE BORD.html' : 'TABLEAU DE BORD.html'); });
+</script>
+<!-- EDU-CHARGEMENT-CENTRE (2026-09-29) : messages « en cours » en texte seul au centre de l'écran -->
+<style>
+#overlay-loading{background:transparent !important;}
+#overlay-loading .loading-box{background:transparent !important;box-shadow:none !important;border:none !important;padding:0 !important;min-width:0 !important;}
+#overlay-loading .loading-box,#sync-pending.show,#edu-centre{font-size:22px !important;font-weight:700 !important;color:var(--navy,#1e3a6e) !important;text-shadow:0 0 4px #fff,0 0 10px #fff,0 0 18px #fff;}
+#sync-pending.show{position:fixed !important;top:50%;left:50%;transform:translate(-50%,-50%);background:transparent !important;padding:0 !important;z-index:1001;animation:none !important;pointer-events:none;white-space:nowrap;}
+body.edu-ov #sync-pending.show{visibility:hidden;}
+#edu-centre{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1001;pointer-events:none;white-space:nowrap;display:none;}
+body.edu-cnt:not(.edu-ov):not(.edu-sp) #edu-centre{display:block;}
+</style>
+<div id="edu-centre">⏳ Chargement…</div>
+<script>
+(function(){
+  function tick(){
+    var b=document.body; if(!b) return;
+    var ov=document.getElementById('overlay-loading');
+    var sp=document.getElementById('sync-pending');
+    var cnt=false, els=document.querySelectorAll('[id$="-count"],[id^="count-"]');
+    for(var i=0;i<els.length;i++){ if((els[i].textContent||'').trim()==='⏳'){ cnt=true; break; } }
+    b.classList.toggle('edu-ov', !!(ov && !ov.classList.contains('hidden') && getComputedStyle(ov).display!=='none'));
+    b.classList.toggle('edu-sp', !!(sp && sp.classList.contains('show')));
+    b.classList.toggle('edu-cnt', cnt);
+  }
+  setInterval(tick, 150); tick();
+})();
+</script>
+<script>/* EDU-AGENT-AUTO-FIN (2026-10-01) */
+(function(){
+  var A = window.EDU_AGENT; if(!A) return;
+  var PINS_DEF = {'MARC':'1111','MAÏTE':'2222','ANTOINE':'3333','VANESSA':'4444'};
+  // 1) L'agent reconnu est accepté par l'outil, même s'il n'était pas dans sa liste de codes
+  try{ if(typeof AGENT_PINS!=='undefined' && AGENT_PINS && !AGENT_PINS[A]) AGENT_PINS[A] = PINS_DEF[A] || '----'; }catch(e){}
+  // 2) Plannings Brochures annuelles / News (code demandé à chaque ouverture) : entrée directe
+  try{
+    if(typeof checkPin==='function' && typeof buildTabs==='function' && typeof loadData==='function' && typeof ouvrir!=='function'){
+      document.addEventListener('DOMContentLoaded', function(){
+        try{ agent = A; }catch(e){}
+        var o=document.getElementById('pin-overlay'); if(o) o.style.display='none';
+        var app=document.getElementById('app'); if(app) app.style.display='block';
+        var b=document.getElementById('agent-badge'); if(b) b.textContent='Agent : '+A;
+        buildTabs(); loadData();
+      });
+    }
+  }catch(e){}
+  // 3) Code PIN conservé pour les actions sensibles (validité 2 minutes après saisie)
+  var okJusqua = 0;
+  function pinAttendu(){ try{ if(typeof AGENT_PINS!=='undefined' && AGENT_PINS && AGENT_PINS[A] && AGENT_PINS[A]!=='----') return String(AGENT_PINS[A]); }catch(e){} return PINS_DEF[A] || null; }
+  function demanderPin(libelle){
+    return new Promise(function(fin){
+      var essais = 0;
+      var fond = document.createElement('div');
+      fond.setAttribute('style','position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2147483000;display:flex;align-items:center;justify-content:center;font-family:Calibri,Arial,sans-serif');
+      fond.innerHTML = '<div style="background:#fff;border-radius:12px;padding:26px 30px;min-width:300px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.35)">'
+        + '<div style="font-size:17px;font-weight:800;color:#1e3a6e;margin-bottom:6px">🔒 Action protégée</div>'
+        + '<div style="font-size:13px;color:#555;margin-bottom:14px">'+libelle+'<br>Code PIN de <b>'+A+'</b> :</div>'
+        + '<input type="password" inputmode="numeric" maxlength="8" autocomplete="off" style="font-size:24px;letter-spacing:8px;width:140px;text-align:center;border:2px solid #ccc;border-radius:8px;padding:6px 10px">'
+        + '<div class="edu-pin-err" style="color:#c0392b;font-size:12.5px;min-height:18px;margin-top:8px"></div>'
+        + '<div style="margin-top:10px;display:flex;gap:10px;justify-content:center">'
+        + '<button type="button" class="edu-pin-ok" style="background:#1e3a6e;color:#fff;border:none;border-radius:6px;padding:8px 22px;font-weight:700;cursor:pointer">Valider</button>'
+        + '<button type="button" class="edu-pin-annuler" style="background:#eee;color:#333;border:none;border-radius:6px;padding:8px 18px;font-weight:700;cursor:pointer">Annuler</button></div></div>';
+      document.body.appendChild(fond);
+      var inp = fond.querySelector('input'), err = fond.querySelector('.edu-pin-err');
+      function fermer(r){ fond.remove(); fin(r); }
+      function valider(){
+        var attendu = pinAttendu();
+        if(attendu && inp.value === attendu){ okJusqua = Date.now() + 120000; fermer(true); return; }
+        essais++; inp.value=''; inp.focus();
+        if(essais >= 3){ err.textContent = '3 essais incorrects — action annulée.'; setTimeout(function(){ fermer(false); }, 1200); }
+        else err.textContent = 'Code incorrect ('+essais+'/3)';
+      }
+      fond.querySelector('.edu-pin-ok').onclick = valider;
+      fond.querySelector('.edu-pin-annuler').onclick = function(){ fermer(false); };
+      inp.addEventListener('keydown', function(e){ if(e.key==='Enter') valider(); if(e.key==='Escape') fermer(false); });
+      setTimeout(function(){ inp.focus(); }, 50);
+    });
+  }
+  window.eduConfirmerPin = async function(libelle){ if(Date.now() < okJusqua) return true; return await demanderPin(libelle); };
+  var SENSIBLES = {
+    genererDocument: 'Générer une facture / note de crédit (numéro définitif).',
+    corrigerDerniereFacture: 'Corriger la dernière facture (le numéro est réutilisé).',
+    executerControleMollie: 'Exécuter la synchronisation des paiements Mollie.',
+    confirmerValidation: 'Valider une inscription (création du n° de membre).'
+  };
+  Object.keys(SENSIBLES).forEach(function(n){
+    var f = window[n]; if(typeof f !== 'function') return;
+    window[n] = async function(){ if(!(await window.eduConfirmerPin(SENSIBLES[n]))) return; return f.apply(this, arguments); };
+  });
+})();
 </script>
 </body>
 </html>

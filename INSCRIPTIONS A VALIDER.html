@@ -1,6 +1,33 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
+<head><script>/* EDU-GARDE-SESSION (2026-10-01) */(function(){
+if(location.protocol!=='https:'||!window.fetch) return;
+var orig=window.fetch.bind(window), affiche=false;
+function bandeau(expiree){ if(affiche) return; affiche=true; var go=function(){
+  var b=document.createElement('div'); b.id='edu-garde-session';
+  b.setAttribute('style','position:fixed;left:0;right:0;top:0;z-index:2147483646;background:#c0392b;color:#fff;font:700 15px Calibri,Arial,sans-serif;padding:12px 16px;display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap;box-shadow:0 3px 12px rgba(0,0,0,.35)');
+  b.innerHTML=(expiree?'🔒 Votre session a expiré : la dernière action n’a PAS été enregistrée. Rechargez la page (F5), reconnectez-vous avec le code reçu par mail, puis refaites-la.'
+                      :'📡 Connexion Internet interrompue : la dernière action n’a PAS été enregistrée. Vérifiez la connexion puis rechargez la page (F5).')
+    +'<button type="button" style="background:#fff;color:#c0392b;border:none;border-radius:6px;padding:6px 14px;font-weight:800;cursor:pointer">🔄 Recharger la page</button>';
+  b.querySelector('button').onclick=function(){ location.reload(); };
+  document.body.appendChild(b); };
+  if(document.body) go(); else document.addEventListener('DOMContentLoaded',go); }
+async function sonder(){ try{ var r=await orig('/api/moi',{redirect:'manual',cache:'no-store'});
+  if(r.type==='opaqueredirect'||r.status===401||r.status===403||r.status===302) return 'expiree';
+  var t=(r.headers.get('content-type')||''); if(t.indexOf('json')<0) return 'expiree'; return 'ok'; }catch(e){ return 'coupure'; } }
+window.fetch=async function(input,init){
+  var url=(typeof input==='string')?input:(input&&input.url)||'';
+  var api=/^\/api\//.test(url); try{ var u=new window.URL(url,location.href); api=(u.origin===location.origin&&u.pathname.indexOf('/api/')===0); }catch(e){} /* window.URL : l'outil Attractions a sa propre variable « URL » */
+  if(!api) return orig(input,init);
+  try{
+    var r=await orig(input,init);
+    if(r.redirected&&/cloudflareaccess\.com/.test(r.url)){ bandeau(true); }
+    else if(r.status===403||r.status===401){ var c=r.clone(); c.text().then(function(t){ if(/connexion Cloudflare Access|Session expir|Jeton|Signature/i.test(t)) bandeau(true); }).catch(function(){}); }
+    else if(r.ok&&(r.headers.get('content-type')||'').indexOf('text/html')===0){ bandeau(true); }
+    return r;
+  }catch(e){ sonder().then(function(s){ if(s!=='ok') bandeau(s==='expiree'); }); throw e; }
+};
+})();</script><script>/* EDU-AGENT-AUTO (2026-10-01) */(function(){try{var x=new XMLHttpRequest();x.open('GET','/api/moi',false);x.send(null);if(x.status===200){var d=JSON.parse(x.responseText);if(d&&d.agent){window.EDU_AGENT=d.agent;['auth_agent','auth_agent_inscriptions_a_valider','auth_agent_mails_standards','auth_agent_moyens_paiement','auth_agent_reservations','auth_agent_contenu_accueil','auth_agent_contenu_contacts','auth_agent_contenu_editions','auth_agent_contenu_profsrelais','auth_agent_contenu_videos','auth_agent_planning'].forEach(function(k){try{sessionStorage.setItem(k,d.agent);}catch(e){}});}}}catch(e){}})();</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>INSCRIPTIONS À VALIDER — EDUCPASS 2026</title>
@@ -125,7 +152,7 @@ input:checked + .slider:before{transform:translateX(20px);}
 // ══════════════════════════════════════════════════════════
 //  CONFIG AIRTABLE — même proxy Cloudflare Worker que les autres outils.
 // ══════════════════════════════════════════════════════════
-const PROXY = 'https://educpass-profs-proxy.marc-flasschoen.workers.dev';
+const PROXY = '/api/profs';
 const BASE  = 'appWCfo8WBkMGUuc2';
 const INSCRIPTIONS_TBL = 'tblMdhkCP9YFHbhPY';
 const PROFS_TBL = 'tbl3e83BINBUCkhMH';
@@ -431,6 +458,95 @@ async function init(){
 // 2026-09-29 : bouton « Tableau de Bord » valable partout — sur l'ordinateur (fichier local : MEMBRES - Documents\TABLEAU DE BORD.html)
 // et sur le site web (TABLEAU DE BORD.html dans le même dossier que cet outil).
 document.querySelectorAll('a[data-tdb]').forEach(function(a){ a.setAttribute('href', location.protocol==='file:' ? '../../TABLEAU DE BORD.html' : 'TABLEAU DE BORD.html'); });
+</script>
+<!-- EDU-CHARGEMENT-CENTRE (2026-09-29) : messages « en cours » en texte seul au centre de l'écran -->
+<style>
+#overlay-loading{background:transparent !important;}
+#overlay-loading .loading-box{background:transparent !important;box-shadow:none !important;border:none !important;padding:0 !important;min-width:0 !important;}
+#overlay-loading .loading-box,#sync-pending.show,#edu-centre{font-size:22px !important;font-weight:700 !important;color:var(--navy,#1e3a6e) !important;text-shadow:0 0 4px #fff,0 0 10px #fff,0 0 18px #fff;}
+#sync-pending.show{position:fixed !important;top:50%;left:50%;transform:translate(-50%,-50%);background:transparent !important;padding:0 !important;z-index:1001;animation:none !important;pointer-events:none;white-space:nowrap;}
+body.edu-ov #sync-pending.show{visibility:hidden;}
+#edu-centre{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1001;pointer-events:none;white-space:nowrap;display:none;}
+body.edu-cnt:not(.edu-ov):not(.edu-sp) #edu-centre{display:block;}
+</style>
+<div id="edu-centre">⏳ Chargement…</div>
+<script>
+(function(){
+  function tick(){
+    var b=document.body; if(!b) return;
+    var ov=document.getElementById('overlay-loading');
+    var sp=document.getElementById('sync-pending');
+    var cnt=false, els=document.querySelectorAll('[id$="-count"],[id^="count-"]');
+    for(var i=0;i<els.length;i++){ if((els[i].textContent||'').trim()==='⏳'){ cnt=true; break; } }
+    b.classList.toggle('edu-ov', !!(ov && !ov.classList.contains('hidden') && getComputedStyle(ov).display!=='none'));
+    b.classList.toggle('edu-sp', !!(sp && sp.classList.contains('show')));
+    b.classList.toggle('edu-cnt', cnt);
+  }
+  setInterval(tick, 150); tick();
+})();
+</script>
+<script>/* EDU-AGENT-AUTO-FIN (2026-10-01) */
+(function(){
+  var A = window.EDU_AGENT; if(!A) return;
+  var PINS_DEF = {'MARC':'1111','MAÏTE':'2222','ANTOINE':'3333','VANESSA':'4444'};
+  // 1) L'agent reconnu est accepté par l'outil, même s'il n'était pas dans sa liste de codes
+  try{ if(typeof AGENT_PINS!=='undefined' && AGENT_PINS && !AGENT_PINS[A]) AGENT_PINS[A] = PINS_DEF[A] || '----'; }catch(e){}
+  // 2) Plannings Brochures annuelles / News (code demandé à chaque ouverture) : entrée directe
+  try{
+    if(typeof checkPin==='function' && typeof buildTabs==='function' && typeof loadData==='function' && typeof ouvrir!=='function'){
+      document.addEventListener('DOMContentLoaded', function(){
+        try{ agent = A; }catch(e){}
+        var o=document.getElementById('pin-overlay'); if(o) o.style.display='none';
+        var app=document.getElementById('app'); if(app) app.style.display='block';
+        var b=document.getElementById('agent-badge'); if(b) b.textContent='Agent : '+A;
+        buildTabs(); loadData();
+      });
+    }
+  }catch(e){}
+  // 3) Code PIN conservé pour les actions sensibles (validité 2 minutes après saisie)
+  var okJusqua = 0;
+  function pinAttendu(){ try{ if(typeof AGENT_PINS!=='undefined' && AGENT_PINS && AGENT_PINS[A] && AGENT_PINS[A]!=='----') return String(AGENT_PINS[A]); }catch(e){} return PINS_DEF[A] || null; }
+  function demanderPin(libelle){
+    return new Promise(function(fin){
+      var essais = 0;
+      var fond = document.createElement('div');
+      fond.setAttribute('style','position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2147483000;display:flex;align-items:center;justify-content:center;font-family:Calibri,Arial,sans-serif');
+      fond.innerHTML = '<div style="background:#fff;border-radius:12px;padding:26px 30px;min-width:300px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.35)">'
+        + '<div style="font-size:17px;font-weight:800;color:#1e3a6e;margin-bottom:6px">🔒 Action protégée</div>'
+        + '<div style="font-size:13px;color:#555;margin-bottom:14px">'+libelle+'<br>Code PIN de <b>'+A+'</b> :</div>'
+        + '<input type="password" inputmode="numeric" maxlength="8" autocomplete="off" style="font-size:24px;letter-spacing:8px;width:140px;text-align:center;border:2px solid #ccc;border-radius:8px;padding:6px 10px">'
+        + '<div class="edu-pin-err" style="color:#c0392b;font-size:12.5px;min-height:18px;margin-top:8px"></div>'
+        + '<div style="margin-top:10px;display:flex;gap:10px;justify-content:center">'
+        + '<button type="button" class="edu-pin-ok" style="background:#1e3a6e;color:#fff;border:none;border-radius:6px;padding:8px 22px;font-weight:700;cursor:pointer">Valider</button>'
+        + '<button type="button" class="edu-pin-annuler" style="background:#eee;color:#333;border:none;border-radius:6px;padding:8px 18px;font-weight:700;cursor:pointer">Annuler</button></div></div>';
+      document.body.appendChild(fond);
+      var inp = fond.querySelector('input'), err = fond.querySelector('.edu-pin-err');
+      function fermer(r){ fond.remove(); fin(r); }
+      function valider(){
+        var attendu = pinAttendu();
+        if(attendu && inp.value === attendu){ okJusqua = Date.now() + 120000; fermer(true); return; }
+        essais++; inp.value=''; inp.focus();
+        if(essais >= 3){ err.textContent = '3 essais incorrects — action annulée.'; setTimeout(function(){ fermer(false); }, 1200); }
+        else err.textContent = 'Code incorrect ('+essais+'/3)';
+      }
+      fond.querySelector('.edu-pin-ok').onclick = valider;
+      fond.querySelector('.edu-pin-annuler').onclick = function(){ fermer(false); };
+      inp.addEventListener('keydown', function(e){ if(e.key==='Enter') valider(); if(e.key==='Escape') fermer(false); });
+      setTimeout(function(){ inp.focus(); }, 50);
+    });
+  }
+  window.eduConfirmerPin = async function(libelle){ if(Date.now() < okJusqua) return true; return await demanderPin(libelle); };
+  var SENSIBLES = {
+    genererDocument: 'Générer une facture / note de crédit (numéro définitif).',
+    corrigerDerniereFacture: 'Corriger la dernière facture (le numéro est réutilisé).',
+    executerControleMollie: 'Exécuter la synchronisation des paiements Mollie.',
+    confirmerValidation: 'Valider une inscription (création du n° de membre).'
+  };
+  Object.keys(SENSIBLES).forEach(function(n){
+    var f = window[n]; if(typeof f !== 'function') return;
+    window[n] = async function(){ if(!(await window.eduConfirmerPin(SENSIBLES[n]))) return; return f.apply(this, arguments); };
+  });
+})();
 </script>
 </body>
 </html>
