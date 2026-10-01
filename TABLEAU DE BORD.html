@@ -1,6 +1,33 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
+<head><script>/* EDU-GARDE-SESSION (2026-10-01) */(function(){
+if(location.protocol!=='https:'||!window.fetch) return;
+var orig=window.fetch.bind(window), affiche=false;
+function bandeau(expiree){ if(affiche) return; affiche=true; var go=function(){
+  var b=document.createElement('div'); b.id='edu-garde-session';
+  b.setAttribute('style','position:fixed;left:0;right:0;top:0;z-index:2147483646;background:#c0392b;color:#fff;font:700 15px Calibri,Arial,sans-serif;padding:12px 16px;display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap;box-shadow:0 3px 12px rgba(0,0,0,.35)');
+  b.innerHTML=(expiree?'🔒 Votre session a expiré : la dernière action n’a PAS été enregistrée. Rechargez la page (F5), reconnectez-vous avec le code reçu par mail, puis refaites-la.'
+                      :'📡 Connexion Internet interrompue : la dernière action n’a PAS été enregistrée. Vérifiez la connexion puis rechargez la page (F5).')
+    +'<button type="button" style="background:#fff;color:#c0392b;border:none;border-radius:6px;padding:6px 14px;font-weight:800;cursor:pointer">🔄 Recharger la page</button>';
+  b.querySelector('button').onclick=function(){ location.reload(); };
+  document.body.appendChild(b); };
+  if(document.body) go(); else document.addEventListener('DOMContentLoaded',go); }
+async function sonder(){ try{ var r=await orig('/api/moi',{redirect:'manual',cache:'no-store'});
+  if(r.type==='opaqueredirect'||r.status===401||r.status===403||r.status===302) return 'expiree';
+  var t=(r.headers.get('content-type')||''); if(t.indexOf('json')<0) return 'expiree'; return 'ok'; }catch(e){ return 'coupure'; } }
+window.fetch=async function(input,init){
+  var url=(typeof input==='string')?input:(input&&input.url)||'';
+  var api=/^\/api\//.test(url); try{ var u=new window.URL(url,location.href); api=(u.origin===location.origin&&u.pathname.indexOf('/api/')===0); }catch(e){} /* window.URL : l'outil Attractions a sa propre variable « URL » */
+  if(!api) return orig(input,init);
+  try{
+    var r=await orig(input,init);
+    if(r.redirected&&/cloudflareaccess\.com/.test(r.url)){ bandeau(true); }
+    else if(r.status===403||r.status===401){ var c=r.clone(); c.text().then(function(t){ if(/connexion Cloudflare Access|Session expir|Jeton|Signature/i.test(t)) bandeau(true); }).catch(function(){}); }
+    else if(r.ok&&(r.headers.get('content-type')||'').indexOf('text/html')===0){ bandeau(true); }
+    return r;
+  }catch(e){ sonder().then(function(s){ if(s!=='ok') bandeau(s==='expiree'); }); throw e; }
+};
+})();</script>
 <!-- VERSION WEB (2026-09-29) — copie générée à partir de « MEMBRES - Documents/TABLEAU DE BORD.html » :
      mêmes cases, liens adaptés au site (outils dans le même dossier, outil Attractions sur GitHub Pages).
      Toute modification des cases doit être faite dans les DEUX fichiers. -->
@@ -71,12 +98,12 @@ a.tile:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(20,30,60,.25)
       </div>
     </a>
 
-    <!-- C) CARTES DE VISITE -->
-    <a class="tile" style="background:linear-gradient(155deg,#1e8a4a,#146334);" href="CARTES-VISITE.html">
+    <!-- C) PLANNING (2026-10-01 : remplace CARTES DE VISITE, désormais dans le Back-office SITE.FR) -->
+    <a class="tile" style="background:linear-gradient(155deg,#d35400,#a04000);" href="attractions/planning-menu.html">
       <div class="letter">C</div>
       <div>
-        <div class="name">🎫 CARTES DE VISITE</div>
-        <div class="desc">Liste des cartes de visite, cliquable par attraction</div>
+        <div class="name">📅 PLANNING</div>
+        <div class="desc">Brochures annuelles, News, Newsletter et Bannières</div>
       </div>
     </a>
 
@@ -117,12 +144,12 @@ a.tile:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(20,30,60,.25)
     </a>
 
     <!-- H) LIBRE (ex BANNIERES SITE, transféré vers BACK-OFFICE SITE.FR) -->
-    <a class="tile disabled" style="background:linear-gradient(155deg,#8a94a6,#6b7688);" href="#" onclick="return false;">
+    <a class="tile" style="background:linear-gradient(155deg,#8a94a6,#6b7688);" href="back-office/BACK-OFFICE SITE.FR.html">
       <div class="letter">H</div>
-      <div class="badge">= LIBRE</div>
+      
       <div>
-        <div class="name">🖼️ LIBRE</div>
-        <div class="desc">Ancien emplacement de BANNIÈRES SITE, transféré vers le Back-office SITE.FR (case B)</div>
+        <div class="name">🌐 BACK-OFFICE SITE.FR</div>
+        <div class="desc">Accueil, bannières, contacts, profs relais, vidéos et éditions du site public</div>
       </div>
     </a>
 
@@ -162,11 +189,11 @@ a.tile:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(20,30,60,.25)
       </div>
     </a>
 
-    <!-- M) ORGANISATIONS -->
+    <!-- M) RÉSERVATIONS PROFS (ex-ORGANISATIONS, renommé le 2026-10-01) -->
     <a class="tile" style="background:linear-gradient(155deg,#c0396b,#8f2a50);" href="ORGANISATIONS.html">
       <div class="letter">M</div>
       <div>
-        <div class="name">🗂️ ORGANISATIONS</div>
+        <div class="name">🗂️ RÉSERVATIONS PROFS</div>
         <div class="desc">Voyages, Educ-jour, Profs-Contacts, Educ-Week-end : réservations, modèles et listing par événement</div>
       </div>
     </a>
@@ -181,7 +208,7 @@ a.tile:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(20,30,60,.25)
     </a>
 
     <!-- O) PARTENAIRES -->
-    <a class="tile" style="background:linear-gradient(155deg,#b23a3a,#8a2b2b);" href="https://flasschoen.github.io/fiches-membres-2026/">
+    <a class="tile" style="background:linear-gradient(155deg,#b23a3a,#8a2b2b);" href="attractions/index.html">
       <div class="letter">O</div>
       <div>
         <div class="name">🤝 PARTENAIRES</div>
@@ -198,10 +225,19 @@ a.tile:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(20,30,60,.25)
       </div>
     </a>
 
+    <!-- Q) ORGANISATION SALONS (2026-10-01) : Salon EDUC-WEX, Salon SETT, Profs-Contacts -->
+    <a class="tile" style="background:linear-gradient(155deg,#0e7c86,#09575e);" href="attractions/salons-menu.html">
+      <div class="letter">Q</div>
+      <div>
+        <div class="name">🎪 ORGANISATION SALONS</div>
+        <div class="desc">Salon EDUC-WEX, Salon SETT et Profs-Contacts (Workshop) — responsable : Maïté</div>
+      </div>
+    </a>
+
   </div>
 
   <div class="footer-note">
-    💡 Toutes les cases sont actives et ouvrent l'outil correspondant, sauf la case <b>H — LIBRE</b> (ancien emplacement de BANNIÈRES SITE, désormais géré depuis le Back-office SITE.FR). La case <b>C — CARTES DE VISITE</b> ouvre la liste des cartes de visite (consultation ; suppression d'une carte réservée à Marc) ; l'édition complète d'une carte reste dans l'outil Attractions. La case <b>O — PARTENAIRES</b> ouvre directement la fiche membre complète (outil Attractions, index.html) pour régler la fiche d'un partenaire ou ajouter une nouvelle commande de publicité dans le planning. La case <b>P — FICHIER LISTING ECOLES</b> affiche, par dossier pays/langue (Belges FR, Belges NL, France, Luxembourg), des listings d'écoles consultables avec recherche et tri de colonnes ; Belges NL et Luxembourg sont en attente des fichiers sources. La case <b>B — INSCRIPTIONS À VALIDER</b> permet de vérifier un dossier (matricule, justificatif) et de le basculer manuellement vers FICHIER ENSEIGNANTS avec un vrai N° membre. La case <b>I — MAILS STANDARDS</b> gère les modèles de mails (5 catégories : Belge FR, NL, France, LUX, DE) et leurs pieds de page communs, avec mise en forme (gras/italique/couleurs) éditable directement dans l'outil.
+    💡 Toutes les cases sont actives et ouvrent l'outil correspondant, sauf la case <b>H — LIBRE</b> (ancien emplacement de BANNIÈRES SITE, désormais géré depuis le Back-office SITE.FR). La case <b>C — PLANNING</b> ouvre le menu des plannings (Brochures annuelles, News, Newsletter, Bannières) ; les cartes de visite sont dans le Back-office SITE.FR. La case <b>O — PARTENAIRES</b> ouvre directement la fiche membre complète (outil Attractions, index.html) pour régler la fiche d'un partenaire ou ajouter une nouvelle commande de publicité dans le planning. La case <b>P — FICHIER LISTING ECOLES</b> affiche, par dossier pays/langue (Belges FR, Belges NL, France, Luxembourg), des listings d'écoles consultables avec recherche et tri de colonnes ; Belges NL et Luxembourg sont en attente des fichiers sources. La case <b>B — INSCRIPTIONS À VALIDER</b> permet de vérifier un dossier (matricule, justificatif) et de le basculer manuellement vers FICHIER ENSEIGNANTS avec un vrai N° membre. La case <b>I — MAILS STANDARDS</b> gère les modèles de mails (5 catégories : Belge FR, NL, France, LUX, DE) et leurs pieds de page communs, avec mise en forme (gras/italique/couleurs) éditable directement dans l'outil.
   </div>
 </div>
 

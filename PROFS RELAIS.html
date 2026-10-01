@@ -1,6 +1,33 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
+<head><script>/* EDU-GARDE-SESSION (2026-10-01) */(function(){
+if(location.protocol!=='https:'||!window.fetch) return;
+var orig=window.fetch.bind(window), affiche=false;
+function bandeau(expiree){ if(affiche) return; affiche=true; var go=function(){
+  var b=document.createElement('div'); b.id='edu-garde-session';
+  b.setAttribute('style','position:fixed;left:0;right:0;top:0;z-index:2147483646;background:#c0392b;color:#fff;font:700 15px Calibri,Arial,sans-serif;padding:12px 16px;display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap;box-shadow:0 3px 12px rgba(0,0,0,.35)');
+  b.innerHTML=(expiree?'🔒 Votre session a expiré : la dernière action n’a PAS été enregistrée. Rechargez la page (F5), reconnectez-vous avec le code reçu par mail, puis refaites-la.'
+                      :'📡 Connexion Internet interrompue : la dernière action n’a PAS été enregistrée. Vérifiez la connexion puis rechargez la page (F5).')
+    +'<button type="button" style="background:#fff;color:#c0392b;border:none;border-radius:6px;padding:6px 14px;font-weight:800;cursor:pointer">🔄 Recharger la page</button>';
+  b.querySelector('button').onclick=function(){ location.reload(); };
+  document.body.appendChild(b); };
+  if(document.body) go(); else document.addEventListener('DOMContentLoaded',go); }
+async function sonder(){ try{ var r=await orig('/api/moi',{redirect:'manual',cache:'no-store'});
+  if(r.type==='opaqueredirect'||r.status===401||r.status===403||r.status===302) return 'expiree';
+  var t=(r.headers.get('content-type')||''); if(t.indexOf('json')<0) return 'expiree'; return 'ok'; }catch(e){ return 'coupure'; } }
+window.fetch=async function(input,init){
+  var url=(typeof input==='string')?input:(input&&input.url)||'';
+  var api=/^\/api\//.test(url); try{ var u=new window.URL(url,location.href); api=(u.origin===location.origin&&u.pathname.indexOf('/api/')===0); }catch(e){} /* window.URL : l'outil Attractions a sa propre variable « URL » */
+  if(!api) return orig(input,init);
+  try{
+    var r=await orig(input,init);
+    if(r.redirected&&/cloudflareaccess\.com/.test(r.url)){ bandeau(true); }
+    else if(r.status===403||r.status===401){ var c=r.clone(); c.text().then(function(t){ if(/connexion Cloudflare Access|Session expir|Jeton|Signature/i.test(t)) bandeau(true); }).catch(function(){}); }
+    else if(r.ok&&(r.headers.get('content-type')||'').indexOf('text/html')===0){ bandeau(true); }
+    return r;
+  }catch(e){ sonder().then(function(s){ if(s!=='ok') bandeau(s==='expiree'); }); throw e; }
+};
+})();</script><script>/* EDU-AGENT-AUTO (2026-10-01) */(function(){try{var x=new XMLHttpRequest();x.open('GET','/api/moi',false);x.send(null);if(x.status===200){var d=JSON.parse(x.responseText);if(d&&d.agent){window.EDU_AGENT=d.agent;['auth_agent','auth_agent_inscriptions_a_valider','auth_agent_mails_standards','auth_agent_moyens_paiement','auth_agent_reservations','auth_agent_contenu_accueil','auth_agent_contenu_contacts','auth_agent_contenu_editions','auth_agent_contenu_profsrelais','auth_agent_contenu_videos','auth_agent_planning'].forEach(function(k){try{sessionStorage.setItem(k,d.agent);}catch(e){}});}}}catch(e){}})();</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PROFS RELAIS — EDUCPASS 2026</title>
@@ -87,9 +114,12 @@ legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
     <div class="toolbar" style="padding:0 0 12px;border:none;">
       <button class="btn btn-orange" onclick="document.getElementById('excel-file-input').click()">📥 Importer un fichier Excel</button>
       <input type="file" id="excel-file-input" accept=".xlsx,.xls" class="hidden" onchange="handleExcelFile(event)">
+      <button class="btn" style="background:#0f3d3e;color:#fff;" onclick="ouvrirDemandes()">📥 Demandes en ligne <span id="nb-demandes"></span></button>
       <button class="btn btn-cancel" onclick="nouveauGroupe()">🔄 Nouveau groupe</button>
+      <button class="btn btn-save hidden" id="btn-traitee" onclick="marquerTraitee()">✅ Marquer la demande comme traitée</button>
       <span id="import-status" style="font-size:12.5px;color:#555;"></span>
     </div>
+    <div id="demandes-panel" class="hidden" style="border:1px solid #d7e0ee;border-radius:6px;padding:10px 12px;margin-bottom:12px;background:#f7f9fd;"></div>
 
     <fieldset>
       <legend>École</legend>
@@ -155,7 +185,7 @@ legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13px;}
 //  CONFIG AIRTABLE — même proxy Cloudflare Worker que les autres outils
 //  (jeton Airtable caché côté serveur, jamais exposé ici).
 // ══════════════════════════════════════════════════════════
-const PROXY = 'https://educpass-profs-proxy.marc-flasschoen.workers.dev';
+const PROXY = '/api/profs';
 const BASE  = 'appWCfo8WBkMGUuc2';
 const HDRS  = {'Content-Type':'application/json'};
 
@@ -479,6 +509,77 @@ async function lookupMatricule(id){
 // ══════════════════════════════════════════════════════════
 //  NOUVEAU GROUPE — réinitialise l'écran
 // ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
+//  DEMANDES EN LIGNE (formulaire public « PROFS RELAIS EN LIGNE ») — 2026-09-30
+// ══════════════════════════════════════════════════════════
+const DEMANDES_API = `${PROXY}/v0/${BASE}/tbliem1jhYNvdJX64`;
+let demandeCourante = null;
+async function listerDemandesEnAttente(){
+  const params = new URLSearchParams({ filterByFormula: "{Statut}='En attente'", 'sort[0][field]':'Date demande', 'sort[0][direction]':'asc', pageSize:'100' });
+  const d = await atFetch(DEMANDES_API+'?'+params.toString());
+  return d.records || [];
+}
+async function compterDemandes(){
+  try{ const n=(await listerDemandesEnAttente()).length; document.getElementById('nb-demandes').textContent = n ? '('+n+')' : ''; }catch(e){}
+}
+async function ouvrirDemandes(){
+  const panel = document.getElementById('demandes-panel');
+  if(!panel.classList.contains('hidden')){ panel.classList.add('hidden'); return; }
+  panel.classList.remove('hidden');
+  panel.innerHTML = '⏳ Chargement des demandes…';
+  try{
+    const recs = await listerDemandesEnAttente();
+    window._demandes = recs;
+    document.getElementById('nb-demandes').textContent = recs.length ? '('+recs.length+')' : '';
+    if(!recs.length){ panel.innerHTML = 'Aucune demande en attente.'; return; }
+    panel.innerHTML = '<div style="font-weight:700;margin-bottom:6px;">Demandes en attente</div>' + recs.map((r,i)=>{
+      const f = r.fields||{};
+      return '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:6px 0;border-top:1px solid #e3e8f1;">'
+        + '<b>'+esc(f['Nom école']||'?')+'</b>'
+        + '<span>'+esc(f['Prof relais']||'')+'</span>'
+        + '<span>'+esc(f['Nombre enseignants']||0)+' enseignant(s) — '+esc(f['Total à verser']!=null?f['Total à verser']+' €':'')+'</span>'
+        + '<span style="color:#777;font-size:12px;">'+esc(f['Référence']||'')+' — '+esc(f['Date demande']||'')+'</span>'
+        + '<button class="btn btn-orange" style="margin-left:auto;padding:4px 12px;" onclick="chargerDemande('+i+')">Charger</button></div>';
+    }).join('');
+  }catch(e){ panel.innerHTML = '❌ '+esc(e.message); }
+}
+function chargerDemande(i){
+  const r = (window._demandes||[])[i]; if(!r) return;
+  const f = r.fields||{};
+  let profs = [];
+  try{ profs = JSON.parse(f['Participants (données)']||'[]'); }catch(e){ setSt('❌ Données participants illisibles.'); return; }
+  const dejaRempli = allRowIds().some(rowHasContent);
+  if(dejaRempli && !confirm('Remplacer le groupe en cours par cette demande ?')) return;
+  document.getElementById('participants-list').innerHTML='';
+  Object.keys(rowMatchState).forEach(k=>delete rowMatchState[k]);
+  document.getElementById('ec-nomecole').value = f['Nom école']||'';
+  document.getElementById('ec-telecole').value = f['Tél école']||'';
+  document.getElementById('ec-contactnom').value = f['Prof relais']||'';
+  document.getElementById('ec-contacttel').value = f['Tél prof relais']||'';
+  if(f['Prix par enseignant']!=null) document.getElementById('ec-montant').value = f['Prix par enseignant'];
+  profs.forEach(p=>{
+    const id = addRow({nom:p.nom, prenom:p.prenom, naissance:p.naissance, matricule:p.matricule, rue:p.rue, nmaison:p.nmaison, cp:p.cp, ville:p.ville, email:p.email, tel:p.tel, niveau:p.niveau, branche:p.branche, gratuit:p.gratuit});
+    if(!p.matricule){ const sel=document.getElementById('p'+id+'-type'); if(sel){ sel.value='FRA'; onTypeChange(id); } }
+    if(p.profRelais){ const n=document.getElementById('knote-'+id); if(n) n.textContent='🧭 Prof relais (formulaire en ligne)'; }
+  });
+  demandeCourante = r.id;
+  document.getElementById('btn-traitee').classList.remove('hidden');
+  document.getElementById('demandes-panel').classList.add('hidden');
+  document.getElementById('import-status').textContent = '✅ Demande '+(f['Référence']||'')+' chargée : '+profs.length+' enseignant(s). École : '+(f['Adresse école']||'')+' — '+(f['Mail école']||'')+'. Vérifie puis crée les fiches.';
+  updateResume();
+}
+async function marquerTraitee(){
+  if(!demandeCourante) return;
+  if(!confirm('Marquer cette demande comme traitée ? (à faire après avoir créé les fiches)')) return;
+  try{
+    await atFetch(DEMANDES_API+'/'+demandeCourante, {method:'PATCH', body: JSON.stringify({fields:{'Statut':'Traitée'}})});
+    demandeCourante = null;
+    document.getElementById('btn-traitee').classList.add('hidden');
+    setSt('✅ Demande marquée comme traitée.');
+    compterDemandes();
+  }catch(e){ setSt('❌ '+e.message); }
+}
+
 function nouveauGroupe(){
   if(!confirm('Repartir sur un nouveau groupe ? Les données actuellement saisies seront perdues.')) return;
   document.getElementById('ec-nomecole').value='';
@@ -489,6 +590,7 @@ function nouveauGroupe(){
   document.getElementById('ec-montant').value='';
   document.getElementById('participants-list').innerHTML='';
   document.getElementById('import-status').textContent='';
+  demandeCourante = null; document.getElementById('btn-traitee').classList.add('hidden');
   Object.keys(rowMatchState).forEach(k=>delete rowMatchState[k]);
   addRow();
   updateResume();
@@ -800,6 +902,7 @@ function saveGestionPins(){
 function init(){
   addRow();
   updateResume();
+  compterDemandes();
 }
 
 document.addEventListener('DOMContentLoaded', function(){
@@ -817,6 +920,95 @@ document.addEventListener('DOMContentLoaded', function(){
 // 2026-09-29 : bouton « Tableau de Bord » valable partout — sur l'ordinateur (fichier local : MEMBRES - Documents\TABLEAU DE BORD.html)
 // et sur le site web (TABLEAU DE BORD.html dans le même dossier que cet outil).
 document.querySelectorAll('a[data-tdb]').forEach(function(a){ a.setAttribute('href', location.protocol==='file:' ? '../../TABLEAU DE BORD.html' : 'TABLEAU DE BORD.html'); });
+</script>
+<!-- EDU-CHARGEMENT-CENTRE (2026-09-29) : messages « en cours » en texte seul au centre de l'écran -->
+<style>
+#overlay-loading{background:transparent !important;}
+#overlay-loading .loading-box{background:transparent !important;box-shadow:none !important;border:none !important;padding:0 !important;min-width:0 !important;}
+#overlay-loading .loading-box,#sync-pending.show,#edu-centre{font-size:22px !important;font-weight:700 !important;color:var(--navy,#1e3a6e) !important;text-shadow:0 0 4px #fff,0 0 10px #fff,0 0 18px #fff;}
+#sync-pending.show{position:fixed !important;top:50%;left:50%;transform:translate(-50%,-50%);background:transparent !important;padding:0 !important;z-index:1001;animation:none !important;pointer-events:none;white-space:nowrap;}
+body.edu-ov #sync-pending.show{visibility:hidden;}
+#edu-centre{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1001;pointer-events:none;white-space:nowrap;display:none;}
+body.edu-cnt:not(.edu-ov):not(.edu-sp) #edu-centre{display:block;}
+</style>
+<div id="edu-centre">⏳ Chargement…</div>
+<script>
+(function(){
+  function tick(){
+    var b=document.body; if(!b) return;
+    var ov=document.getElementById('overlay-loading');
+    var sp=document.getElementById('sync-pending');
+    var cnt=false, els=document.querySelectorAll('[id$="-count"],[id^="count-"]');
+    for(var i=0;i<els.length;i++){ if((els[i].textContent||'').trim()==='⏳'){ cnt=true; break; } }
+    b.classList.toggle('edu-ov', !!(ov && !ov.classList.contains('hidden') && getComputedStyle(ov).display!=='none'));
+    b.classList.toggle('edu-sp', !!(sp && sp.classList.contains('show')));
+    b.classList.toggle('edu-cnt', cnt);
+  }
+  setInterval(tick, 150); tick();
+})();
+</script>
+<script>/* EDU-AGENT-AUTO-FIN (2026-10-01) */
+(function(){
+  var A = window.EDU_AGENT; if(!A) return;
+  var PINS_DEF = {'MARC':'1111','MAÏTE':'2222','ANTOINE':'3333','VANESSA':'4444'};
+  // 1) L'agent reconnu est accepté par l'outil, même s'il n'était pas dans sa liste de codes
+  try{ if(typeof AGENT_PINS!=='undefined' && AGENT_PINS && !AGENT_PINS[A]) AGENT_PINS[A] = PINS_DEF[A] || '----'; }catch(e){}
+  // 2) Plannings Brochures annuelles / News (code demandé à chaque ouverture) : entrée directe
+  try{
+    if(typeof checkPin==='function' && typeof buildTabs==='function' && typeof loadData==='function' && typeof ouvrir!=='function'){
+      document.addEventListener('DOMContentLoaded', function(){
+        try{ agent = A; }catch(e){}
+        var o=document.getElementById('pin-overlay'); if(o) o.style.display='none';
+        var app=document.getElementById('app'); if(app) app.style.display='block';
+        var b=document.getElementById('agent-badge'); if(b) b.textContent='Agent : '+A;
+        buildTabs(); loadData();
+      });
+    }
+  }catch(e){}
+  // 3) Code PIN conservé pour les actions sensibles (validité 2 minutes après saisie)
+  var okJusqua = 0;
+  function pinAttendu(){ try{ if(typeof AGENT_PINS!=='undefined' && AGENT_PINS && AGENT_PINS[A] && AGENT_PINS[A]!=='----') return String(AGENT_PINS[A]); }catch(e){} return PINS_DEF[A] || null; }
+  function demanderPin(libelle){
+    return new Promise(function(fin){
+      var essais = 0;
+      var fond = document.createElement('div');
+      fond.setAttribute('style','position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2147483000;display:flex;align-items:center;justify-content:center;font-family:Calibri,Arial,sans-serif');
+      fond.innerHTML = '<div style="background:#fff;border-radius:12px;padding:26px 30px;min-width:300px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.35)">'
+        + '<div style="font-size:17px;font-weight:800;color:#1e3a6e;margin-bottom:6px">🔒 Action protégée</div>'
+        + '<div style="font-size:13px;color:#555;margin-bottom:14px">'+libelle+'<br>Code PIN de <b>'+A+'</b> :</div>'
+        + '<input type="password" inputmode="numeric" maxlength="8" autocomplete="off" style="font-size:24px;letter-spacing:8px;width:140px;text-align:center;border:2px solid #ccc;border-radius:8px;padding:6px 10px">'
+        + '<div class="edu-pin-err" style="color:#c0392b;font-size:12.5px;min-height:18px;margin-top:8px"></div>'
+        + '<div style="margin-top:10px;display:flex;gap:10px;justify-content:center">'
+        + '<button type="button" class="edu-pin-ok" style="background:#1e3a6e;color:#fff;border:none;border-radius:6px;padding:8px 22px;font-weight:700;cursor:pointer">Valider</button>'
+        + '<button type="button" class="edu-pin-annuler" style="background:#eee;color:#333;border:none;border-radius:6px;padding:8px 18px;font-weight:700;cursor:pointer">Annuler</button></div></div>';
+      document.body.appendChild(fond);
+      var inp = fond.querySelector('input'), err = fond.querySelector('.edu-pin-err');
+      function fermer(r){ fond.remove(); fin(r); }
+      function valider(){
+        var attendu = pinAttendu();
+        if(attendu && inp.value === attendu){ okJusqua = Date.now() + 120000; fermer(true); return; }
+        essais++; inp.value=''; inp.focus();
+        if(essais >= 3){ err.textContent = '3 essais incorrects — action annulée.'; setTimeout(function(){ fermer(false); }, 1200); }
+        else err.textContent = 'Code incorrect ('+essais+'/3)';
+      }
+      fond.querySelector('.edu-pin-ok').onclick = valider;
+      fond.querySelector('.edu-pin-annuler').onclick = function(){ fermer(false); };
+      inp.addEventListener('keydown', function(e){ if(e.key==='Enter') valider(); if(e.key==='Escape') fermer(false); });
+      setTimeout(function(){ inp.focus(); }, 50);
+    });
+  }
+  window.eduConfirmerPin = async function(libelle){ if(Date.now() < okJusqua) return true; return await demanderPin(libelle); };
+  var SENSIBLES = {
+    genererDocument: 'Générer une facture / note de crédit (numéro définitif).',
+    corrigerDerniereFacture: 'Corriger la dernière facture (le numéro est réutilisé).',
+    executerControleMollie: 'Exécuter la synchronisation des paiements Mollie.',
+    confirmerValidation: 'Valider une inscription (création du n° de membre).'
+  };
+  Object.keys(SENSIBLES).forEach(function(n){
+    var f = window[n]; if(typeof f !== 'function') return;
+    window[n] = async function(){ if(!(await window.eduConfirmerPin(SENSIBLES[n]))) return; return f.apply(this, arguments); };
+  });
+})();
 </script>
 </body>
 </html>
