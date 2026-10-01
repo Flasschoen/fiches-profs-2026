@@ -127,18 +127,11 @@ async function envoyerMessage(){
   btn.disabled = true;
   msgEl.textContent = '⏳ Envoi en cours...';
   try{
-    const body = 'Nouveau message reçu via le formulaire de contact du site Educpass.fr\n\n'
-      + 'Nom : ' + nom + '\n'
-      + 'Email : ' + email + '\n\n'
-      + 'Message :\n' + message;
-    const r = await fetch(`${PROXY}/send-email`, {
+    // Phase 4 : le relais choisit lui-même le destinataire (e-mail de la fiche Contenu Contacts)
+    const r = await fetch(`${PROXY}/public/contact`, {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
-        to: emailDestinataire,
-        subject: 'Nouveau message via le formulaire de contact — ' + nom,
-        body: body
-      })
+      body: JSON.stringify({ nom: nom, email: email, message: message })
     });
     if(!r.ok){
       const t = await r.text().catch(()=> '');

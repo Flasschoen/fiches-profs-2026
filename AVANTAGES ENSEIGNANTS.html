@@ -199,7 +199,6 @@ chargerContenu();
 
 /* ===================== Galerie des cartes de visite actives ===================== */
 const ATT_PROXY = 'https://educpass-attractions-proxy.marc-flasschoen.workers.dev';
-const ATT_KEY   = 's0usEmEVnof0Js74MgIIeSGTD6DY5e4M';
 const CARTE_TBL = 'tblFn2gRUJOdgdMTZ';
 const CARTE_URL = `${ATT_PROXY}/records/${CARTE_TBL}`;
 
@@ -243,7 +242,7 @@ async function chargerCartes(){
     do{
       const params = new URLSearchParams({pageSize:'100', filterByFormula:'{Publié}=1'});
       if(offset) params.set('offset', offset);
-      const r = await fetch(`${CARTE_URL}?${params.toString()}`, {headers:{'X-Proxy-Key': ATT_KEY}});
+      const r = await fetch(`${CARTE_URL}?${params.toString()}`);
       if(!r.ok) throw new Error('Attractions '+r.status);
       const data = await r.json();
       all = all.concat(data.records||[]);

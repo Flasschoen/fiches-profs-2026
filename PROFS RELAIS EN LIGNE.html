@@ -356,10 +356,6 @@ function recapTexte(d){
   return L.join('\n');
 }
 
-async function envoyerMail(to, subject, body){
-  const r = await fetch(PROXY+'/send-email', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({to, subject, body})});
-  if(!r.ok) throw new Error('mail '+r.status);
-}
 
 document.getElementById('form-relais').addEventListener('submit', async e=>{
   e.preventDefault();
@@ -381,11 +377,11 @@ document.getElementById('form-relais').addEventListener('submit', async e=>{
 
   const btn = document.getElementById('btn-envoi');
   btn.disabled = true; msg.textContent = '⏳ Envoi en cours…';
+  let mails = {educpass:false, relais:false};
   try{
-    const now = new Date(), p = n=>String(n).padStart(2,'0');
+    // Phase 4 : le relais enregistre la demande (statut et date fixés côté serveur) puis envoie les 2 e-mails
     const fields = {
-      'Référence': d.ref, 'Statut': 'En attente',
-      'Date demande': now.getFullYear()+'-'+p(now.getMonth()+1)+'-'+p(now.getDate()),
+      'Référence': d.ref,
       'Nom école': d.ecole.nom, 'Adresse école': d.ecole.adresse, 'Tél école': d.ecole.tel, 'Mail école': d.ecole.mail,
       'Prof relais': d.relais.nom, 'Tél prof relais': d.relais.tel, 'Mail prof relais': d.relais.mail,
       'Nombre enseignants': d.calc.n, 'Nombre offerts': d.calc.offerts,
@@ -393,23 +389,19 @@ document.getElementById('form-relais').addEventListener('submit', async e=>{
       'Participants (données)': JSON.stringify(d.profs), 'Récapitulatif': recap,
       'Remarque': texteTarif(),
     };
-    const r = await fetch(`${PROXY}/v0/${BASE}/${DEMANDES_TBL}`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({records:[{fields}], typecast:true})});
-    if(!r.ok){ const t = await r.text().catch(()=> ''); throw new Error('Enregistrement impossible ('+r.status+') '+t.slice(0,120)); }
+    const r = await fetch(`${PROXY}/public/profs-relais`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({fields})});
+    const rep = await r.json().catch(()=> ({}));
+    if(!r.ok || !rep.ok){ throw new Error((rep && rep.error) ? rep.error : 'Enregistrement impossible ('+r.status+')'); }
+    if(rep.mails) mails = rep.mails;
   }catch(err){
     btn.disabled = false; msg.className='msg centre err';
     msg.textContent = '❌ La demande n\'a pas pu être envoyée. Réessayez dans un instant ou contactez-nous. ('+err.message+')';
     return;
   }
-  // E-mails (une erreur d'envoi n'annule pas la demande, déjà enregistrée)
-  const sujet = 'Inscription groupée Profs Relais — '+d.ecole.nom+' ('+d.ref+')';
-  const mails = await Promise.allSettled([
-    envoyerMail(MAIL_EDUCPASS, sujet, 'Nouvelle demande reçue via le formulaire en ligne (statut « En attente » dans Airtable, à traiter dans l\'outil TABLEAU PROFS RELAIS).\n\n'+recap),
-    envoyerMail(d.relais.mail, 'Votre inscription groupée Educpass — '+d.ref, 'Bonjour,\n\nNous avons bien reçu votre inscription groupée. Voici le récapitulatif :\n\n'+recap+'\n\nLes passeports seront activés dès réception du paiement.\n\nMerci et à bientôt,\nL\'équipe Educpass'),
-  ]);
   document.getElementById('form-relais').classList.add('hidden');
   document.getElementById('conf-ref').textContent = d.ref;
   document.getElementById('conf-mail').textContent = d.relais.mail;
-  if(mails[1].status==='rejected') document.getElementById('conf-mail').textContent = d.relais.mail+' (l\'envoi a échoué : notez bien votre référence)';
+  if(!mails.relais) document.getElementById('conf-mail').textContent = d.relais.mail+' (l\'envoi a échoué : notez bien votre référence)';
   document.getElementById('conf-total').textContent = euros(d.calc.total);
   document.getElementById('conf-comm').textContent = d.ref+' '+d.ecole.nom;
   document.getElementById('confirmation').classList.remove('hidden');
