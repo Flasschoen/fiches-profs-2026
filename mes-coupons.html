@@ -68,6 +68,26 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:26px;color:var(-
 .bt-or{background:var(--gold);color:var(--teal-dark);}
 
 /* ===== Écran coupon-éclaireur (même présentation que l'aperçu de la fiche attraction) ===== */
+/* ---------- carte de visite du partenaire (2026-10-03) : étape obligatoire avant le coupon ---------- */
+#fiche-overlay{position:fixed;inset:0;background:rgba(10,20,18,.6);z-index:800;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:24px 12px;}
+.fiche{background:var(--paper);border-radius:16px;max-width:720px;width:100%;padding:28px 30px 30px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.35);}
+.fiche .fermer{position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:18px;cursor:pointer;line-height:34px;}
+.fiche .f-logo{width:100%;max-width:280px;aspect-ratio:374/201;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:16px;display:flex;align-items:center;justify-content:center;}
+.fiche .f-logo img{width:100%;height:100%;object-fit:contain;}
+.fiche h2{font-family:'Fraunces',serif;font-weight:700;font-size:25px;color:var(--teal-dark);margin:0 0 4px;padding-right:40px;}
+.fiche .f-pays{font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--off);margin-bottom:16px;}
+.fiche .f-av{background:#fbe9c4;border-radius:10px;padding:14px 18px;font-weight:700;color:var(--teal-dark);font-size:15px;line-height:1.5;white-space:pre-wrap;}
+.fiche .f-action{margin:16px 0 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.fiche .f-action .bt{font-size:16px;padding:13px 24px;}
+.fiche .f-action .note{font-size:12.5px;color:var(--off);}
+.fiche .f-sec{margin-bottom:18px;}
+.fiche .f-sec .lbl{font-size:12.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--teal);margin-bottom:6px;}
+.fiche .f-sec .val{font-size:15px;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere;}
+.fiche .f-photos{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;}
+.fiche .f-photos img{height:110px;border-radius:8px;flex-shrink:0;}
+.fiche .f-video{position:relative;width:100%;padding-top:56.25%;border-radius:10px;overflow:hidden;background:#000;}
+.fiche .f-video iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
+@media (max-width:600px){ #fiche-overlay{padding:0;} .fiche{border-radius:0;min-height:100%;padding:22px 16px 26px;} .fiche .f-action .bt{width:100%;text-align:center;} }
 #coupon-overlay{position:fixed;inset:0;background:rgba(10,20,18,.72);z-index:900;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:18px 12px;}
 .coupon{width:100%;max-width:380px;background:#f1e9d6;border-radius:22px;overflow:hidden;font-family:Arial,sans-serif;box-shadow:0 12px 40px rgba(0,0,0,.45);position:relative;margin:auto 0;}
 .coupon .fermer{position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:50%;border:none;background:#fff;font-size:18px;cursor:pointer;line-height:34px;}
@@ -132,7 +152,7 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:26px;color:var(-
 
 <div class="wrap">
   <h1 class="title">Mes coupons</h1>
-  <p class="subtitle">Choisissez un partenaire, puis présentez l'écran du coupon à l'accueil.</p>
+  <p class="subtitle">Choisissez un partenaire pour voir sa carte de visite. Le bouton « Afficher le coupon » s'y trouve : présentez ensuite l'écran du coupon à l'accueil.</p>
 
   <div class="msg-box msg-err hidden" id="msg-erreur"></div>
   <div class="msg-box msg-warn hidden" id="msg-cotisation">
@@ -145,6 +165,10 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:26px;color:var(-
     <input type="search" class="recherche" id="recherche" placeholder="🔎 Rechercher un partenaire…" autocomplete="off">
   </div>
   <div id="liste"><div class="vide">⏳ Chargement des partenaires…</div></div>
+</div>
+
+<div id="fiche-overlay" class="hidden" role="dialog" aria-modal="true" aria-label="Carte de visite du partenaire">
+  <div class="fiche" id="fiche"></div>
 </div>
 
 <div id="coupon-overlay" class="hidden" role="dialog" aria-modal="true" aria-label="Coupon">
@@ -263,7 +287,7 @@ async function chargerCompte(){
 async function chargerPartenaires(){
   let all = [], offset;
   do{
-    const params = new URLSearchParams({pageSize:'100', filterByFormula:'{Coupon publié}=1'});
+    const params = new URLSearchParams({pageSize:'100', filterByFormula:'AND({Coupon publié}=1,{Publié}=1)'});
     if(offset) params.set('offset', offset);
     const r = await fetch(`${CARTE_URL}?${params.toString()}`);
     if(!r.ok) throw new Error('Attractions '+r.status);
@@ -309,10 +333,66 @@ function rendreListe(){
       + `<div class="nom">${escHtml(nomDe(c))}</div>`
       + `<div class="pays">${escHtml(libellePays(paysDe(c)))}</div>`
       + (avantageDe(c) ? `<div class="av">${escHtml(avantageDe(c))}</div>` : '')
-      + `<div class="ouvrir">${enOrdre ? '🎟️ Afficher le coupon' : '🔒 Coupon verrouillé'}</div>`
+      + `<div class="ouvrir">🔎 Voir la carte de visite</div>`
       + `</button>`;
   }).join('') + '</div>';
-  zone.querySelectorAll('.carte-p').forEach(b=>b.addEventListener('click', ()=>ouvrirCoupon(b.getAttribute('data-id'))));
+  zone.querySelectorAll('.carte-p').forEach(b=>b.addEventListener('click', ()=>ouvrirFiche(b.getAttribute('data-id'))));
+}
+
+// ---------- Carte de visite du partenaire (2026-10-03, demande de Marc) ----------
+// L'enseignant passe d'abord par la carte de visite ; le bouton "Afficher le coupon" ne se
+// trouve que là. Cotisation pas en ordre : le bouton est remplacé par "Régler ma cotisation".
+function toEmbedUrl(url){
+  if(!url) return null;
+  try{
+    const u = new URL(url);
+    let id = null;
+    if(u.hostname.indexOf('youtu.be')!==-1){ id = u.pathname.replace(/^\//,''); }
+    else if(u.searchParams.get('v')){ id = u.searchParams.get('v'); }
+    else if(u.pathname.indexOf('/embed/')!==-1){ return url; }
+    if(!id) return null;
+    return 'https://www.youtube.com/embed/' + id;
+  }catch(e){ return null; }
+}
+function ouvrirFiche(id){
+  const c = partenaires.find(x=>x.id===id);
+  if(!c) return;
+  const f = c.fields, nom = nomDe(c);
+  const lcv = f['Logo carte de visite'];   // sur la carte de visite : son propre logo d'abord, sinon celui du coupon
+  const logo = (Array.isArray(lcv) && lcv.length) ? (((lcv[0].thumbnails||{}).full||{}).url || lcv[0].url || '') : logoDe(c, false);
+  const avantage = f['Avantage coupon (affichage)'] || f['Avantage coupon'] || '';
+  const desc = f['Description longue'] || f['Description courte'] || '';
+  const horaires = f['Horaires et fermetures'] || '';
+  const tarifs = f['Tarifs, réservation et infos pratiques'] || '';
+  const photos = Array.isArray(f['Photos']) ? f['Photos'] : [];
+  const embed = toEmbedUrl(f['Vidéo YouTube']);
+  const sec = (lbl, txt)=> txt ? `<div class="f-sec"><div class="lbl">${lbl}</div><div class="val">${escHtml(txt)}</div></div>` : '';
+  const action = enOrdre
+    ? '<button type="button" class="bt bt-or" id="fiche-coupon">🎟️ AFFICHER LE COUPON</button>'
+    : '<a class="bt bt-or" href="cotisation.html">💳 Régler ma cotisation</a><span class="note">🔒 Le coupon sera débloqué après le règlement de votre cotisation.</span>';
+  const box = document.getElementById('fiche');
+  box.innerHTML = '<button class="fermer" type="button" aria-label="Fermer">✕</button>'
+    + (logo ? `<div class="f-logo"><img src="${escAttr(logo)}" alt="${escAttr(nom)}"></div>` : '')
+    + `<h2>${escHtml(nom)}</h2>`
+    + `<div class="f-pays">${escHtml(libellePays(paysDe(c)))}</div>`
+    + sec('Description', desc) + sec('Horaires et fermetures', horaires) + sec('Tarifs, réservation et infos pratiques', tarifs)
+    // 2026-10-03 (demande de Marc) : l'avantage et le bouton coupon viennent APRÈS le texte (sous les tarifs)
+    + (avantage ? `<div class="f-av">${escHtml(avantage)}</div>` : '')
+    + `<div class="f-action">${action}</div>`
+    + (embed ? `<div class="f-sec"><div class="lbl">Vidéo</div><div class="f-video"><iframe src="${escAttr(embed)}" title="${escAttr(nom)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div></div>` : '')
+    + (photos.length ? `<div class="f-sec"><div class="lbl">Photos</div><div class="f-photos">${photos.map(p=>`<img src="${escAttr((p.thumbnails&&p.thumbnails.large)?p.thumbnails.large.url:p.url)}" alt="" loading="lazy">`).join('')}</div></div>` : '');
+  box.querySelector('.fermer').addEventListener('click', fermerFiche);
+  const bc = document.getElementById('fiche-coupon');
+  if(bc) bc.addEventListener('click', ()=>ouvrirCoupon(id));
+  document.getElementById('fiche-overlay').classList.remove('hidden');
+  document.body.classList.add('coupon-ouvert');
+  document.getElementById('fiche-overlay').scrollTop = 0;
+}
+function ficheOuverte(){ return !document.getElementById('fiche-overlay').classList.contains('hidden'); }
+function fermerFiche(){
+  document.getElementById('fiche-overlay').classList.add('hidden');
+  document.getElementById('fiche').innerHTML = '';   // coupe aussi la vidéo
+  document.body.classList.remove('coupon-ouvert');
 }
 
 function ouvrirCoupon(id){
@@ -372,11 +452,13 @@ function dessinerQr(texte){
 
 function fermerCoupon(){
   document.getElementById('coupon-overlay').classList.add('hidden');
-  document.body.classList.remove('coupon-ouvert');
+  if(!ficheOuverte()) document.body.classList.remove('coupon-ouvert');
   document.getElementById('coupon').innerHTML = '';
 }
 document.getElementById('coupon-overlay').addEventListener('click', (e)=>{ if(e.target.id==='coupon-overlay') fermerCoupon(); });
-document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') fermerCoupon(); });
+document.getElementById('fiche-overlay').addEventListener('click', (e)=>{ if(e.target.id==='fiche-overlay') fermerFiche(); });
+document.addEventListener('keydown', (e)=>{ if(e.key!=='Escape') return;
+  if(!document.getElementById('coupon-overlay').classList.contains('hidden')) fermerCoupon(); else if(ficheOuverte()) fermerFiche(); });
 
 let debounce;
 document.getElementById('recherche').addEventListener('input', (e)=>{
