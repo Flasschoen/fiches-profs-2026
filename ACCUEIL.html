@@ -216,7 +216,9 @@ h1.title{
   border-radius:14px;
   overflow:hidden;
   box-shadow:0 6px 24px rgba(19,36,32,.16);
-  background:var(--paper-2);
+  /* 2026-10-03 (demande de Marc) : fond mauve clair, et bloc à la même
+     hauteur que la bannière de gauche (voir alignerSponsor() plus bas). */
+  background:#e5daf4;
   display:flex;
   flex-direction:column;
   align-items:center;
@@ -224,7 +226,10 @@ h1.title{
   gap:10px;
   padding:12px;
   min-width:0;
+  min-height:120px;
+  box-sizing:border-box;
 }
+.sponsor-block.aligne{align-self:start;min-height:0;}
 .sponsor-block .sponsor-logo{max-width:82%;max-height:50%;object-fit:contain;}
 .sponsor-block .sponsor-action-btn{
   border:none;border-radius:10px;padding:8px 16px;
@@ -692,6 +697,26 @@ async function chargerPhraseAccueil(){
   }
 }
 
+// 2026-10-03 (demande de Marc) : le bloc sponsor prend exactement la hauteur
+// de la bannière « Offres du moment » et s'aligne sur elle (sans compter le
+// titre au-dessus ni la note en dessous). Sur GSM (blocs empilés) : hauteur libre.
+function alignerSponsor(){
+  const bloc = document.querySelector('.sponsor-block');
+  const car = document.getElementById('carousel');
+  if(!bloc || !car) return;
+  const col = car.parentElement;
+  const cote = bloc.getBoundingClientRect().left > col.getBoundingClientRect().right - 1;
+  if(!cote){ bloc.classList.remove('aligne'); bloc.style.height=''; bloc.style.marginTop=''; return; }
+  bloc.classList.add('aligne');
+  bloc.style.marginTop = Math.round(car.getBoundingClientRect().top - col.getBoundingClientRect().top) + 'px';
+  bloc.style.height = car.offsetHeight + 'px';
+}
+window.addEventListener('resize', alignerSponsor);
+window.addEventListener('load', alignerSponsor);
+if(window.ResizeObserver){
+  const _roSponsor = new ResizeObserver(alignerSponsor);
+  document.addEventListener('DOMContentLoaded', ()=>{ const c=document.getElementById('carousel'); if(c){ _roSponsor.observe(c); _roSponsor.observe(c.parentElement); } alignerSponsor(); });
+}
 async function chargerSponsor(){
   try{
     const data = await atFetch(CONTENU_API + '/' + SPONSOR_ACTION_ID);
