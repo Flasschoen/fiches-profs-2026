@@ -230,7 +230,9 @@ h1.title{
   box-sizing:border-box;
 }
 .sponsor-block.aligne{align-self:start;min-height:0;}
-.sponsor-block .sponsor-logo{max-width:82%;max-height:50%;object-fit:contain;}
+.sponsor-block .sponsor-logo{max-width:86%;max-height:62%;object-fit:contain;
+  /* 2026-10-03 : cadre blanc arrondi, pour qu'un logo à fond blanc ne fasse plus un rectangle brut sur le mauve */
+  background:#fff;border-radius:10px;padding:8px 12px;box-sizing:border-box;box-shadow:0 2px 8px rgba(19,36,32,.10);}
 .sponsor-block .sponsor-action-btn{
   border:none;border-radius:10px;padding:8px 16px;
   font-family:'Work Sans',Arial,sans-serif;font-weight:700;font-size:13px;
@@ -724,7 +726,7 @@ async function chargerSponsor(){
     const img = document.getElementById('sponsor-logo-img');
     const btn = document.getElementById('sponsor-action-btn');
     const logo = f['Logo'] && f['Logo'][0];
-    if(img && logo && logo.url) img.src = logo.url;
+    if(img && logo && logo.url) img.src = (logo.thumbnails && logo.thumbnails.large && logo.thumbnails.large.url) || logo.url;
     if(btn){
       if(f['Texte bouton']) btn.textContent = f['Texte bouton'];
       const lien = f['Lien bouton'];
