@@ -191,6 +191,9 @@ function rtNettoyer(html){
 }
 
 // 2026-10-03 : vidéo de la page (champ « Vidéo » de la fiche, géré dans le back-office)
+// 2026-10-03 (correctif) : un texte vide reste vide — on n'affiche plus « à compléter » (ancien texte provisoire)
+function texteSansProvisoire(t){ t = String(t == null ? '' : t).trim(); return /^[àa] compl[ée]ter\.?$/i.test(t) ? '' : t; }
+function masquerSiVide(el){ if(el && !el.textContent.trim() && !el.querySelector('img,iframe,a')) el.style.display = 'none'; }
 function videoEmbedUrl(url){
   // Lien YouTube (youtube.com/watch, youtu.be, shorts, live, embed) ou Vimeo → adresse du lecteur intégré ; sinon null.
   try{
@@ -241,8 +244,9 @@ async function chargerContenu(){
     })();
     afficherVideoPage(f['Vidéo']);
     if(f['Texte HTML']){ el.innerHTML = rtNettoyer(f['Texte HTML']); el.classList.add('riche'); }
-    else el.textContent = f['Texte'] || 'à compléter';
+    else el.textContent = texteSansProvisoire(f['Texte']);
     el.classList.remove('loading');
+    masquerSiVide(el);
   }catch(e){
     el.textContent = 'Contenu momentanément indisponible.';
     el.classList.remove('loading');
