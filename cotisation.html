@@ -199,7 +199,7 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:24px;color:var(-
         <div style="margin-top:16px;">
           <a href="#" class="btn-principal desactive" id="btn-payer" onclick="payerCotisation(event)">💳 Payer ma cotisation</a>
         </div>
-        <p style="font-size:12px;color:var(--off);margin:14px 0 0;">Vous serez redirigé vers Mollie pour le paiement sécurisé. Votre accès aux coupons se débloque automatiquement dès le paiement confirmé.</p>
+        <p id="txt-explication-mollie" style="font-size:12px;color:var(--off);margin:14px 0 0;">Vous serez redirigé vers Mollie pour le paiement sécurisé. Votre accès aux coupons se débloque automatiquement dès le paiement confirmé.</p>
       </div>
 
       <!-- Paiement par virement bancaire (manuel) — actif tant que Mollie
@@ -213,7 +213,7 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:24px;color:var(-
         <!-- Repliée par défaut : se déplie au clic sur le bouton ci-dessus et
              présente les deux solutions pour régler par virement. -->
         <div id="virement-details" class="hidden" style="margin-top:14px;">
-          <p style="font-size:12px;font-weight:700;color:var(--teal-dark);margin:0 0 6px;text-transform:uppercase;letter-spacing:.3px;">Solution 1 — Virement manuel</p>
+          <p style="font-size:12px;font-weight:700;color:var(--teal-dark);margin:0 0 6px;text-transform:uppercase;letter-spacing:.3px;" id="txt-titre-virement">Solution 1 — Virement manuel</p>
           <div id="virement-contenu">Chargement des coordonnées de virement...</div>
           <!-- QR code SEPA (virement) — n'apparaît que si la fiche Airtable de
                cette fédération a ses 3 champs IBAN/BIC/Titulaire (pour QR virement)
@@ -221,9 +221,9 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:24px;color:var(-
                bas : masqué par défaut pour ne jamais risquer d'afficher un mauvais
                IBAN (ex: fédérations Belge/NL/LUX/DE, pas encore concernées). -->
           <div id="virement-qr-zone" class="hidden" style="margin-top:18px;text-align:center;border-top:1px dashed var(--line);padding-top:14px;">
-            <p style="font-size:12px;font-weight:700;color:var(--teal-dark);margin:0 0 8px;text-transform:uppercase;letter-spacing:.3px;text-align:left;">Solution 2 — Scanner le QR code</p>
+            <p style="font-size:12px;font-weight:700;color:var(--teal-dark);margin:0 0 8px;text-transform:uppercase;letter-spacing:.3px;text-align:left;" id="txt-titre-qr">Solution 2 — Scanner le QR code</p>
             <div id="virement-qr-svg" style="display:inline-block;width:160px;height:160px;"></div>
-            <p style="font-size:12px;color:var(--off);margin:8px 0 0;">📱 Scannez ce QR code avec l'appli de votre banque : IBAN, montant et référence sont remplis automatiquement.</p>
+            <p id="txt-qr" style="font-size:12px;color:var(--off);margin:8px 0 0;">📱 Scannez ce QR code avec l'appli de votre banque : IBAN, montant et référence sont remplis automatiquement.</p>
           </div>
         </div>
       </div>
@@ -237,7 +237,7 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:24px;color:var(-
           <a href="#" class="btn-principal desactive" id="btn-payer-paypal" onclick="payerParPaypal(event)">🅿️ Payer par PayPal</a>
           <img id="logo-paypal" class="logo-moyen-paiement hidden" alt="PayPal">
         </div>
-        <p style="font-size:12px;color:var(--off);margin:14px 0 0;">Vous serez redirigé vers PayPal pour le paiement sécurisé. Votre accès aux coupons se débloque automatiquement dès le paiement confirmé.</p>
+        <p id="txt-explication-paypal" style="font-size:12px;color:var(--off);margin:14px 0 0;">Vous serez redirigé vers PayPal pour le paiement sécurisé. Votre accès aux coupons se débloque automatiquement dès le paiement confirmé.</p>
       </div>
     </div>
 
@@ -708,7 +708,43 @@ async function chargerMoyensDePaiement(){
     const records = data.records || [];
     afficherLogoMoyen(records, 'PayPal', 'logo-paypal');
     afficherLogoMoyen(records, 'Crédit Mutuel', 'logo-credit-mutuel');
-  }catch(e){ /* pas de logo si erreur réseau — non bloquant */ }
+    appliquerTextesPaiement(records);
+  }catch(e){ /* pas de logo ni de texte personnalisé si erreur réseau — non bloquant */ }
+}
+
+// 2026-10-03 (demande de Marc) : les textes de chaque moyen de paiement sont
+// modifiables dans le back-office MOYENS DE PAIEMENT.html (table Airtable
+// « Moyens de paiement »). Les valeurs ci-dessous sont les textes de secours :
+// elles restent affichées si Airtable ne répond pas ou si un champ est vide.
+const TEXTES_PAIEMENT = {
+  boutonMollie: '💳 Payer ma cotisation',
+  boutonPaypal: '🅿️ Payer par PayPal'
+};
+function appliquerTextesPaiement(records){
+  const champ = (nom, c) => {
+    const rec = records.find(x => x.fields['Nom'] === nom);
+    const v = rec && rec.fields[c];
+    return (typeof v === 'string' && v.trim()) ? v.trim() : '';
+  };
+  const poser = (id, texte) => { const el = document.getElementById(id); if(el && texte) el.textContent = texte; };
+  // Les boutons Mollie / PayPal changent de texte pendant l'utilisation (« Choisissez une
+  // formule », « Préparation du paiement… ») : on ne remplace que leur texte normal.
+  const bouton = (id, cle, texte) => {
+    if(!texte) return;
+    const ancien = TEXTES_PAIEMENT[cle];
+    TEXTES_PAIEMENT[cle] = texte;
+    const el = document.getElementById(id);
+    if(el && el.textContent === ancien) el.textContent = texte;
+  };
+  const MOLLIE = 'Paiement en ligne (Mollie)', VIR = 'Crédit Mutuel', PP = 'PayPal';
+  bouton('btn-payer', 'boutonMollie', champ(MOLLIE, 'Texte du bouton'));
+  poser('txt-explication-mollie', champ(MOLLIE, "Texte d'explication"));
+  poser('btn-virement-toggle', champ(VIR, 'Texte du bouton'));
+  poser('txt-titre-virement', champ(VIR, 'Titre virement manuel'));
+  poser('txt-titre-qr', champ(VIR, 'Titre QR code'));
+  poser('txt-qr', champ(VIR, 'Texte du QR code'));
+  bouton('btn-payer-paypal', 'boutonPaypal', champ(PP, 'Texte du bouton'));
+  poser('txt-explication-paypal', champ(PP, "Texte d'explication"));
 }
 function afficherLogoMoyen(records, nom, idImg){
   const img = document.getElementById(idImg);
@@ -737,7 +773,7 @@ function majReferenceEtBouton(produit, prixFinal){
   if(produit){
     btn.classList.remove('desactive');
     btn.removeAttribute('aria-disabled');
-    if(!btn.dataset.enCours) btn.textContent = '💳 Payer ma cotisation';
+    if(!btn.dataset.enCours) btn.textContent = TEXTES_PAIEMENT.boutonMollie;
   } else {
     btn.classList.add('desactive');
     btn.setAttribute('aria-disabled', 'true');
@@ -748,7 +784,7 @@ function majReferenceEtBouton(produit, prixFinal){
   if(produit){
     btnPaypal.classList.remove('desactive');
     btnPaypal.removeAttribute('aria-disabled');
-    if(!btnPaypal.dataset.enCours) btnPaypal.textContent = '🅿️ Payer par PayPal';
+    if(!btnPaypal.dataset.enCours) btnPaypal.textContent = TEXTES_PAIEMENT.boutonPaypal;
   } else {
     btnPaypal.classList.add('desactive');
     btnPaypal.setAttribute('aria-disabled', 'true');
@@ -786,7 +822,7 @@ async function payerCotisation(e){
     location.href = data.checkoutUrl;
   }catch(err){
     delete btn.dataset.enCours;
-    btn.textContent = '💳 Payer ma cotisation';
+    btn.textContent = TEXTES_PAIEMENT.boutonMollie;
     msg.className = 'promo-msg err';
     msg.textContent = '❌ ' + err.message;
   }
@@ -822,7 +858,7 @@ async function payerParPaypal(e){
     location.href = data.checkoutUrl;
   }catch(err){
     delete btn.dataset.enCours;
-    btn.textContent = '🅿️ Payer par PayPal';
+    btn.textContent = TEXTES_PAIEMENT.boutonPaypal;
     msg.className = 'promo-msg err';
     msg.textContent = '❌ ' + err.message;
   }
