@@ -33,6 +33,10 @@ h1{text-align:center;}
 .corps.riche a{color:var(--teal);font-weight:600;}
 .bloc2{margin-top:30px;padding-top:24px;border-top:1px solid var(--line);}
 .bloc2 h2{font-family:'Fraunces',serif;font-weight:700;font-size:23px;color:var(--teal-dark);margin:0 0 12px;text-align:center;}
+/* 2026-10-03 (demande de Marc) : photo d'illustration sous le titre, gérée dans le back-office (même présentation que Profs Relais) */
+.photo{margin:0 0 22px;}
+.photo img{display:block;margin:0 auto;max-width:100%;max-height:260px;border-radius:10px;border:1px solid var(--line);object-fit:cover;}
+.photo.hidden{display:none !important;}
 </style>
 </head>
 <body>
@@ -45,6 +49,7 @@ h1{text-align:center;}
 <div class="wrap">
   <div class="page-card">
     <h1 id="page-titre">Espace VIP</h1>
+    <div class="photo hidden" id="page-photo"></div>
     <div class="corps loading" id="page-texte">⏳ Chargement…</div>
   </div>
 </div>
@@ -95,6 +100,17 @@ async function chargerContenu(){
     const data = await r.json();
     const f = data.fields || {};
     if(f['Titre']) document.getElementById('page-titre').textContent = f['Titre'];
+    // 2026-10-03 : photo d'illustration (champ « Photo » de la fiche, gérée dans le back-office)
+    (function(){
+      const photo = f['Photo'] && f['Photo'][0];
+      const zone = document.getElementById('page-photo');
+      if(!zone || !photo || !photo.url) return;
+      const img = document.createElement('img');
+      img.alt = '';
+      img.src = (photo.thumbnails && photo.thumbnails.large && photo.thumbnails.large.url) || photo.url;
+      img.onerror = function(){ zone.classList.add('hidden'); };
+      zone.textContent = ''; zone.appendChild(img); zone.classList.remove('hidden');
+    })();
     if(f['Texte HTML']){ el.innerHTML = rtNettoyer(f['Texte HTML']); el.classList.add('riche'); }
     else el.textContent = f['Texte'] || 'à compléter';
     el.classList.remove('loading');

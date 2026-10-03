@@ -133,6 +133,10 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:24px;color:var(-
 
 #overlay-loading{position:fixed;inset:0;background:rgba(15,61,62,.35);display:flex;align-items:center;justify-content:center;z-index:1000;}
 .loading-box{background:var(--paper);border-radius:12px;padding:22px 34px;box-shadow:0 4px 28px rgba(0,0,0,.3);font-size:16px;font-weight:700;color:var(--teal-dark);text-align:center;min-width:260px;}
+/* 2026-10-03 (demande de Marc) : photo d'illustration sous le titre, gérée dans le back-office (même présentation que Profs Relais) */
+.photo{margin:0 0 22px;}
+.photo img{display:block;margin:0 auto;max-width:100%;max-height:260px;border-radius:10px;border:1px solid var(--line);object-fit:cover;}
+.photo.hidden{display:none !important;}
 </style>
 </head>
 <body>
@@ -156,6 +160,7 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:24px;color:var(-
 
 <div class="wrap">
   <h1 class="title">Ma cotisation</h1>
+  <div class="photo hidden" id="page-photo"></div>
   <p class="subtitle">Votre cotisation doit être en ordre pour l'année en cours (ou déjà réglée pour l'année suivante) afin de profiter des coupons de nos partenaires.</p>
 
   <div class="msg-box hidden" id="msg-erreur"></div>
@@ -700,6 +705,27 @@ function majQrVirement(){
 //  Sans configuration ou en cas d'erreur réseau : logos simplement absents,
 //  jamais bloquant pour le paiement lui-même.
 // ══════════════════════════════════════════════════════════
+// 2026-10-03 (demande de Marc) : photo d'illustration de la page Cotisation, gérée dans
+// MOYENS DE PAIEMENT.html (fiche « Page Cotisation » de la table « Contenu Accueil »).
+// Jamais bloquant : sans photo ou en cas d'erreur, la page reste telle quelle.
+const PHOTO_COTISATION_API = `${PROXY}/v0/${BASE}/tblvNiGHmWXwI4Htz/recXKRBaGjCgEpV6O`;
+async function chargerPhotoPage(){
+  try{
+    const r = await fetch(PHOTO_COTISATION_API);
+    if(!r.ok) return;
+    const f = (await r.json()).fields || {};
+    const photo = f['Photo'] && f['Photo'][0];
+    const zone = document.getElementById('page-photo');
+    if(!zone || !photo || !photo.url) return;
+    const img = document.createElement('img');
+    img.alt = '';
+    img.src = (photo.thumbnails && photo.thumbnails.large && photo.thumbnails.large.url) || photo.url;
+    img.onerror = function(){ zone.classList.add('hidden'); };
+    zone.textContent = ''; zone.appendChild(img); zone.classList.remove('hidden');
+  }catch(e){}
+}
+chargerPhotoPage();
+
 async function chargerMoyensDePaiement(){
   try{
     const r = await fetch(MOYENS_API + '?pageSize=100');

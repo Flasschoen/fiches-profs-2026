@@ -42,6 +42,10 @@ h2{font-family:'Fraunces',serif;font-weight:700;font-size:22px;color:var(--teal-
 #form-msg{font-size:14px;margin-top:12px;min-height:18px;}
 #form-msg.ok{color:var(--ok);font-weight:600;}
 #form-msg.err{color:var(--err);font-weight:600;}
+/* 2026-10-03 (demande de Marc) : photo d'illustration sous le titre, gérée dans le back-office (même présentation que Profs Relais) */
+.photo{margin:0 0 22px;}
+.photo img{display:block;margin:0 auto;max-width:100%;max-height:260px;border-radius:10px;border:1px solid var(--line);object-fit:cover;}
+.photo.hidden{display:none !important;}
 </style>
 </head>
 <body>
@@ -54,6 +58,7 @@ h2{font-family:'Fraunces',serif;font-weight:700;font-size:22px;color:var(--teal-
 <div class="wrap">
   <div class="page-card">
     <h1 id="page-titre">Contacts</h1>
+    <div class="photo hidden" id="page-photo"></div>
     <div class="corps loading" id="page-texte">⏳ Chargement…</div>
     <div class="coord-grid" id="coord-grid"></div>
   </div>
@@ -94,6 +99,17 @@ async function chargerContenu(){
     const data = await r.json();
     const f = data.fields || {};
     if(f['Titre']) document.getElementById('page-titre').textContent = f['Titre'];
+    // 2026-10-03 : photo d'illustration (champ « Photo » de la fiche, gérée dans le back-office)
+    (function(){
+      const photo = f['Photo'] && f['Photo'][0];
+      const zone = document.getElementById('page-photo');
+      if(!zone || !photo || !photo.url) return;
+      const img = document.createElement('img');
+      img.alt = '';
+      img.src = (photo.thumbnails && photo.thumbnails.large && photo.thumbnails.large.url) || photo.url;
+      img.onerror = function(){ zone.classList.add('hidden'); };
+      zone.textContent = ''; zone.appendChild(img); zone.classList.remove('hidden');
+    })();
     elTexte.textContent = f['Texte'] || 'à compléter';
     elTexte.classList.remove('loading');
     emailDestinataire = f['Email'] || '';
