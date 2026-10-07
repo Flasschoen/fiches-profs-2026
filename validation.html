@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Educpass — Validation du coupon</title>
+<!-- 2026-10-08 : adresse imprimée sur les présentoirs et affichettes des partenaires
+     (QR code → www.educpass.fr/validation). NE JAMAIS RENOMMER NI SUPPRIMER CE FICHIER :
+     il renvoie l'enseignant vers ses coupons pour valider sa visite à l'accueil. -->
+<meta http-equiv="refresh" content="0; url=mes-coupons.html?accueil=1">
+<style>
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f1e9d6;color:#0a2b2c;display:flex;min-height:100vh;align-items:center;justify-content:center;text-align:center;padding:24px;}
+a{display:inline-block;margin-top:14px;background:#12733a;color:#fff;padding:13px 22px;border-radius:10px;font-weight:700;text-decoration:none;font-size:17px;}
+</style>
+</head>
+<body>
+<div>
+  <p style="font-size:18px;font-weight:700;">Ouverture de vos coupons Educpass…</p>
+  <a id="lien" href="mes-coupons.html?accueil=1">Valider mon coupon</a>
+</div>
+<script>location.replace('mes-coupons.html?accueil=1');</script>
+</body>
+</html>
