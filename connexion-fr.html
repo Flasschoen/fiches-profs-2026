@@ -151,6 +151,14 @@ const PROXY = 'https://educpass-profs-proxy.marc-flasschoen.workers.dev';
 
 // 2026-09-28 : page d'arrivée de l'espace membre après connexion (décision de Marc)
 const PAGE_ARRIVEE = 'cotisation.html';
+// 2026-10-07 : arrivée par le QR code d'un présentoir sans être connecté → mes-coupons.html a noté
+// où revenir. Seule cette adresse précise est acceptée (jamais une adresse libre).
+function pageApresConnexion(){
+  let retour = '';
+  try{ retour = sessionStorage.getItem('educpass_retour') || ''; sessionStorage.removeItem('educpass_retour'); }catch(e){}
+  // 2026-10-11 : aussi le lien direct vers un coupon (mes-coupons.html?carte=recXXXXXXXXXXXXXX)
+  return (retour === 'mes-coupons.html?accueil=1' || /^mes-coupons\.html\?carte=rec[A-Za-z0-9]{14}$/.test(retour)) ? retour : PAGE_ARRIVEE;
+}
 
 // ── Session : stockage en double (localStorage + cookie), identique à cotisation.html ──
 // Un cookie longue durée (180 jours) prend le relais si le localStorage disparaît
@@ -191,7 +199,7 @@ function getSession(){
 // cotisation.html efface la session et renvoie ici : pas de boucle possible).
 (function(){
   const s = getSession();
-  if(s && s.token) location.replace(PAGE_ARRIVEE);
+  if(s && s.token) location.replace(pageApresConnexion());
 })();
 
 const form = document.getElementById('login-form');
@@ -261,7 +269,8 @@ form.addEventListener('submit', async (e)=>{
     document.getElementById('result-detail').textContent = data.prof.membre ? ('N° membre : ' + data.prof.membre) : '';
     resultPanel.classList.add('show');
     // 2026-09-28 : redirection automatique vers l'espace membre
-    setTimeout(()=> location.href = PAGE_ARRIVEE, 1200);
+    const suite = pageApresConnexion();
+    setTimeout(()=> location.href = suite, 1200);
 
   }catch(e){
     afficherMessage('Impossible de contacter le serveur. Vérifiez votre connexion et réessayez.', 'err');

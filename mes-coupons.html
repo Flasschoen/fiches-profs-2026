@@ -6,7 +6,6 @@
 <title>Mes coupons — Educpass</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 :root{
   --paper:#faf5e8;
@@ -108,11 +107,108 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:26px;color:var(-
 .c-info{padding:8px 16px 16px;display:flex;gap:12px;align-items:flex-start;}
 .c-info .txt{flex:1;font-size:13px;color:#333;line-height:1.55;min-width:0;overflow-wrap:anywhere;}
 .c-info .txt b{font-size:14px;}
-.c-qr{flex-shrink:0;text-align:center;}
+/* ---- Validation du coupon à l'accueil (2026-10-07) ---- */
+.c-valider{padding:4px 18px 6px;text-align:center;}
+/* 2026-10-08 (demande de Marc) : bouton vert clair à coins arrondis, à la place de l'ancien QR code */
+.c-slot{flex-shrink:0;width:116px;}
+.c-slot:empty{display:none;}
+.c-slot .bt{width:100%;min-height:96px;font-size:15px;font-weight:800;line-height:1.25;padding:10px 8px;background:#d6efdb;color:#0f5a2b;border:2px solid #1a7a3c;border-radius:16px;box-shadow:0 2px 0 rgba(15,90,43,.25);}
+.c-valider .aide{font-size:12px;color:#555;margin-top:7px;line-height:1.4;}
+.c-confirme{margin:12px 16px 4px;padding:14px;background:#fff;border:2px solid #c9a227;border-radius:12px;text-align:center;font-size:14px;line-height:1.45;color:#222;}
+.c-confirme b{color:#0a2b2c;}
+.c-confirme .rang{display:flex;gap:8px;margin-top:12px;}
+.c-confirme .rang .bt{flex:1;padding:12px 8px;font-size:15px;}
+.c-confirme .bt-non{background:#e6e0cf;color:#333;}
+.c-confirme .bt-oui{background:#1a7a3c;color:#fff;}
+.c-msg-val{margin:10px 16px 0;padding:10px 12px;border-radius:10px;background:#fdecea;color:#8a1c1c;font-size:13.5px;font-weight:700;text-align:center;}
+.c-utilise{margin:12px 16px 4px;padding:14px;background:#e9e5d8;border-radius:12px;text-align:center;font-size:14px;line-height:1.5;color:#444;}
+.c-utilise b{display:block;font-size:16px;color:#0a2b2c;}
+.coupon.valide{background:#12733a;color:#fff;}
+.v-ecran{padding:26px 18px 24px;text-align:center;}
+.v-ecran .coche{width:86px;height:86px;border-radius:50%;background:#fff;color:#12733a;font-size:54px;line-height:86px;margin:0 auto 12px;animation:vpouls 1.6s ease-in-out infinite;}
+@keyframes vpouls{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(255,255,255,.55);}50%{transform:scale(1.07);box-shadow:0 0 0 14px rgba(255,255,255,0);}}
+.v-ecran .titre{font-size:27px;font-weight:800;letter-spacing:.5px;}
+.v-ecran .attr{font-size:23px;font-weight:800;margin:12px 0 4px;line-height:1.2;text-transform:uppercase;}
+.v-ecran .avv{background:#fbe9c4;color:#0a2b2c;border-radius:10px;padding:10px 12px;font-weight:700;font-size:15px;margin:12px 0;white-space:pre-wrap;line-height:1.4;}
+.v-ecran .prof{font-size:16px;font-weight:700;margin-top:6px;}
+.v-ecran .horloge{font-size:34px;font-weight:800;font-variant-numeric:tabular-nums;margin-top:12px;letter-spacing:1px;}
+.v-ecran .jour{font-size:15px;opacity:.95;}
+.v-ecran .barre{height:8px;border-radius:4px;background:rgba(255,255,255,.25);overflow:hidden;margin:16px 0 10px;}
+.v-ecran .barre i{display:block;height:100%;width:35%;background:#fff;border-radius:4px;animation:vbarre 2.2s linear infinite;}
+@keyframes vbarre{0%{transform:translateX(-110%);}100%{transform:translateX(300%);}}
+.v-ecran .pied{font-size:13px;opacity:.95;line-height:1.45;}
+.v-ecran .validele{font-size:13px;margin-top:8px;opacity:.9;}
+.carte-p .utilise{margin-top:6px;font-size:12px;font-weight:700;color:#12733a;background:#e3f3e7;border-radius:6px;padding:3px 7px;align-self:flex-start;}
 .c-retour{padding:10px 18px 18px;text-align:center;}
 .c-retour .bt{width:100%;background:#fff;color:#0a2b2c;border:2px solid #0f3d3e;border-radius:12px;font-size:15px;padding:11px 12px;}
-.c-qr .qr{width:110px;height:110px;padding:4px;background:#fff;box-shadow:0 0 0 1px #ddd;}
-.c-qr .qr img,.c-qr .qr canvas{width:102px !important;height:102px !important;display:block;}
+.coupon.valide .c-retour .bt{border-color:#fff;}
+/* ---- Modes du coupon, codes personnels, périodes non valables, coupon papier (2026-10-08) ---- */
+.c-slot a.bt{display:flex;align-items:center;justify-content:center;text-align:center;box-sizing:border-box;}
+.c-periode{margin:12px 16px 4px;padding:14px;background:#fdecea;border:2px solid #c0392b;border-radius:12px;text-align:center;font-size:14.5px;font-weight:700;line-height:1.45;color:#8a1c1c;}
+.c-periodes-info{margin:8px 16px 0;font-size:12px;color:#555;text-align:center;line-height:1.4;}
+.carte-p .nonvalable{margin-top:6px;font-size:12px;font-weight:700;color:#8a1c1c;background:#fdecea;border-radius:6px;padding:3px 7px;align-self:flex-start;}
+.codes-perso{margin:10px 16px 4px;padding:12px;background:#fff;border:2px solid #c9a227;border-radius:12px;}
+.fiche .codes-perso{margin:14px 0 0;}
+.code-ligne{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:5px 0;font-size:15px;color:#222;}
+.code-ligne .lib{font-weight:700;}
+.code-ligne .code{font-family:Consolas,Menlo,monospace;font-size:19px;font-weight:800;letter-spacing:1.5px;color:#0a2b2c;user-select:all;}
+.code-ligne .bt-copier{margin-left:auto;padding:7px 12px;font-size:13px;background:#0f3d3e;color:#fff;border-radius:8px;}
+.codes-note,.codes-attente{font-size:12.5px;color:#555;margin-top:6px;text-align:center;}
+.codes-attente{margin:10px 16px;}
+.c-papier-pret{margin:12px 16px 4px;padding:14px;background:#e3f3e7;border-radius:12px;text-align:center;font-size:14px;line-height:1.5;color:#0f5a2b;}
+.c-papier-pret .bt{margin-top:10px;background:#1a7a3c;color:#fff;font-size:15px;padding:11px 18px;}
+#papier{display:none;}
+.pp{width:92mm;border:1.2pt solid #000;padding:5mm;font-family:Arial,Helvetica,sans-serif;color:#000;background:#fff;box-sizing:border-box;}
+.pp-logo{text-align:center;border-bottom:.8pt solid #000;padding-bottom:3mm;}
+.pp-logo img{width:62mm;height:auto;}
+.pp-titre{text-align:center;font-size:17pt;padding:2.5mm 0;border-bottom:.8pt solid #000;}
+.pp-titre small{display:block;font-size:8.5pt;font-style:italic;}
+.pp-corps{display:flex;gap:4mm;padding:4mm 0;align-items:center;}
+.pp-img{width:34mm;flex-shrink:0;} .pp-img img{width:100%;height:auto;display:block;}
+.pp-part{flex:1;text-align:center;font-size:8.5pt;font-style:italic;line-height:1.5;}
+.pp-nom{font-weight:700;font-style:normal;font-size:10pt;margin-bottom:1mm;}
+.pp-av{margin-top:4mm;color:#c00000;font-weight:700;font-style:normal;font-size:10.5pt;line-height:1.3;white-space:pre-wrap;}
+.pp-per{font-size:7.5pt;text-align:center;padding-bottom:3mm;}
+.pp-bas{display:flex;gap:3mm;border-top:.8pt solid #000;padding-top:3mm;align-items:stretch;}
+.pp-prof{flex:1;font-size:8.5pt;line-height:1.5;} .pp-t{font-weight:700;font-size:9.5pt;border-bottom:.6pt solid #000;margin-bottom:1.5mm;padding-bottom:1mm;}
+.pp-num{width:38mm;flex-shrink:0;border:1pt solid #000;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2mm;box-sizing:border-box;}
+.pp-num b{font-size:8.5pt;font-family:Consolas,Menlo,monospace;margin:1mm 0;word-break:break-all;} .pp-num small{font-size:7pt;}
+.pp-pied{font-size:6.5pt;text-align:center;margin-top:3mm;color:#333;}
+@media print{
+  body.impression > *:not(#papier){display:none !important;}
+  body.impression{background:#fff !important;margin:0;}
+  body.impression #papier{display:block !important;padding:12mm;}
+  @page{margin:0;}
+}
+/* ---- Demande de réservation (2026-10-11) ---- */
+.r-form{margin:12px 16px 4px;padding:14px;background:#fff;border:2px solid #c9a227;border-radius:12px;font-size:14px;color:#222;}
+.r-titre{font-weight:800;color:#0a2b2c;font-size:15px;margin-bottom:6px;}
+.r-moi{font-size:12.5px;color:#555;margin-bottom:10px;overflow-wrap:anywhere;}
+.r-champ{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0;}
+.r-champ.r-col{flex-direction:column;align-items:stretch;}
+.r-lib{font-weight:700;min-width:120px;}
+.r-champ select,.r-champ input[type=date],.r-champ textarea{font:inherit;padding:7px 8px;border:1px solid #bbb;border-radius:8px;background:#fff;}
+.r-champ textarea{width:100%;box-sizing:border-box;resize:vertical;}
+.r-acc{margin:10px 0;padding:10px;background:#f6f1e3;border-radius:10px;font-weight:700;}
+.r-acc .r-lib{font-weight:600;}
+.r-total{margin-top:6px;text-align:right;}
+.r-aide{font-size:12px;color:#555;line-height:1.4;margin:4px 0;}
+.r-form .rang{display:flex;gap:8px;margin-top:12px;}
+.r-form .rang .bt{flex:1;padding:12px 8px;font-size:15px;}
+.r-ok{margin:12px 16px 0;padding:10px 12px;border-radius:10px;background:#e3f3e7;color:#12733a;font-weight:700;text-align:center;}
+.r-alerte{margin:10px 16px 0;padding:10px 12px;border-radius:10px;background:#fff3cd;border:2px solid #c9a227;font-weight:700;font-size:13.5px;line-height:1.4;color:#5a4500;}
+.r-resume{text-align:left;}
+.r-resume .r-titre{font-size:16px;}
+.r-resume .r-inline{display:inline;font-size:inherit;}
+.r-etat{margin-top:10px;}
+.r-etat > b{display:block;color:#0a2b2c;}
+.r-pied{margin-top:10px;font-size:12px;color:#666;}
+.r-virement{margin-top:8px;padding:10px;background:#fff;border:2px dashed #c9a227;border-radius:10px;}
+.r-l{display:flex;justify-content:space-between;gap:10px;padding:3px 0;border-bottom:1px solid #eee;font-size:13.5px;}
+.r-l b{text-align:right;overflow-wrap:anywhere;display:inline;font-size:inherit;}
+.r-virement small{display:block;margin-top:6px;color:#555;font-size:12px;}
+.r-info{margin-top:6px;font-size:13px;color:#555;}
+.bandeau-accueil{background:#12733a;color:#fff;border-radius:10px;padding:12px 16px;font-size:15px;font-weight:700;margin:0 0 14px;line-height:1.4;}
 .c-pied{background:#1a1a1a;color:#fff;text-align:center;font-weight:700;font-size:14px;padding:13px;}
 .c-pied small{display:block;font-weight:400;font-size:11px;color:#bbb;margin-top:3px;}
 .c-verrou{padding:26px 22px 28px;text-align:center;}
@@ -158,6 +254,7 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:26px;color:var(-
   <h1 class="title">Mes coupons</h1>
   <p class="subtitle">Choisissez un partenaire pour voir sa carte de visite. Le bouton « Afficher le coupon » s'y trouve : présentez ensuite l'écran du coupon à l'accueil.</p>
 
+  <div class="bandeau-accueil hidden" id="bandeau-accueil">📍 Vous êtes à l'accueil d'un partenaire ? Cherchez-le ci-dessous, ouvrez son coupon, puis appuyez sur « Valider le coupon » devant la personne de l'accueil.</div>
   <div class="msg-box msg-err hidden" id="msg-erreur"></div>
   <div class="msg-box msg-warn hidden" id="msg-cotisation">
     <span>⚠️ <b>Votre cotisation n'est pas à jour.</b> Vous pouvez parcourir les partenaires, mais les coupons seront débloqués après le règlement de votre cotisation.</span>
@@ -237,7 +334,14 @@ function getSession(){
   return null;
 }
 const session = getSession();
+// Arrivée par le QR code du présentoir (…/mes-coupons.html?accueil=1) : on s'en souvient pour
+// revenir ici après la connexion.
+const ARRIVEE_ACCUEIL = /[?&]accueil=1(&|$)/.test(location.search);
+// 2026-10-11 : lien direct vers un coupon (ex. depuis WinDev à la place du lien Jotform) : mes-coupons.html?carte=recXXXXXXXXXXXXXX
+const CARTE_DEMANDEE = (location.search.match(/[?&]carte=(rec[A-Za-z0-9]{14})(&|$)/) || [])[1] || '';
 if(!session || !session.token){
+  if(ARRIVEE_ACCUEIL){ try{ sessionStorage.setItem('educpass_retour', 'mes-coupons.html?accueil=1'); }catch(e){} }
+  else if(CARTE_DEMANDEE){ try{ sessionStorage.setItem('educpass_retour', 'mes-coupons.html?carte=' + CARTE_DEMANDEE); }catch(e){} }
   location.href = 'connexion-fr.html';
 }
 
@@ -257,6 +361,32 @@ let enOrdre = false;
 let partenaires = [];
 let ongletActif = 'TOUTES';
 let rechercheTxt = '';
+// Coupons déjà utilisés cette année civile : id de la carte de visite → date ISO de la visite
+let validations = {};
+let validationsInfo = {};   // id de la carte → {mode, numero}
+let anneeCoupons = new Date().getFullYear();
+let horlogeValidation = null;
+
+async function chargerValidations(){
+  // Simple confort d'affichage : la règle (un coupon par attraction et par an) est appliquée par le serveur.
+  try{
+    const r = await fetch(`${PROXY}/coupons/mes-validations`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ token: session.token }),
+    });
+    const data = await r.json().catch(()=> ({}));
+    if(!r.ok || !data.ok) return;
+    const m = {}, mi = {};
+    (data.validations||[]).forEach(v=>{ if(v.carte){ m[v.carte] = v.date || ''; mi[v.carte] = {mode:v.mode || 'Standard', numero:v.numero || '', reservation:v.reservation || null}; } });
+    validations = m; validationsInfo = mi;
+    if(data.annee) anneeCoupons = data.annee;
+  }catch(e){}
+}
+function dateCourte(iso){
+  const d = new Date(iso);
+  if(!iso || isNaN(d)) return '';
+  return d.toLocaleDateString('fr-BE', {day:'2-digit', month:'2-digit', year:'numeric', timeZone:'Europe/Brussels'});
+}
 
 function paysDe(c){
   const arr = c.fields['Pays (via Attraction)'];
@@ -337,6 +467,8 @@ function rendreListe(){
       + `<div class="nom">${escHtml(nomDe(c))}</div>`
       + `<div class="pays">${escHtml(libellePays(paysDe(c)))}</div>`
       + (avantageDe(c) ? `<div class="av">${escHtml(avantageDe(c))}</div>` : '')
+      + (validations[c.id]!==undefined ? `<div class="utilise">✔ ${(validationsInfo[c.id]||{}).mode==='Coupon papier' ? 'Imprimé' : ((validationsInfo[c.id]||{}).mode==='Demande de réservation' ? 'Demandé' : 'Utilisé')}${dateCourte(validations[c.id]) ? ' le '+dateCourte(validations[c.id]) : ''}</div>`
+        : (enOrdre && modeDe(c)==='Standard' && nonValableAujourdhui(c).bloque ? '<div class="nonvalable">⛔ Non valable aujourd\'hui</div>' : ''))
       + `<div class="ouvrir">🔎 Voir la carte de visite</div>`
       + `</button>`;
   }).join('') + '</div>';
@@ -382,12 +514,14 @@ function ouvrirFiche(id){
     + sec('Description', desc) + sec('Horaires et fermetures', horaires) + sec('Tarifs, réservation et infos pratiques', tarifs)
     // 2026-10-03 (demande de Marc) : l'avantage et le bouton coupon viennent APRÈS le texte (sous les tarifs)
     + (avantage ? `<div class="f-av">${escHtml(avantage)}</div>` : '')
+    + (enOrdre && modeDe(c)==='Code personnel' ? '<div id="fiche-codes"></div>' : '')
     + `<div class="f-action">${action}</div>`
     + (embed ? `<div class="f-sec"><div class="lbl">Vidéo</div><div class="f-video"><iframe src="${escAttr(embed)}" title="${escAttr(nom)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div></div>` : '')
     + (photos.length ? `<div class="f-sec"><div class="lbl">Photos</div><div class="f-photos">${photos.map(p=>`<img src="${escAttr((p.thumbnails&&p.thumbnails.large)?p.thumbnails.large.url:p.url)}" alt="" loading="lazy">`).join('')}</div></div>` : '');
   box.querySelector('.fermer').addEventListener('click', fermerFiche);
   const bc = document.getElementById('fiche-coupon');
   if(bc) bc.addEventListener('click', ()=>ouvrirCoupon(id));
+  if(enOrdre && modeDe(c)==='Code personnel') afficherCodes(id, document.getElementById('fiche-codes'));
   document.getElementById('fiche-overlay').classList.remove('hidden');
   document.body.classList.add('coupon-ouvert');
   document.getElementById('fiche-overlay').scrollTop = 0;
@@ -411,7 +545,7 @@ function ouvrirCoupon(id){
       + `<h2>Coupon « ${escHtml(nom)} »</h2>`
       + '<p>Réglez votre cotisation pour débloquer ce coupon et tous les avantages Educpass.</p>'
       + '<a class="bt bt-or" href="cotisation.html">💳 Régler ma cotisation</a></div>'
-      + '<div class="c-retour"><button type="button" class="bt" data-retour-carte="1">← Retour à la carte de visite</button></div>';
+      + '<div class="c-retour"><button type="button" class="bt" data-retour-carte="1">← Retour page précédente</button></div>';
   } else {
     const logo = logoDe(c, false);
     const av = truncateForCoupon(avantageDe(c)) || '—';
@@ -433,29 +567,505 @@ function ouvrirCoupon(id){
       +   (l1 ? escHtml(l1)+'<br>' : '') + (l2 ? escHtml(l2)+'<br>' : '')
       +   (compte.membre ? 'N° de membre : <b>'+escHtml(compte.membre)+'</b><br>' : '')
       +   (annee ? 'Cotisation : <b>'+escHtml(annee)+'</b>' : '')
-      + '</div><div class="c-qr"><div class="qr" id="c-qr"></div></div></div>'
-      + '<div class="c-pied">Présentez cet écran à l\'accueil<small>Coupon personnel — une pièce d\'identité peut vous être demandée</small></div>'
-      + '<div class="c-retour"><button type="button" class="bt" data-retour-carte="1">← Retour à la carte de visite</button></div>';
-    // Texte du QR sans accents (lecture fiable par tous les lecteurs) : EDUCPASS|n° membre|NOM|année
-    dessinerQr(`EDUCPASS|${compte.membre||''}|${nomProf}|${annee}`.normalize('NFD').replace(/[̀-ͯ]/g,''));
+      + '</div><div class="c-slot" id="c-slot-valider"></div></div>'
+      + (modeDe(c)==='Standard' ? '<div class="c-pied">Présentez cet écran à l\'accueil<small>Coupon personnel — une pièce d\'identité peut vous être demandée</small></div>'
+        : '<div class="c-pied">Coupon personnel<small>Une pièce d\'identité peut vous être demandée lors de votre visite</small></div>')
+      + '<div id="c-zone-validation"></div>'
+      + '<div class="c-retour"><button type="button" class="bt" data-retour-carte="1">← Retour page précédente</button></div>';
   }
+  box.classList.remove('valide');
   box.querySelector('.fermer').addEventListener('click', fermerCoupon);
   box.querySelectorAll('[data-retour-carte]').forEach(b=>b.addEventListener('click', ()=>retourCarteDeVisite(id)));
+  if(enOrdre) rendreZoneValidation(id);
   document.getElementById('coupon-overlay').classList.remove('hidden');
   document.body.classList.add('coupon-ouvert');
   document.getElementById('coupon-overlay').scrollTop = 0;
 }
 
-function dessinerQr(texte){
-  const el = document.getElementById('c-qr');
-  if(!el) return;
+// ---------- Modes du coupon et périodes non valables (2026-10-08, demande de Marc) ----------
+// Chaque carte de visite a un mode (réglé dans l'outil Attractions) :
+//   Standard (ou vide) → « Valider le coupon » à l'accueil ;
+//   Lien partenaire    → le bouton ouvre le site du partenaire (Walibi…), le passage est compté ;
+//   Coupon papier      → impression unique du coupon (Astérix…) ;
+//   Code personnel     → codes fournis par le partenaire (Han, Salon Educ…).
+// Les règles sont appliquées par le serveur ; ici on ne fait qu'afficher.
+function choixTexte(v){ return (v && typeof v === 'object') ? String(v.name||'').trim() : String(v==null?'':v).trim(); }
+function modeDe(c){
+  const m = choixTexte(c.fields['Coupon — mode']);
+  return ['Lien partenaire','Coupon papier','Code personnel','Demande de réservation'].includes(m) ? m : 'Standard';
+}
+const TEXTE_BOUTON_DEFAUT = {'Standard':'Valider le coupon', 'Lien partenaire':'Réserver sur le site du partenaire', 'Coupon papier':'Imprimer votre coupon-papier', 'Code personnel':'Réserver', 'Demande de réservation':'Réserver'};
+function texteBoutonDe(c){ return String(c.fields['Coupon — texte du bouton']||'').trim() || TEXTE_BOUTON_DEFAUT[modeDe(c)]; }
+function lienDe(c){
+  let u = String(c.fields['Coupon — lien partenaire']||'').trim();
+  if(!u) return '';
+  if(!/^https?:\/\//i.test(u)) u = 'https://' + u;
+  try{ const x = new URL(u); return (x.protocol==='https:' || x.protocol==='http:') ? x.href : ''; }catch(e){ return ''; }
+}
+function jourBruxelles(d){ return new Intl.DateTimeFormat('en-CA', {timeZone:'Europe/Brussels', year:'numeric', month:'2-digit', day:'2-digit'}).format(d); }
+function reglesPeriodes(c){
+  const periodes = [];
+  String(c.fields['Coupon — périodes non valables']||'').split(/\r?\n/).forEach(l=>{
+    const m = l.match(/(\d{4}-\d{2}-\d{2})\s*(?:>|→|au|-{1,2}>?|\/)?\s*(\d{4}-\d{2}-\d{2})?/);
+    if(!m) return;
+    let a = m[1], b = m[2] || m[1];
+    if(b < a){ const t = a; a = b; b = t; }
+    periodes.push([a, b]);
+  });
+  const jours = String(c.fields['Coupon — jours non valables']||'').split(/[^1-7]+/).filter(Boolean).map(Number);
+  return {periodes, jours};
+}
+function jourBloque(regles, jour){
+  if(regles.periodes.some(p=> jour >= p[0] && jour <= p[1])) return true;
+  const js = new Date(jour + 'T12:00:00Z').getUTCDay();
+  return regles.jours.includes(js === 0 ? 7 : js);
+}
+function jjmmaaaa(j){ return j.slice(8,10) + '/' + j.slice(5,7) + '/' + j.slice(0,4); }
+// Le coupon est-il non valable AUJOURD'HUI (heure de Bruxelles) ? → {bloque, message}
+function nonValableAujourdhui(c){
+  const regles = reglesPeriodes(c), jour = jourBruxelles(new Date());
+  if(!jourBloque(regles, jour)) return {bloque:false, message:''};
+  let reprise = '';
+  const t = new Date(jour + 'T12:00:00Z');
+  for(let i=1;i<=400;i++){ const j = new Date(t.getTime() + i*86400000).toISOString().slice(0,10); if(!jourBloque(regles, j)){ reprise = j; break; } }
+  let message = String(c.fields['Coupon — message non valable']||'').trim() || 'Coupon non valable pendant cette période.';
+  if(reprise) message += ' De nouveau valable à partir du ' + jjmmaaaa(reprise) + '.';
+  return {bloque:true, message};
+}
+// Rappel lisible des périodes à venir ou en cours (pour information).
+const NOMS_JOURS = ['', 'lundis', 'mardis', 'mercredis', 'jeudis', 'vendredis', 'samedis', 'dimanches'];
+function periodesLisibles(c){
+  const regles = reglesPeriodes(c), jour = jourBruxelles(new Date());
+  const morceaux = regles.periodes.filter(p=> p[1] >= jour).sort((a,b)=> a[0] < b[0] ? -1 : 1)
+    .map(p=> p[0]===p[1] ? 'le ' + jjmmaaaa(p[0]) : 'du ' + jjmmaaaa(p[0]) + ' au ' + jjmmaaaa(p[1]));
+  const js = [...new Set(regles.jours)].sort().map(n=>NOMS_JOURS[n]);
+  if(js.length) morceaux.push('les ' + (js.length>1 ? js.slice(0,-1).join(', ') + ' et ' + js[js.length-1] : js[0]));
+  return morceaux.length ? 'Coupon non valable : ' + morceaux.join(' ; ') + '.' : '';
+}
+function infoPeriodesHtml(c){ const t = periodesLisibles(c); return t ? `<div class="c-periodes-info">ℹ️ ${escHtml(t)}</div>` : ''; }
+
+// --- Lien partenaire : le lien s'ouvre tout de suite (pas de fenêtre bloquée), le passage est noté en parallèle.
+function noterPassage(id){
   try{
-    if(typeof QRCode === 'undefined') throw new Error('QR indisponible');
-    new QRCode(el, {text: texte, width: 204, height: 204, correctLevel: QRCode.CorrectLevel.M});
+    fetch(`${PROXY}/coupons/passage`, {
+      method:'POST', headers:{'Content-Type':'application/json'}, keepalive:true,
+      body: JSON.stringify({ token: session.token, carte: id }),
+    }).catch(()=>{});
+  }catch(e){}
+}
+
+// --- Codes personnels : demandés au serveur à l'ouverture, gardés en mémoire pendant la visite de la page.
+let codesPerso = {};   // id carte → {codes:[…], incomplet} | {erreur:'…'}
+async function chargerCodes(id){
+  if(codesPerso[id] && codesPerso[id].codes) return codesPerso[id];
+  try{
+    const r = await fetch(`${PROXY}/coupons/mes-codes`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ token: session.token, carte: id }),
+    });
+    const data = await r.json().catch(()=> ({}));
+    if(r.status === 401){ clearSession(); location.href = 'connexion-fr.html'; return {erreur:''}; }
+    if(r.ok && data.ok && Array.isArray(data.codes) && data.codes.length){ codesPerso[id] = {codes:data.codes, incomplet:!!data.incomplet}; }
+    else codesPerso[id] = {erreur: data.error || 'Votre code n\'a pas pu être chargé, merci de réessayer.'};
+  }catch(e){ codesPerso[id] = {erreur:'Pas de connexion internet : votre code n\'a pas pu être chargé.'}; }
+  return codesPerso[id];
+}
+function codesHtml(res){
+  if(!res) return '<div class="codes-attente">⏳ Chargement de votre code…</div>';
+  if(!res.codes) return res.erreur ? `<div class="c-msg-val">${escHtml(res.erreur)}</div>` : '';
+  return '<div class="codes-perso">' + res.codes.map((k,i)=>
+    `<div class="code-ligne"><span class="lib">CODE PROMO${res.codes.length>1 ? ' '+(i+1) : ''} :</span> <span class="code">${escHtml(k)}</span>`
+    + `<button type="button" class="bt bt-copier" data-code="${escAttr(k)}">Copier</button></div>`).join('')
+    + (res.incomplet ? '<div class="codes-note">Un seul code est disponible pour le moment. Contactez le secrétariat d\'Educpass pour le second.</div>' : '')
+    + '</div>';
+}
+function brancherCopie(racine){
+  racine.querySelectorAll('.bt-copier').forEach(b=>b.addEventListener('click', async ()=>{
+    const k = b.getAttribute('data-code');
+    let ok = false;
+    try{ await navigator.clipboard.writeText(k); ok = true; }catch(e){
+      try{ const t = document.createElement('textarea'); t.value = k; t.style.position='fixed'; t.style.opacity='0'; document.body.appendChild(t); t.select(); ok = document.execCommand('copy'); t.remove(); }catch(e2){}
+    }
+    b.textContent = ok ? '✔ Copié' : 'Copie impossible';
+    setTimeout(()=>{ b.textContent = 'Copier'; }, 2000);
+  }));
+}
+async function afficherCodes(id, zone){
+  if(!zone) return;
+  zone.innerHTML = codesHtml(codesPerso[id] && (codesPerso[id].codes || codesPerso[id].erreur) ? codesPerso[id] : null);
+  const res = await chargerCodes(id);
+  if(!zone.isConnected) return;
+  zone.innerHTML = codesHtml(res);
+  brancherCopie(zone);
+}
+
+// --- Coupon papier (modèle B) : une seule impression par année civile, enregistrée par le serveur.
+function premierLookup(v){ return Array.isArray(v) ? String(v[0]==null?'':v[0]).trim() : String(v==null?'':v).trim(); }
+function coupnPapierHtml(c, v){
+  const f = c.fields, nom = nomDe(c), logo = logoDe(c, false);
+  const nomProf = ((compte.prenom||'') + ' ' + (compte.nom||'')).trim();
+  const l1 = [compte.rue, compte.nMaison].filter(Boolean).join(', ');
+  const l2 = [compte.cp, compte.ville].filter(Boolean).join(' - ');
+  const adr1 = premierLookup(f['Rue (via Attraction)']);
+  const adr2 = [premierLookup(f['CP (via Attraction)']), premierLookup(f['Commune (via Attraction)'])].filter(Boolean).join(' - ');
+  const tel = premierLookup(f['Téléphone (via Attraction)']);
+  const periodes = periodesLisibles(c);
+  const quand = new Date(v.date);
+  const dateImp = (isNaN(quand) ? new Date() : quand).toLocaleDateString('fr-BE', {day:'2-digit', month:'2-digit', year:'numeric', timeZone:'Europe/Brussels'});
+  return '<div class="pp">'
+    + `<div class="pp-logo"><img src="${LOGO_COUPON}" alt="Educpass"></div>`
+    + '<div class="pp-titre">Coupon-<b>éclaireur</b><small>Non-valable en groupe</small></div>'
+    + '<div class="pp-corps">'
+    +   `<div class="pp-img">${logo ? `<img src="${escAttr(logo)}" alt="">` : ''}</div>`
+    +   '<div class="pp-part">'
+    +     `<div class="pp-nom">${escHtml(nom)}</div>`
+    +     (adr1 ? `<div>${escHtml(adr1)}</div>` : '') + (adr2 ? `<div>${escHtml(adr2)}</div>` : '') + (tel ? `<div>${escHtml(tel)}</div>` : '')
+    +     `<div class="pp-av">${escHtml(avantageDe(c) || '')}</div>`
+    +   '</div>'
+    + '</div>'
+    + (periodes ? `<div class="pp-per">${escHtml(periodes)}</div>` : '')
+    + '<div class="pp-bas">'
+    +   '<div class="pp-prof"><div class="pp-t">Info titulaire enseignant</div>'
+    +     `<b>${escHtml(nomProf)}</b>` + (l1 ? `<div>${escHtml(l1)}</div>` : '') + (l2 ? `<div>${escHtml(l2)}</div>` : '')
+    +     (compte.email ? `<div>${escHtml(compte.email)}</div>` : '')
+    +     (compte.membre ? `<div>N° de membre : <b>${escHtml(compte.membre)}</b></div>` : '')
+    +   '</div>'
+    +   `<div class="pp-num"><small>Coupon n°</small><b>${escHtml(v.numero || '')}</b><small>Imprimé le ${escHtml(dateImp)}</small><small>Valable en ${escHtml(v.annee || anneeCoupons)}</small></div>`
+    + '</div>'
+    + `<div class="pp-pied">Coupon personnel, à présenter avec une pièce d'identité et/ou la carte enseignant — Avantages non cumulables — © Educpass a.s.b.l. ${escHtml(v.annee || anneeCoupons)}</div>`
+    + '</div>';
+}
+function lancerImpression(){
+  document.body.classList.add('impression');
+  try{ window.print(); }catch(e){}
+}
+window.addEventListener('afterprint', ()=>document.body.classList.remove('impression'));
+function demanderImpression(id){
+  const c = partenaires.find(x=>x.id===id); const z = document.getElementById('c-zone-validation');
+  if(!c || !z) return;
+  const slot = document.getElementById('c-slot-valider'); if(slot) slot.innerHTML = '';
+  z.innerHTML = '<div class="c-confirme">Imprimer maintenant votre coupon-papier pour <b>' + escHtml(nomDe(c)) + '</b> ?<br>'
+    + 'Il ne peut être imprimé <b>qu\'une seule fois en ' + escHtml(anneeCoupons) + '</b> : vérifiez que votre imprimante est prête.'
+    + '<div class="rang"><button type="button" class="bt bt-non" id="c-bt-non">Annuler</button>'
+    + '<button type="button" class="bt bt-oui" id="c-bt-oui">Oui, imprimer</button></div></div>';
+  document.getElementById('c-bt-non').addEventListener('click', ()=>rendreZoneValidation(id));
+  document.getElementById('c-bt-oui').addEventListener('click', ()=>imprimerCoupon(id));
+  z.scrollIntoView({block:'nearest'});
+}
+let couponPapierEnMain = {};   // id carte → validation renvoyée par le serveur (tant que la page reste ouverte)
+async function imprimerCoupon(id){
+  if(validationEnCours) return;
+  validationEnCours = true;
+  const oui = document.getElementById('c-bt-oui'), non = document.getElementById('c-bt-non');
+  if(oui){ oui.disabled = true; oui.textContent = '⏳ Préparation…'; } if(non) non.disabled = true;
+  try{
+    const r = await fetch(`${PROXY}/coupons/imprimer`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ token: session.token, carte: id }),
+    });
+    const data = await r.json().catch(()=> ({}));
+    if(r.ok && data.ok && data.validation){
+      validations[id] = data.validation.date || new Date().toISOString();
+      validationsInfo[id] = {mode:'Coupon papier', numero:data.validation.numero || ''};
+      if(data.validation.annee) anneeCoupons = data.validation.annee;
+      couponPapierEnMain[id] = data.validation;
+      rendreListe();
+      rendreZoneValidation(id);
+      lancerImpression();
+      return;
+    }
+    if(r.status === 401){ clearSession(); try{ sessionStorage.setItem('educpass_retour', 'mes-coupons.html'); }catch(e){} location.href = 'connexion-fr.html'; return; }
+    if(data.code === 'deja_utilise'){ validations[id] = data.date || ''; validationsInfo[id] = {mode:'Coupon papier', numero:''}; rendreListe(); rendreZoneValidation(id); return; }
+    if(data.code === 'cotisation'){ enOrdre = false; document.getElementById('msg-cotisation').classList.remove('hidden'); rendreListe(); ouvrirCoupon(id); return; }
+    rendreZoneValidation(id, data.error || 'L\'impression n\'a pas pu être préparée. Votre coupon n\'a pas été utilisé, merci de réessayer.');
   }catch(e){
-    el.parentNode.classList.add('hidden');   // pas de QR si la librairie n'a pas pu se charger
+    rendreZoneValidation(id, 'Pas de connexion internet : l\'impression n\'a pas pu être préparée. Votre coupon n\'a pas été utilisé, merci de réessayer.');
+  }finally{
+    validationEnCours = false;
   }
 }
+
+// ---------- Demande de réservation (2026-10-11, Nausicaá…) ----------
+// Le prof choisit sa date ; Educpass réserve chez le partenaire, qui lui envoie le billet.
+// Le serveur refait TOUS les contrôles (date, 48 h, périodes, nombre, une demande par an).
+function euros(n){ return (Math.round(Number(n||0)*100)/100).toFixed(2).replace('.', ',') + ' €'; }
+function prixDe(c, cle){ const v = Number(c.fields[cle]); return Number.isFinite(v) && v > 0 ? v : 0; }
+function maxAccDe(c){ const v = c.fields['Réservation — max accompagnants']; return (v===undefined || v===null || v==='') ? 5 : Math.max(0, Math.round(Number(v))||0); }
+function delaiDe(c){ const v = Math.round(Number(c.fields['Réservation — délai minimum (heures)'])); return Number.isFinite(v) && v >= 0 && c.fields['Réservation — délai minimum (heures)'] !== undefined && c.fields['Réservation — délai minimum (heures)'] !== null && c.fields['Réservation — délai minimum (heures)'] !== '' ? v : 48; }
+function premierJourResa(c){
+  const j = jourBruxelles(new Date(Date.now() + delaiDe(c)*3600000));
+  return new Date(new Date(j + 'T12:00:00Z').getTime() + 86400000).toISOString().slice(0,10);
+}
+function paysProbable(){
+  const cp = String(compte.cp||'').trim().toUpperCase();
+  if(/^L-?\d{4}$/.test(cp)) return 'LU';
+  if(/^\d{5}$/.test(cp)) return 'FR';
+  if(/^\d{4}$/.test(cp)) return 'BE';
+  return 'BE';
+}
+const PAYS_RESA = [['BE','Belgique'],['FR','France'],['LU','Luxembourg'],['NL','Pays-Bas'],['DE','Allemagne']];
+function virementHtml(p, montant){
+  if(!p) return '<div class="r-info">Le secrétariat d\'Educpass vous communiquera les coordonnées de paiement.</div>';
+  return '<div class="r-virement"><b>Virement à effectuer</b>'
+    + '<div class="r-l"><span>Bénéficiaire</span><b>' + escHtml(p.beneficiaire||'—') + '</b></div>'
+    + '<div class="r-l"><span>IBAN</span><b>' + escHtml(p.iban) + '</b></div>'
+    + (p.bic ? '<div class="r-l"><span>BIC</span><b>' + escHtml(p.bic) + '</b></div>' : '')
+    + '<div class="r-l"><span>Montant</span><b>' + escHtml(euros(montant)) + '</b></div>'
+    + '<div class="r-l"><span>Communication</span><b>' + escHtml(p.communication) + '</b></div>'
+    + '<small>Indiquez la communication exacte : votre billet est envoyé dès réception du paiement.</small></div>';
+}
+// Ce que voit le prof quand une demande existe déjà cette année
+function resumeResaHtml(c, info, dateDemande){
+  const r = info.reservation || {};
+  const nom = nomDe(c);
+  const acc = (r.adultes||0) + (r.enfants||0);
+  let etat;
+  if(r.statut === 'À payer') etat = '<b>⏳ En attente de votre virement</b>' + virementHtml(r.paiement, r.montant);
+  else if(r.statut === 'Réservé') etat = '<b>✔ Réservation déjà utilisée</b>Votre billet vous a été envoyé par e-mail par ' + escHtml(nom) + '. Vérifiez vos spams.';
+  else etat = '<b>⏳ Demande en cours de traitement</b>Votre billet vous sera envoyé par e-mail par ' + escHtml(nom) + '.';
+  return '<div class="c-utilise r-resume">'
+    + '<div class="r-titre">Demande envoyée' + (dateDemande ? ' le ' + escHtml(dateDemande) : '') + '</div>'
+    + (r.dateVisite ? 'Visite prévue le <b class="r-inline">' + escHtml(jjmmaaaa(r.dateVisite)) + '</b>' : '')
+    + (acc ? ' — avec ' + acc + ' accompagnant' + (acc>1?'s':'') : '')
+    + '<div class="r-etat">' + etat + '</div>'
+    + '<div class="r-pied">Un seul coupon par année civile : il sera de nouveau disponible le 1er janvier ' + (Number(anneeCoupons)+1) + '.</div></div>';
+}
+function formResaHtml(c){
+  const min = premierJourResa(c), max = anneeCoupons + '-12-31';
+  const maxAcc = maxAccDe(c), pA = prixDe(c,'Réservation — prix adulte'), pE = prixDe(c,'Réservation — prix enfant');
+  const opts = n => Array.from({length:n+1},(_,i)=>`<option value="${i}">${i}</option>`).join('');
+  const pays = paysProbable();
+  return '<form class="r-form" id="r-form" novalidate>'
+    + '<div class="r-titre">Demande de réservation — ' + escHtml(nomDe(c)) + '</div>'
+    + '<div class="r-moi">' + escHtml(((compte.prenom||'') + ' ' + (compte.nom||'')).trim()) + ' · ' + escHtml(compte.email||'') + '</div>'
+    + '<div class="r-champ"><span class="r-lib">Civilité *</span><label><input type="radio" name="r-civ" value="Mme"> Madame</label> <label><input type="radio" name="r-civ" value="M"> Monsieur</label></div>'
+    + '<div class="r-champ"><label class="r-lib" for="r-pays">Pays *</label><select id="r-pays">' + PAYS_RESA.map(p=>`<option value="${p[0]}"${p[0]===pays?' selected':''}>${p[1]}</option>`).join('') + '</select></div>'
+    + '<div class="r-champ"><label class="r-lib" for="r-date">Date de visite *</label><input type="date" id="r-date" min="' + min + '" max="' + max + '"></div>'
+    + '<div class="r-aide" id="r-date-aide">Au plus tôt le ' + escHtml(jjmmaaaa(min)) + ' (' + delaiDe(c) + ' h minimum avant la visite).' + (periodesLisibles(c) ? '<br>' + escHtml(periodesLisibles(c)) : '') + '</div>'
+    + '<div class="r-champ"><span class="r-lib">Entrée gratuite</span><b>1 (vous)</b></div>'
+    + (maxAcc > 0 && (pA || pE) ? '<div class="r-acc">Accompagnants payants (' + maxAcc + ' au maximum)'
+        + (pA ? '<div class="r-champ"><label class="r-lib" for="r-adultes">Adulte +12 ans (' + escHtml(euros(pA)) + ')</label><select id="r-adultes">' + opts(maxAcc) + '</select></div>' : '')
+        + (pE ? '<div class="r-champ"><label class="r-lib" for="r-enfants">Enfant 3-12 ans (' + escHtml(euros(pE)) + ')</label><select id="r-enfants">' + opts(maxAcc) + '</select></div>' : '')
+        + '<div class="r-total">Total à payer : <b id="r-total">0,00 €</b></div></div>' : '')
+    + '<div class="r-champ r-col"><label class="r-lib" for="r-rem">Remarque (facultatif)</label><textarea id="r-rem" maxlength="500" rows="2"></textarea></div>'
+    + '<div class="c-msg-val hidden" id="r-err"></div>'
+    + '<div class="rang"><button type="button" class="bt bt-non" id="r-annuler">Annuler</button><button type="submit" class="bt bt-oui" id="r-envoyer">Envoyer ma demande</button></div>'
+    + '<div class="r-aide">En envoyant cette demande, votre coupon ' + escHtml(nomDe(c)) + ' ' + escHtml(anneeCoupons) + ' est utilisé.</div>'
+    + '</form>';
+}
+function ouvrirFormResa(id){
+  const c = partenaires.find(x=>x.id===id); const z = document.getElementById('c-zone-validation');
+  if(!c || !z) return;
+  const slot = document.getElementById('c-slot-valider'); if(slot) slot.innerHTML = '';
+  z.innerHTML = formResaHtml(c);
+  const f = document.getElementById('r-form'), err = document.getElementById('r-err');
+  const nb = sel => { const e = document.getElementById(sel); return e ? Number(e.value)||0 : 0; };
+  const maj = ()=>{
+    const a = nb('r-adultes'), e = nb('r-enfants'), maxAcc = maxAccDe(c);
+    const t = document.getElementById('r-total');
+    if(t) t.textContent = euros(a*prixDe(c,'Réservation — prix adulte') + e*prixDe(c,'Réservation — prix enfant'));
+    return a + e <= maxAcc;
+  };
+  ['r-adultes','r-enfants'].forEach(s=>{ const e = document.getElementById(s); if(e) e.addEventListener('change', ()=>{ if(!maj()){ err.textContent = maxAccDe(c) + ' accompagnants au maximum.'; err.classList.remove('hidden'); } else err.classList.add('hidden'); }); });
+  const verifDate = ()=>{
+    const v = document.getElementById('r-date').value;
+    if(!v) return 'Choisissez la date de votre visite.';
+    if(v < premierJourResa(c)) return 'Trop tôt : première date possible le ' + jjmmaaaa(premierJourResa(c)) + '.';
+    if(v.slice(0,4) !== String(anneeCoupons)) return 'La visite doit avoir lieu en ' + anneeCoupons + '.';
+    if(jourBloque(reglesPeriodes(c), v)) return (String(c.fields['Coupon — message non valable']||'').trim() || 'Coupon non valable pendant cette période.') + ' Choisissez une autre date.';
+    return '';
+  };
+  document.getElementById('r-date').addEventListener('change', ()=>{ const m = verifDate(); err.textContent = m; err.classList.toggle('hidden', !m || m.startsWith('Choisissez la date')); });
+  document.getElementById('r-annuler').addEventListener('click', ()=>rendreZoneValidation(id));
+  f.addEventListener('submit', async ev=>{
+    ev.preventDefault();
+    const civ = (f.querySelector('input[name="r-civ"]:checked')||{}).value || '';
+    let m = !civ ? 'Indiquez Madame ou Monsieur.' : verifDate();
+    if(!m && !maj()) m = maxAccDe(c) + ' accompagnants au maximum.';
+    if(m){ err.textContent = m; err.classList.remove('hidden'); return; }
+    err.classList.add('hidden');
+    const bt = document.getElementById('r-envoyer'); bt.disabled = true; bt.textContent = '⏳ Envoi…';
+    try{
+      const r = await fetch(`${PROXY}/coupons/reserver`, { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ token: session.token, carte: id, date: document.getElementById('r-date').value, civilite: civ,
+          pays: document.getElementById('r-pays').value, adultes: nb('r-adultes'), enfants: nb('r-enfants'), remarque: document.getElementById('r-rem').value }) });
+      const data = await r.json().catch(()=> ({}));
+      if(r.ok && data.ok && data.reservation){
+        const v = data.reservation;
+        validations[id] = v.date || new Date().toISOString();
+        validationsInfo[id] = { mode:'Demande de réservation', numero:'', reservation: v };
+        rendreListe();
+        rendreZoneValidation(id);
+        const z2 = document.getElementById('c-zone-validation');
+        if(z2) z2.insertAdjacentHTML('afterbegin', '<div class="r-ok">✅ Votre demande est envoyée.</div><div class="r-alerte">Ceci est un message de confirmation de votre demande. Ce n\'est pas votre ticket d\'entrée. Il vous parvient un peu plus tard. Vérifiez vos spams.</div>');
+        return;
+      }
+      if(r.status === 401){ clearSession(); try{ sessionStorage.setItem('educpass_retour', 'mes-coupons.html?carte=' + id); }catch(e){} location.href = 'connexion-fr.html'; return; }
+      if(data.code === 'deja_utilise'){ validations[id] = data.date || ''; validationsInfo[id] = {mode:'Demande de réservation'}; rendreListe(); rendreZoneValidation(id); return; }
+      if(data.code === 'cotisation'){ enOrdre = false; document.getElementById('msg-cotisation').classList.remove('hidden'); rendreListe(); ouvrirCoupon(id); return; }
+      err.textContent = data.error || 'La demande n\'a pas pu être envoyée. Votre coupon n\'a pas été utilisé, merci de réessayer.';
+    }catch(e){
+      err.textContent = 'Pas de connexion internet : la demande n\'a pas été envoyée. Votre coupon n\'a pas été utilisé, merci de réessayer.';
+    }
+    err.classList.remove('hidden'); bt.disabled = false; bt.textContent = 'Envoyer ma demande';
+  });
+  z.scrollIntoView({block:'nearest'});
+}
+
+// ---------- Validation du coupon à l'accueil (2026-10-07) ----------
+// Le prof valide lui-même, devant la personne de l'accueil. Le serveur vérifie tout (session,
+// cotisation, coupon publié, un seul par attraction et par année civile) et prévient le partenaire.
+function rendreZoneValidation(id, message){
+  const z = document.getElementById('c-zone-validation');
+  const slot = document.getElementById('c-slot-valider');
+  const c = partenaires.find(x=>x.id===id);
+  if(!z || !c) return;
+  if(slot) slot.innerHTML = '';
+  const mode = modeDe(c), texte = texteBoutonDe(c), lien = lienDe(c);
+  const msg = message ? `<div class="c-msg-val">${escHtml(message)}</div>` : '';
+
+  // --- Lien partenaire (Walibi…) : le bouton ouvre le site du partenaire, rien n'est bloqué
+  if(mode === 'Lien partenaire'){
+    if(!lien){ z.innerHTML = '<div class="c-msg-val">Le lien de réservation de ce partenaire n\'est pas encore disponible. Merci de réessayer plus tard.</div>'; return; }
+    if(slot) slot.innerHTML = `<a class="bt" id="c-bt-lien" href="${escAttr(lien)}" target="_blank" rel="noopener">${escHtml(texte)}</a>`;
+    z.innerHTML = msg + '<div class="c-valider"><div class="aide">Le bouton ouvre le site du partenaire, où vous réservez avec votre avantage Educpass.</div></div>' + infoPeriodesHtml(c);
+    document.getElementById('c-bt-lien').addEventListener('click', ()=>noterPassage(id));
+    return;
+  }
+  // --- Code personnel (Han, Salon Educ…) : codes affichés + bouton vers le site du partenaire
+  if(mode === 'Code personnel'){
+    if(slot && lien) slot.innerHTML = `<a class="bt" id="c-bt-lien" href="${escAttr(lien)}" target="_blank" rel="noopener">${escHtml(texte)}</a>`;
+    z.innerHTML = msg + '<div id="c-codes"></div>'
+      + '<div class="c-valider"><div class="aide">' + (lien ? 'Copiez votre code, puis appuyez sur « ' + escHtml(texte) + ' » pour l\'utiliser sur le site du partenaire.' : 'Utilisez ce code auprès du partenaire.') + '</div></div>'
+      + infoPeriodesHtml(c);
+    afficherCodes(id, document.getElementById('c-codes'));
+    return;
+  }
+  // --- Demande de réservation (Nausicaá…) : formulaire, ou rappel de la demande déjà envoyée
+  if(mode === 'Demande de réservation'){
+    if(validations[id]!==undefined){ z.innerHTML = resumeResaHtml(c, validationsInfo[id] || {}, dateCourte(validations[id])); return; }
+    if(slot) slot.innerHTML = `<button type="button" class="bt" id="c-bt-resa">${escHtml(texte)}</button>`;
+    z.innerHTML = msg + '<div class="c-valider"><div class="aide">Choisissez la date de votre visite : Educpass réserve pour vous et ' + escHtml(nomDe(c)) + ' vous envoie votre billet par e-mail.</div></div>';
+    document.getElementById('c-bt-resa').addEventListener('click', ()=>ouvrirFormResa(id));
+    return;
+  }
+  // --- Déjà utilisé cette année (validation à l'accueil ou coupon papier déjà imprimé)
+  if(validations[id]!==undefined){
+    const d = dateCourte(validations[id]);
+    const info = validationsInfo[id] || {};
+    if(mode === 'Coupon papier' || info.mode === 'Coupon papier'){
+      const enMain = couponPapierEnMain[id];
+      if(enMain){
+        document.getElementById('papier').innerHTML = coupnPapierHtml(c, enMain);
+        z.innerHTML = '<div class="c-papier-pret"><b>✔ Votre coupon-papier est prêt</b><br>Coupon n° ' + escHtml(enMain.numero || '')
+          + '<br>Si l\'impression ne s\'est pas lancée, utilisez le bouton ci-dessous <b>avant de fermer cette page</b>.'
+          + '<br><button type="button" class="bt" id="c-bt-reimprimer">🖨️ Lancer l\'impression</button></div>';
+        document.getElementById('c-bt-reimprimer').addEventListener('click', lancerImpression);
+        return;
+      }
+      z.innerHTML = '<div class="c-utilise"><b>✔ Coupon-papier déjà imprimé' + (d ? ' le ' + escHtml(d) : '') + '</b>'
+        + (info.numero ? 'Coupon n° ' + escHtml(info.numero) + '. ' : '')
+        + 'Il sera de nouveau disponible le 1er janvier ' + (Number(anneeCoupons)+1) + '.</div>';
+      return;
+    }
+    z.innerHTML = '<div class="c-utilise"><b>✔ Coupon déjà utilisé' + (d ? ' le ' + escHtml(d) : '') + '</b>'
+      + 'Il sera de nouveau disponible le 1er janvier ' + (Number(anneeCoupons)+1) + '.</div>';
+    return;
+  }
+  // --- Coupon papier (Astérix…) : impression unique, possible à l'avance
+  if(mode === 'Coupon papier'){
+    if(slot) slot.innerHTML = `<button type="button" class="bt" id="c-bt-imprimer">${escHtml(texte)}</button>`;
+    z.innerHTML = msg + '<div class="c-valider"><div class="aide">Ce partenaire demande un <b>coupon imprimé</b>. Il ne peut être imprimé qu\'une seule fois par an.</div></div>' + infoPeriodesHtml(c);
+    document.getElementById('c-bt-imprimer').addEventListener('click', ()=>demanderImpression(id));
+    return;
+  }
+  // --- Standard : jour non valable → message à la place du bouton
+  const nv = nonValableAujourdhui(c);
+  if(nv.bloque){
+    z.innerHTML = `<div class="c-periode">⛔ ${escHtml(nv.message)}</div>`;
+    return;
+  }
+  // Le bouton se trouve à droite des coordonnées du prof ; sous le coupon : message éventuel + rappel
+  if(slot) slot.innerHTML = `<button type="button" class="bt" id="c-bt-valider">${escHtml(texte)}</button>`;
+  z.innerHTML = msg
+    + '<div class="c-valider"><div class="aide">« ' + escHtml(texte) + ' » : à faire <b>devant la personne de l\'accueil</b>, au moment de votre visite.</div></div>'
+    + infoPeriodesHtml(c);
+  const bt = document.getElementById('c-bt-valider');
+  if(bt) bt.addEventListener('click', ()=>demanderConfirmation(id));
+}
+function demanderConfirmation(id){
+  const c = partenaires.find(x=>x.id===id); const z = document.getElementById('c-zone-validation');
+  if(!c || !z) return;
+  const slot = document.getElementById('c-slot-valider'); if(slot) slot.innerHTML = '';   // pas de 2e appui pendant la question
+  z.innerHTML = '<div class="c-confirme">Valider maintenant votre coupon pour <b>' + escHtml(nomDe(c)) + '</b> ?<br>'
+    + 'Il ne pourra <b>plus être utilisé en ' + escHtml(anneeCoupons) + '</b>.'
+    + '<div class="rang"><button type="button" class="bt bt-non" id="c-bt-non">Annuler</button>'
+    + '<button type="button" class="bt bt-oui" id="c-bt-oui">Oui, valider</button></div></div>';
+  document.getElementById('c-bt-non').addEventListener('click', ()=>rendreZoneValidation(id));
+  document.getElementById('c-bt-oui').addEventListener('click', ()=>validerCoupon(id));
+  z.scrollIntoView({block:'nearest'});
+}
+let validationEnCours = false;
+async function validerCoupon(id){
+  if(validationEnCours) return;
+  validationEnCours = true;
+  const oui = document.getElementById('c-bt-oui'), non = document.getElementById('c-bt-non');
+  if(oui){ oui.disabled = true; oui.textContent = '⏳ Validation…'; } if(non) non.disabled = true;
+  try{
+    const r = await fetch(`${PROXY}/coupons/valider`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ token: session.token, carte: id }),
+    });
+    const data = await r.json().catch(()=> ({}));
+    if(r.ok && data.ok && data.validation){
+      validations[id] = data.validation.date || new Date().toISOString();
+      if(data.validation.annee) anneeCoupons = data.validation.annee;
+      rendreListe();
+      afficherEcranValide(id, data.validation);
+      return;
+    }
+    if(r.status === 401){ clearSession(); try{ sessionStorage.setItem('educpass_retour', 'mes-coupons.html?accueil=1'); }catch(e){} location.href = 'connexion-fr.html'; return; }
+    if(data.code === 'deja_utilise'){ validations[id] = data.date || ''; rendreListe(); rendreZoneValidation(id); return; }
+    if(data.code === 'cotisation'){ enOrdre = false; document.getElementById('msg-cotisation').classList.remove('hidden'); rendreListe(); ouvrirCoupon(id); return; }
+    if(data.code === 'periode'){ const zz = document.getElementById('c-zone-validation'); if(zz) zz.innerHTML = `<div class="c-periode">⛔ ${escHtml(data.error || 'Coupon non valable pendant cette période.')}</div>`; return; }
+    rendreZoneValidation(id, data.error || 'La validation n\'a pas abouti. Votre coupon n\'a pas été utilisé, merci de réessayer.');
+  }catch(e){
+    rendreZoneValidation(id, 'Pas de connexion internet : la validation n\'a pas abouti. Votre coupon n\'a pas été utilisé, merci de réessayer.');
+  }finally{
+    validationEnCours = false;
+  }
+}
+function afficherEcranValide(id, v){
+  const c = partenaires.find(x=>x.id===id);
+  const box = document.getElementById('coupon');
+  const nomProf = ((compte.prenom||'') + ' ' + (compte.nom||'')).trim();
+  const quand = new Date(v.date);
+  const fmtH = (d)=> d.toLocaleTimeString('fr-BE', {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false, timeZone:'Europe/Brussels'});
+  const fmtJ = (d)=> d.toLocaleDateString('fr-BE', {weekday:'long', day:'numeric', month:'long', year:'numeric', timeZone:'Europe/Brussels'});
+  box.classList.add('valide');
+  box.innerHTML = '<button class="fermer" type="button" aria-label="Fermer">✕</button>'
+    + '<div class="v-ecran">'
+    +   '<div class="coche">✓</div>'
+    +   '<div class="titre">COUPON VALIDÉ</div>'
+    +   `<div class="attr">${escHtml(v.partenaire || (c ? nomDe(c) : ''))}</div>`
+    +   (v.avantage ? `<div class="avv">${escHtml(v.avantage)}</div>` : '')
+    +   `<div class="prof">${escHtml(nomProf.toUpperCase())}</div>`
+    +   (compte.membre ? `<div class="validele">N° de membre : ${escHtml(compte.membre)}</div>` : '')
+    +   '<div class="horloge" id="v-horloge"></div><div class="jour" id="v-jour"></div>'
+    +   '<div class="barre"><i></i></div>'
+    +   `<div class="validele">Validé à ${escHtml(fmtH(isNaN(quand) ? new Date() : quand))}</div>`
+    +   '<div class="pied">Montrez cet écran à la personne de l\'accueil.<br>L\'heure qui défile prouve que la validation vient d\'être faite.</div>'
+    + '</div>'
+    + '<div class="c-retour"><button type="button" class="bt" data-retour-carte="1">← Retour page précédente</button></div>';
+  box.querySelector('.fermer').addEventListener('click', fermerCoupon);
+  box.querySelectorAll('[data-retour-carte]').forEach(b=>b.addEventListener('click', ()=>retourCarteDeVisite(id)));
+  const tic = ()=>{ const n = new Date(); const h = document.getElementById('v-horloge'), j = document.getElementById('v-jour');
+    if(!h){ clearInterval(horlogeValidation); horlogeValidation = null; return; } h.textContent = fmtH(n); j.textContent = fmtJ(n); };
+  clearInterval(horlogeValidation); tic(); horlogeValidation = setInterval(tic, 1000);
+  document.getElementById('coupon-overlay').scrollTop = 0;
+}
+
+// 2026-10-08 (demande de Marc) : plus de QR code sur le coupon — la validation se fait par le bouton « Valider le coupon », placé à droite des coordonnées du prof (à la place de l'ancien QR).
 
 // 2026-10-08 (demande de Marc) : bouton « Retour à la carte de visite » sur le coupon.
 // La carte de visite est restée ouverte sous le coupon ; si elle a été fermée, on la rouvre.
@@ -468,6 +1078,8 @@ function fermerCoupon(){
   document.getElementById('coupon-overlay').classList.add('hidden');
   if(!ficheOuverte()) document.body.classList.remove('coupon-ouvert');
   document.getElementById('coupon').innerHTML = '';
+  document.getElementById('coupon').classList.remove('valide');
+  clearInterval(horlogeValidation); horlogeValidation = null;
 }
 document.getElementById('coupon-overlay').addEventListener('click', (e)=>{ if(e.target.id==='coupon-overlay') fermerCoupon(); });
 document.getElementById('fiche-overlay').addEventListener('click', (e)=>{ if(e.target.id==='fiche-overlay') fermerFiche(); });
@@ -485,14 +1097,16 @@ document.getElementById('recherche').addEventListener('input', (e)=>{
   if(!session || !session.token) return;
   setSt('⏳ Chargement de vos coupons...');
   try{
-    const [c, p] = await Promise.all([chargerCompte(), chargerPartenaires().catch(e=>{ throw new Error('partenaires : '+e.message); })]);
+    const [c, p] = await Promise.all([chargerCompte(), chargerPartenaires().catch(e=>{ throw new Error('partenaires : '+e.message); }), chargerValidations()]);
     if(!c) return;
     compte = c;
     enOrdre = ANNEES_EN_ORDRE.includes(String(c.anneeCotisation==null?'':c.anneeCotisation).trim());
     document.getElementById('msg-cotisation').classList.toggle('hidden', enOrdre);
     partenaires = p;
+    if(ARRIVEE_ACCUEIL && enOrdre){ document.getElementById('bandeau-accueil').classList.remove('hidden'); try{ document.getElementById('recherche').focus(); }catch(e){} }
     construireOnglets();
     rendreListe();
+    if(CARTE_DEMANDEE && partenaires.some(x=>x.id===CARTE_DEMANDEE)){ ouvrirFiche(CARTE_DEMANDEE); if(enOrdre) ouvrirCoupon(CARTE_DEMANDEE); }
   }catch(e){
     const box = document.getElementById('msg-erreur');
     box.textContent = 'Impossible de charger vos coupons (' + e.message + '). Rechargez la page ou reconnectez-vous.';
@@ -504,5 +1118,6 @@ document.getElementById('recherche').addEventListener('input', (e)=>{
 })();
 </script>
 
+<div id="papier"></div>
 </body>
 </html>
