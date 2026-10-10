@@ -620,6 +620,14 @@ function jourBloque(regles, jour){
   const js = new Date(jour + 'T12:00:00Z').getUTCDay();
   return regles.jours.includes(js === 0 ? 7 : js);
 }
+function dateLongue(j){ const d=Number(j.slice(8,10)), m=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre']; return (d===1?'1er':String(d))+' '+m[Number(j.slice(5,7))-1]+' '+j.slice(0,4); }
+// Date à partir de laquelle le coupon redevient utilisable l'année suivante : 1er janvier,
+// ou premier jour suivant hors périodes/jours non valables de la carte (ex. Nausicaá → 1er février).
+function dispoAnneeSuivante(c){
+  const r = reglesPeriodes(c), t = new Date((Number(anneeCoupons)+1) + '-01-01T12:00:00Z');
+  for(let i=0;i<400;i++){ const j = new Date(t.getTime() + i*86400000).toISOString().slice(0,10); if(!jourBloque(r, j)) return j; }
+  return (Number(anneeCoupons)+1) + '-01-01';
+}
 function jjmmaaaa(j){ return j.slice(8,10) + '/' + j.slice(5,7) + '/' + j.slice(0,4); }
 // Le coupon est-il non valable AUJOURD'HUI (heure de Bruxelles) ? → {bloque, message}
 function nonValableAujourdhui(c){
@@ -828,7 +836,7 @@ function resumeResaHtml(c, info, dateDemande){
     + (r.dateVisite ? 'Visite prévue le <b class="r-inline">' + escHtml(jjmmaaaa(r.dateVisite)) + '</b>' : '')
     + (acc ? ' — avec ' + acc + ' accompagnant' + (acc>1?'s':'') : '')
     + '<div class="r-etat">' + etat + '</div>'
-    + '<div class="r-pied">Un seul coupon par année civile : il sera de nouveau disponible le 1er janvier ' + (Number(anneeCoupons)+1) + '.</div></div>';
+    + '<div class="r-pied">Un seul coupon par année civile : il sera de nouveau disponible à partir du ' + dateLongue(dispoAnneeSuivante(c)) + '.</div></div>';
 }
 function formResaHtml(c){
   const min = premierJourResa(c), max = anneeCoupons + '-12-31';
@@ -965,11 +973,11 @@ function rendreZoneValidation(id, message){
       }
       z.innerHTML = '<div class="c-utilise"><b>✔ Coupon-papier déjà imprimé' + (d ? ' le ' + escHtml(d) : '') + '</b>'
         + (info.numero ? 'Coupon n° ' + escHtml(info.numero) + '. ' : '')
-        + 'Il sera de nouveau disponible le 1er janvier ' + (Number(anneeCoupons)+1) + '.</div>';
+        + 'Il sera de nouveau disponible à partir du ' + dateLongue(dispoAnneeSuivante(c)) + '.</div>';
       return;
     }
     z.innerHTML = '<div class="c-utilise"><b>✔ Coupon déjà utilisé' + (d ? ' le ' + escHtml(d) : '') + '</b>'
-      + 'Il sera de nouveau disponible le 1er janvier ' + (Number(anneeCoupons)+1) + '.</div>';
+      + 'Il sera de nouveau disponible à partir du ' + dateLongue(dispoAnneeSuivante(c)) + '.</div>';
     return;
   }
   // --- Coupon papier (Astérix…) : impression unique, possible à l'avance

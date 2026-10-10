@@ -134,6 +134,8 @@ function regles(){
   return { periodes, jours: String(f('Coupon — jours non valables')||'').split(/[^1-7]+/).filter(Boolean).map(Number) };
 }
 function bloque(j){ const r = regles(); if(r.periodes.some(p=>j>=p[0]&&j<=p[1])) return true; const d = new Date(j+'T12:00:00Z').getUTCDay(); return r.jours.includes(d===0?7:d); }
+function dateLongue(j){ const d=Number(j.slice(8,10)), m=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre']; return (d===1?'1er':String(d))+' '+m[Number(j.slice(5,7))-1]+' '+j.slice(0,4); }
+function dispoAnneeSuivante(){ const t = new Date((anneeCoupons+1) + '-01-01T12:00:00Z'); for(let i=0;i<400;i++){ const j = new Date(t.getTime()+i*86400000).toISOString().slice(0,10); if(!bloque(j)) return j; } return (anneeCoupons+1)+'-01-01'; }
 function periodesTexte(){
   const r = regles(), auj = jourBxl(new Date()), noms = ['','lundis','mardis','mercredis','jeudis','vendredis','samedis','dimanches'];
   const m = r.periodes.filter(p=>p[1]>=auj).sort((a,b)=>a[0]<b[0]?-1:1).map(p=>p[0]===p[1]?'le '+jj(p[0]):'du '+jj(p[0])+' au '+jj(p[1]));
@@ -161,7 +163,7 @@ function resumeHtml(r, dateDemande, nouveau){
     + (dateDemande ? '<p>Demande envoyée le <b class="v">' + esc(dateDemande) + '</b>.</p>' : '')
     + (r.dateVisite ? '<p>Visite prévue le <b class="v">' + esc(jj(r.dateVisite)) + '</b>' + (acc ? ', avec ' + acc + ' accompagnant' + (acc>1?'s':'') : '') + '.</p>' : '')
     + etat
-    + '<p class="aide">Un seul coupon par année civile : il sera de nouveau disponible le 1er janvier ' + (anneeCoupons+1) + '.</p></div>';
+    + '<p class="aide">Un seul coupon par année civile : il sera de nouveau disponible à partir du ' + dateLongue(dispoAnneeSuivante()) + '.</p></div>';
 }
 async function appel(route, corps){
   const r = await fetch(PROXY + '/coupons/' + route, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(corps) });
