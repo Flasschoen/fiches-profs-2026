@@ -822,10 +822,14 @@ function virementHtml(p, montant){
     + '<div class="r-l"><span>Communication</span><b>' + escHtml(p.communication) + '</b></div>'
     + '<small>Indiquez la communication exacte : votre billet est envoyé dès réception du paiement.</small></div>';
 }
+function dateLongueFr(t){ const m=String(t||'').match(/^(\d{2})\/(\d{2})\/(\d{4})$/); return m ? dateLongue(m[3]+'-'+m[2]+'-'+m[1]) : String(t||''); }
 // Ce que voit le prof quand une demande existe déjà cette année
 function resumeResaHtml(c, info, dateDemande){
   const r = info.reservation || {};
   const nom = nomDe(c);
+  // Coupon utilisé avant la réservation en ligne (historique Jotform, sans demande enregistrée)
+  if(!r.statut) return '<div class="c-utilise r-resume"><b>✔ Coupon déjà utilisé' + (dateDemande ? ' le ' + escHtml(dateLongueFr(dateDemande)) : '') + '</b>'
+    + '<div class="r-pied">Un seul coupon par année civile : il sera de nouveau disponible à partir du ' + dateLongue(dispoAnneeSuivante(c)) + '.</div></div>';
   const acc = (r.adultes||0) + (r.enfants||0);
   let etat;
   if(r.statut === 'À payer') etat = '<b>⏳ En attente de votre virement</b>' + virementHtml(r.paiement, r.montant);
@@ -905,7 +909,7 @@ function ouvrirFormResa(id){
         rendreListe();
         rendreZoneValidation(id);
         const z2 = document.getElementById('c-zone-validation');
-        if(z2) z2.insertAdjacentHTML('afterbegin', '<div class="r-ok">✅ Votre demande est envoyée.</div><div class="r-alerte">Ceci est un message de confirmation de votre demande. Ce n\'est pas votre ticket d\'entrée. Il vous parvient un peu plus tard. Vérifiez vos spams.</div>');
+        if(z2) z2.insertAdjacentHTML('afterbegin', '<div class="r-ok">✅ Votre demande est envoyée.</div><div class="r-alerte">Ceci est un message de confirmation de votre demande. Ce n\'est pas votre ticket d\'entrée. Il vous parviendra un peu plus tard. Vérifiez vos spams.</div>');
         return;
       }
       if(r.status === 401){ clearSession(); try{ sessionStorage.setItem('educpass_retour', 'mes-coupons.html?carte=' + id); }catch(e){} location.href = 'connexion-fr.html'; return; }

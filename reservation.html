@@ -111,7 +111,7 @@ input[type=text],input[type=email],input[type=date],select,textarea{width:100%;f
 const PROXY = 'https://educpass-profs-proxy.marc-flasschoen.workers.dev';
 const ATT_PROXY = 'https://educpass-attractions-proxy.marc-flasschoen.workers.dev';
 const CARTE_URL = ATT_PROXY + '/records/tblFn2gRUJOdgdMTZ';
-const AVERTISSEMENT = 'Ceci est un message de confirmation de votre demande. Ce n\'est pas votre ticket d\'entrée. Il vous parvient un peu plus tard. Vérifiez vos spams.';
+const AVERTISSEMENT = 'Ceci est un message de confirmation de votre demande. Ce n\'est pas votre ticket d\'entrée. Il vous parviendra un peu plus tard. Vérifiez vos spams.';
 const CARTE_ID = (location.search.match(/[?&]carte=(rec[A-Za-z0-9]{14})(&|$)/) || [])[1] || '';
 let carte = null, ident = null, anneeCoupons = Number(new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Brussels',year:'numeric'}).format(new Date()));
 
@@ -151,8 +151,12 @@ function virementHtml(p, montant){
     + '<div class="r"><span>Montant</span><b>'+esc(euros(montant))+'</b></div><div class="r"><span>Communication</span><b>'+esc(p.communication)+'</b></div>'
     + '<div class="aide">Indiquez la communication exacte : votre billet est envoyé dès réception du paiement.</div></div>';
 }
+function dateLongueFr(t){ const m=String(t||'').match(/^(\d{2})\/(\d{2})\/(\d{4})$/); return m ? dateLongue(m[3]+'-'+m[2]+'-'+m[1]) : String(t||''); }
 function resumeHtml(r, dateDemande, nouveau){
   r = r || {};
+  if(!r.statut && !nouveau) return '<div class="resume"><h2>Votre coupon ' + esc(anneeCoupons) + '</h2>'
+    + '<p><b>✔ Coupon déjà utilisé' + (dateDemande ? ' le ' + esc(dateLongueFr(dateDemande)) : '') + '</b></p>'
+    + '<p class="aide">Un seul coupon par année civile : il sera de nouveau disponible à partir du ' + dateLongue(dispoAnneeSuivante()) + '.</p></div>';
   const acc = (r.adultes||0) + (r.enfants||0);
   let etat;
   if(r.statut === 'À payer') etat = '<p><b>⏳ En attente de votre virement</b></p>' + virementHtml(r.paiement, r.montant);
