@@ -50,6 +50,7 @@ input[type=text],input[type=email],input[type=date],select,textarea{width:100%;f
 .hidden{display:none !important;}
 .charge{text-align:center;color:var(--soft);padding:30px 0;}
 @media (max-width:560px){ .hero{min-height:240px;} .hero h1{font-size:23px;} .hero .logo img{max-width:160px;max-height:80px;} }
+b.deja{color:#c00000;}
 </style>
 </head>
 <body>
@@ -155,12 +156,12 @@ function dateLongueFr(t){ const m=String(t||'').match(/^(\d{2})\/(\d{2})\/(\d{4}
 function resumeHtml(r, dateDemande, nouveau){
   r = r || {};
   if(!r.statut && !nouveau) return '<div class="resume"><h2>Votre coupon ' + esc(anneeCoupons) + '</h2>'
-    + '<p><b>✔ Coupon déjà utilisé' + (dateDemande ? ' le ' + esc(dateLongueFr(dateDemande)) : '') + '</b></p>'
+    + '<p><b class="deja">✔ Coupon déjà utilisé' + (dateDemande ? ' le ' + esc(dateLongueFr(dateDemande)) : '') + '</b></p>'
     + '<p class="aide">Un seul coupon par année civile : il sera de nouveau disponible à partir du ' + dateLongue(dispoAnneeSuivante()) + '.</p></div>';
   const acc = (r.adultes||0) + (r.enfants||0);
   let etat;
   if(r.statut === 'À payer') etat = '<p><b>⏳ En attente de votre virement</b></p>' + virementHtml(r.paiement, r.montant);
-  else if(r.statut === 'Réservé') etat = '<p><b>✔ Réservation déjà utilisée</b><br>Votre billet vous a été envoyé par e-mail par ' + esc(nom()) + '. Vérifiez vos spams.</p>';
+  else if(r.statut === 'Réservé') etat = '<p><b class="deja">✔ Réservation déjà utilisée</b><br>Votre billet vous a été envoyé par e-mail par ' + esc(nom()) + '. Vérifiez vos spams.</p>';
   else etat = '<p><b>⏳ Demande en cours de traitement</b><br>Votre billet vous sera envoyé par e-mail par ' + esc(nom()) + '.</p>';
   return (nouveau ? '<div class="ok">✅ Votre demande est envoyée.</div><div class="alerte">' + esc(AVERTISSEMENT) + '</div>' : '')
     + '<div class="resume"><h2>Votre demande ' + esc(anneeCoupons) + '</h2>'

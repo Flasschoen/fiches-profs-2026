@@ -123,6 +123,7 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:26px;color:var(-
 .c-msg-val{margin:10px 16px 0;padding:10px 12px;border-radius:10px;background:#fdecea;color:#8a1c1c;font-size:13.5px;font-weight:700;text-align:center;}
 .c-utilise{margin:12px 16px 4px;padding:14px;background:#e9e5d8;border-radius:12px;text-align:center;font-size:14px;line-height:1.5;color:#444;}
 .c-utilise b{display:block;font-size:16px;color:#0a2b2c;}
+.c-utilise b.deja{color:#c00000;}
 .coupon.valide{background:#12733a;color:#fff;}
 .v-ecran{padding:26px 18px 24px;text-align:center;}
 .v-ecran .coche{width:86px;height:86px;border-radius:50%;background:#fff;color:#12733a;font-size:54px;line-height:86px;margin:0 auto 12px;animation:vpouls 1.6s ease-in-out infinite;}
@@ -853,12 +854,12 @@ function resumeResaHtml(c, info, dateDemande){
   const r = info.reservation || {};
   const nom = nomDe(c);
   // Coupon utilisé avant la réservation en ligne (historique Jotform, sans demande enregistrée)
-  if(!r.statut) return '<div class="c-utilise r-resume"><b>✔ Coupon déjà utilisé' + (dateDemande ? ' le ' + escHtml(dateLongueFr(dateDemande)) : '') + '</b>'
+  if(!r.statut) return '<div class="c-utilise r-resume"><b class="deja">✔ Coupon déjà utilisé' + (dateDemande ? ' le ' + escHtml(dateLongueFr(dateDemande)) : '') + '</b>'
     + '<div class="r-pied">Un seul coupon par année civile : il sera de nouveau disponible à partir du ' + dateLongue(dispoAnneeSuivante(c)) + '.</div></div>';
   const acc = (r.adultes||0) + (r.enfants||0);
   let etat;
   if(r.statut === 'À payer') etat = '<b>⏳ En attente de votre virement</b>' + virementHtml(r.paiement, r.montant);
-  else if(r.statut === 'Réservé') etat = '<b>✔ Réservation déjà utilisée</b>Votre billet vous a été envoyé par e-mail par ' + escHtml(nom) + '. Vérifiez vos spams.';
+  else if(r.statut === 'Réservé') etat = '<b class="deja">✔ Réservation déjà utilisée</b>Votre billet vous a été envoyé par e-mail par ' + escHtml(nom) + '. Vérifiez vos spams.';
   else etat = '<b>⏳ Demande en cours de traitement</b>Votre billet vous sera envoyé par e-mail par ' + escHtml(nom) + '.';
   return '<div class="c-utilise r-resume">'
     + '<div class="r-titre">Demande envoyée' + (dateDemande ? ' le ' + escHtml(dateDemande) : '') + '</div>'
@@ -1000,13 +1001,13 @@ function rendreZoneValidation(id, message){
         document.getElementById('c-bt-reimprimer').addEventListener('click', lancerImpression);
         return;
       }
-      z.innerHTML = '<div class="c-utilise"><b>✔ Coupon-papier déjà imprimé' + (d ? ' le ' + escHtml(d) : '') + '</b>'
+      z.innerHTML = '<div class="c-utilise"><b class="deja">✔ Coupon-papier déjà imprimé' + (d ? ' le ' + escHtml(d) : '') + '</b>'
         + (info.numero ? 'Coupon n° ' + escHtml(info.numero) + '. ' : '')
         + 'Il sera de nouveau disponible à partir du ' + dateLongue(dispoAnneeSuivante(c)) + '.</div>';
       return;
     }
     const ng = nomsGroupe(c);
-    z.innerHTML = '<div class="c-utilise"><b>✔ Coupon déjà utilisé' + (d ? ' le ' + escHtml(d) : '') + (info.autre ? ' à ' + escHtml(info.autre) : '') + '</b>'
+    z.innerHTML = '<div class="c-utilise"><b class="deja">✔ Coupon déjà utilisé' + (d ? ' le ' + escHtml(d) : '') + (info.autre ? ' à ' + escHtml(info.autre) : '') + '</b>'
       + (ng.length > 1 ? 'Coupon commun : ' + escHtml(ng.join(' ou ')) + ' — un seul parc par an. ' : '')
       + 'Il sera de nouveau disponible à partir du ' + dateLongue(dispoAnneeSuivante(c)) + '.</div>';
     return;
