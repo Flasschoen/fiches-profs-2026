@@ -455,7 +455,20 @@ function construireOnglets(){
   }));
 }
 
+// Coupon commun à plusieurs cartes (2026-10-11, ex. Zoo Antwerpen OU Planckendael) : quand l'un est utilisé,
+// les autres cartes du même groupe apparaissent aussi « déjà utilisé » (la règle est appliquée par le serveur).
+function groupeDe(c){ return String((c && c.fields && c.fields['Coupon — groupe commun']) || '').trim(); }
+function appliquerGroupes(){
+  Object.keys(validationsInfo).forEach(id=>{ if(validationsInfo[id] && validationsInfo[id].autre){ delete validations[id]; delete validationsInfo[id]; } });
+  partenaires.forEach(c=>{
+    const g = groupeDe(c); if(!g || validations[c.id]!==undefined) return;
+    const s = partenaires.find(x=>x.id!==c.id && groupeDe(x)===g && validations[x.id]!==undefined && !(validationsInfo[x.id]||{}).autre);
+    if(s){ validations[c.id] = validations[s.id]; validationsInfo[c.id] = {mode:'Standard', numero:'', autre: nomDe(s)}; }
+  });
+}
+function nomsGroupe(c){ const g = groupeDe(c); return g ? partenaires.filter(x=>groupeDe(x)===g).map(nomDe) : []; }
 function rendreListe(){
+  appliquerGroupes();
   const zone = document.getElementById('liste');
   let liste = partenaires.slice();
   if(ongletActif!=='TOUTES') liste = liste.filter(c=>paysDe(c)===ongletActif);
@@ -472,7 +485,7 @@ function rendreListe(){
       + `<div class="nom">${escHtml(nomDe(c))}</div>`
       + `<div class="pays">${escHtml(libellePays(paysDe(c)))}</div>`
       + (avantageDe(c) ? `<div class="av">${escHtml(avantageDe(c))}</div>` : '')
-      + (validations[c.id]!==undefined ? `<div class="utilise">✔ ${(validationsInfo[c.id]||{}).mode==='Coupon papier' ? 'Imprimé' : ((validationsInfo[c.id]||{}).mode==='Demande de réservation' ? 'Demandé' : 'Utilisé')}${dateCourte(validations[c.id]) ? ' le '+dateCourte(validations[c.id]) : ''}</div>`
+      + (validations[c.id]!==undefined ? `<div class="utilise">✔ ${(validationsInfo[c.id]||{}).mode==='Coupon papier' ? 'Imprimé' : ((validationsInfo[c.id]||{}).mode==='Demande de réservation' ? 'Demandé' : 'Utilisé')}${dateCourte(validations[c.id]) ? ' le '+dateCourte(validations[c.id]) : ''}${(validationsInfo[c.id]||{}).autre ? ' à '+escHtml(validationsInfo[c.id].autre) : ''}</div>`
         : (enOrdre && modeDe(c)==='Standard' && nonValableAujourdhui(c).bloque ? '<div class="nonvalable">⛔ Non valable aujourd\'hui</div>' : ''))
       + `<div class="ouvrir">🔎 Voir la carte de visite</div>`
       + `</button>`;
@@ -992,7 +1005,9 @@ function rendreZoneValidation(id, message){
         + 'Il sera de nouveau disponible à partir du ' + dateLongue(dispoAnneeSuivante(c)) + '.</div>';
       return;
     }
-    z.innerHTML = '<div class="c-utilise"><b>✔ Coupon déjà utilisé' + (d ? ' le ' + escHtml(d) : '') + '</b>'
+    const ng = nomsGroupe(c);
+    z.innerHTML = '<div class="c-utilise"><b>✔ Coupon déjà utilisé' + (d ? ' le ' + escHtml(d) : '') + (info.autre ? ' à ' + escHtml(info.autre) : '') + '</b>'
+      + (ng.length > 1 ? 'Coupon commun : ' + escHtml(ng.join(' ou ')) + ' — un seul parc par an. ' : '')
       + 'Il sera de nouveau disponible à partir du ' + dateLongue(dispoAnneeSuivante(c)) + '.</div>';
     return;
   }
@@ -1049,7 +1064,10 @@ async function validerCoupon(id){
       return;
     }
     if(r.status === 401){ clearSession(); try{ sessionStorage.setItem('educpass_retour', 'mes-coupons.html?accueil=1'); }catch(e){} location.href = 'connexion-fr.html'; return; }
-    if(data.code === 'deja_utilise'){ validations[id] = data.date || ''; rendreListe(); rendreZoneValidation(id); return; }
+    if(data.code === 'deja_utilise'){
+      validations[id] = data.date || '';
+      if(data.carteUtilisee && data.carteUtilisee !== id){ const o = partenaires.find(x=>x.id===data.carteUtilisee); validations[data.carteUtilisee] = data.date || ''; validationsInfo[data.carteUtilisee] = {mode:'Standard', numero:''}; validationsInfo[id] = {mode:'Standard', numero:'', autre: o ? nomDe(o) : 'un autre parc'}; }
+      rendreListe(); rendreZoneValidation(id); return; }
     if(data.code === 'cotisation'){ enOrdre = false; document.getElementById('msg-cotisation').classList.remove('hidden'); rendreListe(); ouvrirCoupon(id); return; }
     if(data.code === 'periode'){ const zz = document.getElementById('c-zone-validation'); if(zz) zz.innerHTML = `<div class="c-periode">⛔ ${escHtml(data.error || 'Coupon non valable pendant cette période.')}</div>`; return; }
     rendreZoneValidation(id, data.error || 'La validation n\'a pas abouti. Votre coupon n\'a pas été utilisé, merci de réessayer.');
