@@ -169,6 +169,7 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:26px;color:var(-
 .pp-nom{font-weight:700;font-style:normal;font-size:10pt;margin-bottom:1mm;}
 .pp-av{margin-top:4mm;color:#c00000;font-weight:700;font-style:normal;font-size:10.5pt;line-height:1.3;white-space:pre-wrap;}
 .pp-per{font-size:7.5pt;text-align:center;padding-bottom:3mm;}
+.pp-cond{font-size:7pt;line-height:1.35;text-align:justify;white-space:pre-wrap;border-top:.8pt solid #000;padding:2.5mm 0;} .pp-cond b{display:block;font-size:8pt;text-align:center;margin-bottom:1mm;}
 .pp-bas{display:flex;gap:3mm;border-top:.8pt solid #000;padding-top:3mm;align-items:stretch;}
 .pp-prof{flex:1;font-size:8.5pt;line-height:1.5;} .pp-t{font-weight:700;font-size:9.5pt;border-bottom:.6pt solid #000;margin-bottom:1.5mm;padding-bottom:1mm;}
 .pp-num{width:38mm;flex-shrink:0;border:1pt solid #000;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2mm;box-sizing:border-box;}
@@ -718,6 +719,8 @@ function coupnPapierHtml(c, v){
   const adr2 = [premierLookup(f['CP (via Attraction)']), premierLookup(f['Commune (via Attraction)'])].filter(Boolean).join(' - ');
   const tel = premierLookup(f['Téléphone (via Attraction)']);
   const periodes = periodesLisibles(c);
+  // Texte complet de l'avantage (conditions du partenaire, code offre caisse…) imprimé sous le coupon (2026-10-11)
+  const conditions = String(f['Avantage coupon'] || '').replace(/\r/g,'').replace(/\n{3,}/g,'\n\n').trim();
   const quand = new Date(v.date);
   const dateImp = (isNaN(quand) ? new Date() : quand).toLocaleDateString('fr-BE', {day:'2-digit', month:'2-digit', year:'numeric', timeZone:'Europe/Brussels'});
   return '<div class="pp">'
@@ -732,6 +735,7 @@ function coupnPapierHtml(c, v){
     +   '</div>'
     + '</div>'
     + (periodes ? `<div class="pp-per">${escHtml(periodes)}</div>` : '')
+    + (conditions ? `<div class="pp-cond"><b>Avantage et conditions d'utilisation</b>${escHtml(conditions)}</div>` : '')
     + '<div class="pp-bas">'
     +   '<div class="pp-prof"><div class="pp-t">Info titulaire enseignant</div>'
     +     `<b>${escHtml(nomProf)}</b>` + (l1 ? `<div>${escHtml(l1)}</div>` : '') + (l2 ? `<div>${escHtml(l2)}</div>` : '')
