@@ -158,7 +158,11 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:26px;color:var(-
 .c-papier-pret{margin:12px 16px 4px;padding:14px;background:#e3f3e7;border-radius:12px;text-align:center;font-size:14px;line-height:1.5;color:#0f5a2b;}
 .c-papier-pret .bt{margin-top:10px;background:#1a7a3c;color:#fff;font-size:15px;padding:11px 18px;}
 #papier{display:none;}
-.pp{width:92mm;border:1.2pt solid #000;padding:5mm;font-family:Arial,Helvetica,sans-serif;color:#000;background:#fff;box-sizing:border-box;}
+.pp{width:92mm;border:1.2pt solid #000;padding:5mm;font-family:Arial,Helvetica,sans-serif;color:#000;background:#fff;box-sizing:border-box;position:relative;overflow:hidden;}
+.pp>*:not(.pp-fil){position:relative;z-index:1;}
+.pp-fil{position:absolute;inset:-30mm;z-index:0;transform:rotate(-28deg);pointer-events:none;display:flex;flex-direction:column;justify-content:space-around;}
+.pp-fil div{white-space:nowrap;font-size:6.5pt;font-weight:700;letter-spacing:.3pt;color:#e4e4e4;line-height:1;}
+@media print{.pp-fil div{color:#e0e0e0 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
 .pp-logo{text-align:center;border-bottom:.8pt solid #000;padding-bottom:3mm;}
 .pp-logo img{width:62mm;height:auto;}
 .pp-titre{text-align:center;font-size:17pt;padding:2.5mm 0;border-bottom:.8pt solid #000;}
@@ -723,7 +727,11 @@ function coupnPapierHtml(c, v){
   const conditions = String(f['Avantage coupon'] || '').replace(/\r/g,'').replace(/\n{3,}/g,'\n\n').trim();
   const quand = new Date(v.date);
   const dateImp = (isNaN(quand) ? new Date() : quand).toLocaleDateString('fr-BE', {day:'2-digit', month:'2-digit', year:'numeric', timeZone:'Europe/Brussels'});
-  return '<div class="pp">'
+  // Fond dissuasif (2026-10-11) : « ORIGINAL EDUCPASS — NOM — n° » répété en filigrane sur tout le coupon,
+  // pour qu'une copie ne puisse servir qu'au titulaire (pièce d'identité demandée en caisse).
+  const filTxt = ('ORIGINAL EDUCPASS · ' + nomProf.toUpperCase() + ' · ' + (v.numero || '') + ' · ').repeat(4);
+  const filigrane = '<div class="pp-fil" aria-hidden="true">' + Array.from({length:26}, ()=>'<div>' + escHtml(filTxt) + '</div>').join('') + '</div>';
+  return '<div class="pp">' + filigrane
     + `<div class="pp-logo"><img src="${LOGO_COUPON}" alt="Educpass"></div>`
     + '<div class="pp-titre">Coupon-<b>éclaireur</b><small>Non-valable en groupe</small></div>'
     + '<div class="pp-corps">'
