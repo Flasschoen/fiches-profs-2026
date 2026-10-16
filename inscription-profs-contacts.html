@@ -233,7 +233,7 @@ async function charger(){
   if(!CFG){ fermer('Inscriptions fermées', 'Les inscriptions en ligne ne sont pas ouvertes pour le moment.'); return; }
   $('titre').textContent = 'Inscription au ' + CFG.titre.replace(/-/g, '\u2011');
   document.title = 'Inscription ' + CFG.titre + ' — Educpass';
-  $('sous-titre').textContent = 'Réservé aux membres en ordre de cotisation ' + (2000 + (CFG.anneeExigee % 100));
+  $('sous-titre').textContent = 'Réservé aux membres en ordre de cotisation ' + texteAnnees();
   $('quand').innerHTML = (CFG.dateTexte ? '📅 <b>' + esc(CFG.dateTexte) + '</b><br>' : '') + (CFG.adresse ? '📍 ' + esc(CFG.adresse) + '<br>' : '') +
     (CFG.infos ? '🚗 ' + esc(CFG.infos).replace(/\n/g, '<br>') + '<br>' : '') + (CFG.limite ? '⏰ Inscription jusqu\'au <b>' + jjmmaaaa(CFG.limite) + '</b>' : '');
   const offert = CFG.entreesGratuites - 1;
@@ -246,13 +246,16 @@ async function charger(){
   $('texte-infos').classList.toggle('hidden', !CFG.texteInfos);
   // heures
   const h = $('i-heure');
+  const vip = CFG.heuresVip.filter(x => !CFG.heures.includes(x));   // une heure présente dans les 2 listes n'apparaît qu'une fois
   h.innerHTML = '<option value="">— Choisir —</option>' + CFG.heures.map(x => '<option>' + esc(x) + '</option>').join('') +
-    (CFG.heuresVip.length ? '<optgroup label="VIP — réservé uniquement aux retraités">' + CFG.heuresVip.map(x => '<option value="' + esc(x) + '">' + esc(x) + ' (VIP retraités)</option>').join('') + '</optgroup>' : '');
+    (vip.length ? '<optgroup label="VIP — réservé uniquement aux retraités">' + vip.map(x => '<option value="' + esc(x) + '">' + esc(x) + ' (VIP retraités)</option>').join('') + '</optgroup>' : '');
   const n = $('i-nbacc');
   n.innerHTML = Array.from({length: CFG.maxAccompagnants + 1}, (_, i) => '<option value="' + i + '">' + (i === 0 ? 'NON, je viens seul(e)' : 'OUI, ' + i + ' personne' + (i > 1 ? 's' : '')) + '</option>').join('');
   $('regle-acc').textContent = 'Maximum ' + CFG.maxAccompagnants + ' accompagnants. Adulte = ' + CFG.ageAdulte + ' ans et plus le jour de l\'événement.';
   $('zone-membre').classList.remove('hidden');
 }
+// Années acceptées : l'année minimum réglée dans Airtable et la suivante (ex. 26 → « 2026 ou 2027 »).
+function texteAnnees(){ const a = 2000 + (CFG.anneeExigee % 100); return a + ' ou ' + (a + 1); }
 function fermer(t, txt){ $('ferme-titre').textContent = t; $('ferme-texte').textContent = txt; $('zone-ferme').classList.remove('hidden'); }
 
 // ===== Étape 1 =====
@@ -272,7 +275,7 @@ async function verifier(){
       majAccompagnants(); window.scrollTo({top: $('zone-inscription').offsetTop - 10, behavior:'smooth'});
     }else{
       msg.className = 'msg err';
-      msg.innerHTML = esc(d.error || 'Vérification impossible, merci de réessayer.') +
+      msg.innerHTML = esc(d.code === 'cotisation' ? 'Votre cotisation ' + texteAnnees() + ' n\'est pas en ordre.' : (d.error || 'Vérification impossible, merci de réessayer.')) +
         (d.code === 'cotisation' ? '<br><a href="cotisation.html" style="color:var(--rouge);">👉 Régler ma cotisation</a>' : '');
     }
   }catch(e){ msg.className = 'msg err'; msg.textContent = 'Connexion impossible, merci de réessayer.'; }
