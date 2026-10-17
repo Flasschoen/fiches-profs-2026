@@ -186,6 +186,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 <script>
 const PROXY = 'https://educpass-profs-proxy.marc-flasschoen.workers.dev';
 const API = PROXY + '/public/profs-contacts/';
+const URL_CONNEXION_EDUCPASS = 'https://www.educpass.eu/FR/Connexion.awp';
 let CFG = null, AUJ = '', MEMBRE = null;
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -275,8 +276,11 @@ async function verifier(){
       majAccompagnants(); window.scrollTo({top: $('zone-inscription').offsetTop - 10, behavior:'smooth'});
     }else{
       msg.className = 'msg err';
-      msg.innerHTML = esc(d.code === 'cotisation' ? 'Votre cotisation ' + texteAnnees() + ' n\'est pas en ordre.' : (d.error || 'Vérification impossible, merci de réessayer.')) +
-        (d.code === 'cotisation' ? '<br><a href="cotisation.html" style="color:var(--rouge);">👉 Régler ma cotisation</a>' : '');
+      // 2026-10-17 (Marc) : comptes et cotisations encore gérés sur le site WinDev educpass.eu.
+      const LIEN_EDU = '<br><a href="' + URL_CONNEXION_EDUCPASS + '" target="_blank" rel="noopener" style="color:var(--rouge);">👉 Se connecter / s\'inscrire chez Educpass</a>';
+      if(d.code === 'identite') msg.innerHTML = 'Veuillez vérifier vos données ou vous inscrire chez Educpass à l\'aide de votre N° de matricule.' + LIEN_EDU;
+      else if(d.code === 'cotisation') msg.innerHTML = esc('Votre cotisation ' + texteAnnees() + ' n\'est pas en ordre.') + LIEN_EDU.replace('Se connecter / s\'inscrire chez Educpass', 'Régler ma cotisation chez Educpass');
+      else msg.innerHTML = esc(d.error || 'Vérification impossible, merci de réessayer.');
     }
   }catch(e){ msg.className = 'msg err'; msg.textContent = 'Connexion impossible, merci de réessayer.'; }
   b.disabled = false; b.textContent = '🔎 Vérifier mon affiliation';
