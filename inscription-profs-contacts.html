@@ -190,6 +190,29 @@ const URL_CONNEXION_EDUCPASS = 'https://www.educpass.eu/FR/Connexion.awp';
 let CFG = null, AUJ = '', MEMBRE = null;
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// 2026-10-21 : textes mis en forme dans l'outil RÉSERVATIONS (gras, italique, souligné, barré, couleur).
+// Seules ces balises / styles sont gardés (le reste est retiré) ; un texte simple garde ses retours à la ligne.
+const riche = s => {
+  s = String(s == null ? '' : s);
+  if(!/<(b|i|u|s|strong|em|strike|del|span|font|br|div|p)\b/i.test(s)) return esc(s).replace(/\n/g, '<br>');
+  const OK = {B:1,STRONG:1,I:1,EM:1,U:1,S:1,STRIKE:1,DEL:1,BR:1,SPAN:1,FONT:1,DIV:1,P:1};
+  const STY = ['color','background-color','font-weight','font-style','text-decoration','text-decoration-line'];
+  const t = document.createElement('template'); t.innerHTML = s;
+  (function net(n){
+    Array.from(n.childNodes).forEach(c => {
+      if(c.nodeType === 3) return;
+      if(c.nodeType === 1 && /^(SCRIPT|STYLE|IFRAME|OBJECT|EMBED|TEMPLATE|TEXTAREA|SELECT)$/.test(c.tagName)){ c.remove(); return; }
+      if(c.nodeType !== 1 || !OK[c.tagName]){ if(c.nodeType === 1){ net(c); c.replaceWith(...c.childNodes); } else c.remove(); return; }
+      const st = c.style ? STY.map(k => c.style.getPropertyValue(k) ? k + ':' + c.style.getPropertyValue(k) : '').filter(Boolean).join(';') : '';
+      const coul = c.tagName === 'FONT' ? c.getAttribute('color') : null;
+      Array.from(c.attributes).forEach(a => c.removeAttribute(a.name));
+      if(st) c.setAttribute('style', st);
+      if(coul && /^#?[0-9a-z]+$/i.test(coul)) c.setAttribute('color', coul);
+      net(c);
+    });
+  })(t.content);
+  const d = document.createElement('div'); d.appendChild(t.content); return d.innerHTML;
+};
 const euros = n => (Math.round(n * 100) / 100).toFixed(2).replace('.', ',') + ' €';
 const jjmmaaaa = iso => iso ? iso.slice(8,10) + '/' + iso.slice(5,7) + '/' + iso.slice(0,4) : '';
 
@@ -236,14 +259,14 @@ async function charger(){
   document.title = 'Inscription ' + CFG.titre + ' — Educpass';
   $('sous-titre').textContent = 'Réservé aux membres en ordre de cotisation ' + texteAnnees();
   $('quand').innerHTML = (CFG.dateTexte ? '📅 <b>' + esc(CFG.dateTexte) + '</b><br>' : '') + (CFG.adresse ? '📍 ' + esc(CFG.adresse) + '<br>' : '') +
-    (CFG.infos ? '🚗 ' + esc(CFG.infos).replace(/\n/g, '<br>') + '<br>' : '') + (CFG.limite ? '⏰ Inscription jusqu\'au <b>' + jjmmaaaa(CFG.limite) + '</b>' : '');
+    (CFG.infos ? '🚗 ' + riche(CFG.infos) + '<br>' : '') + (CFG.limite ? '⏰ Inscription jusqu\'au <b>' + jjmmaaaa(CFG.limite) + '</b>' : '');
   const offert = CFG.entreesGratuites - 1;
   $('bandeau').innerHTML = '🎁 Votre entrée' + (offert > 0 ? ' et celle de <b>' + offert + ' accompagnant' + (offert > 1 ? 's' : '') + '</b> sont offertes' : ' est offerte') +
     (CFG.valeurEntree ? ' (valeur ' + euros(CFG.valeurEntree) + ' par entrée)' : '') + '. Personne supplémentaire : ' + euros(CFG.prixAdulte) + ' par adulte, ' + euros(CFG.prixEnfant) +
     ' par enfant de ' + CFG.ageGratuit + ' à ' + (CFG.ageAdulte - 1) + ' ans, gratuit sous ' + CFG.ageGratuit + ' ans.' + (CFG.frais ? ' Frais de réservation : ' + euros(CFG.frais) + ' par formulaire.' : '') +
     '<br>Chaque enseignant doit s\'inscrire avec son propre formulaire (la carte prof n\'est pas valable).';
   if(CFG.limite && AUJ > CFG.limite){ fermer('Inscriptions clôturées', 'Les inscriptions étaient ouvertes jusqu\'au ' + jjmmaaaa(CFG.limite) + '.'); return; }
-  $('texte-infos').innerHTML = esc(CFG.texteInfos).replace(/\n/g, '<br>');
+  $('texte-infos').innerHTML = riche(CFG.texteInfos);
   $('texte-infos').classList.toggle('hidden', !CFG.texteInfos);
   // heures
   const h = $('i-heure');
@@ -367,7 +390,7 @@ function afficherMerci(d, email){
       q.make(); $('merci-qr-svg').innerHTML = q.createSvgTag({scalable:true}); $('merci-qr').classList.remove('hidden');
     }catch(e){}
   }
-  $('merci-infos').innerHTML = esc(CFG.texteInfos).replace(/\n/g, '<br>');
+  $('merci-infos').innerHTML = riche(CFG.texteInfos);
   $('merci-infos').classList.toggle('hidden', !CFG.texteInfos);
   $('zone-merci').classList.remove('hidden');
   window.scrollTo({top: $('zone-merci').offsetTop - 10, behavior:'smooth'});
