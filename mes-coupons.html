@@ -144,10 +144,11 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:26px;color:var(-
 .v-decompte .rl{font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;}
 .v-decompte .rn{font-size:54px;font-weight:800;font-variant-numeric:tabular-nums;}
 .v-decompte.fin{border-color:#c00000;color:#c00000;}
-.coupon.valide.expire{background:#7a7a7a;}
-.coupon.valide.expire .coche{animation:none;color:#7a7a7a;}
+/* 2026-10-28 (Marc) : écran expiré en ROUGE (avant : gris #7a7a7a). */
+.coupon.valide.expire{background:#b3201f;}
+.coupon.valide.expire .coche{animation:none;color:#b3201f;}
 .coupon.valide.expire .barre,.coupon.valide.expire .horloge,.coupon.valide.expire .jour{display:none;}
-.coupon.valide.expire .v-decompte{background:#e6e6e6;color:#444;border-color:#555;box-shadow:none;}
+.coupon.valide.expire .v-decompte{background:#fbe3e1;color:#7d1514;border-color:#7d1514;box-shadow:none;}
 .carte-p .utilise{margin-top:6px;font-size:12px;font-weight:700;color:#12733a;background:#e3f3e7;border-radius:6px;padding:3px 7px;align-self:flex-start;}
 .c-retour{padding:10px 18px 18px;text-align:center;}
 .c-retour .bt{width:100%;background:#fff;color:#0a2b2c;border:2px solid #0f3d3e;border-radius:12px;font-size:15px;padding:11px 12px;}
