@@ -57,8 +57,10 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:24px;color:var(-
   font-family:Calibri,Carlito,'Segoe UI',Arial,sans-serif;color:#1c1c1c;
 }
 .carte-nom{position:absolute;left:6.5%;top:37%;width:58%;font-size:4.6cqw;font-weight:700;text-transform:uppercase;line-height:1.15;}
-.carte-adresse{position:absolute;left:6.5%;top:44.5%;width:58%;font-size:3.9cqw;line-height:1.3;color:#2b2b2b;}
-.carte-membre{position:absolute;right:5.5%;top:37%;width:32%;text-align:right;font-size:3.9cqw;font-weight:700;color:#333;}
+.carte-adresse{position:absolute;left:6.5%;top:44.5%;width:46%;font-size:3.9cqw;line-height:1.3;color:#2b2b2b;}
+.carte-membre{position:absolute;right:5.5%;top:37%;width:38%;text-align:right;font-size:3.9cqw;font-weight:700;color:#333;}
+/* 2026-10-30 (demande de Marc) : n° de matricule sous le n° de membre (utile p. ex. pour Walibi) */
+.carte-matricule{position:absolute;right:5.5%;top:43.5%;width:42%;text-align:right;font-size:3.5cqw;font-weight:700;color:#333;white-space:nowrap;}
 .carte-annee{position:absolute;right:5.5%;bottom:7%;font-size:8cqw;font-weight:700;color:#fff;letter-spacing:.2cqw;
   -webkit-text-stroke:0.35cqw #3a2a00;paint-order:stroke fill;}
 
@@ -94,6 +96,7 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:24px;color:var(-
     <div class="carte-nom" id="carte-nom"></div>
     <div class="carte-adresse" id="carte-adresse"></div>
     <div class="carte-membre" id="carte-nmembre"></div>
+    <div class="carte-matricule" id="carte-matricule"></div>
     <div class="carte-annee" id="carte-annee"></div>
   </div>
 
@@ -178,6 +181,7 @@ async function chargerCarte(){
     const adresseLigne2 = [c.cp, c.ville].filter(Boolean).join(' - ');
     document.getElementById('carte-adresse').innerHTML = [adresseLigne1, adresseLigne2].filter(Boolean).map(l=>l).join('<br>');
     document.getElementById('carte-nmembre').textContent = c.membre ? ('N° de membre : ' + c.membre) : '';
+    document.getElementById('carte-matricule').textContent = c.matricule ? ('Matricule : ' + c.matricule) : '';
     document.getElementById('carte-annee').textContent = anneeLisible(c.anneeCotisation);
     // 2026-09-28 : pas de QR code sur la carte (décision de Marc).
 
