@@ -46,6 +46,8 @@ input:focus,select:focus,button:focus-visible{outline:3px solid var(--gold);outl
 .msg{margin-top:12px;font-weight:600;font-size:14.5px;min-height:20px;}
 .msg.ok{color:var(--ok);} .msg.err{color:var(--err);}
 .parrain-ok{display:inline-block;margin-top:8px;background:#e3f3e8;color:var(--ok);font-weight:700;border-radius:999px;padding:4px 12px;font-size:14px;}
+.sous-titre{font-size:16px;color:var(--navy);margin:20px 0 2px;padding-top:12px;border-top:1px solid var(--line);}
+.sous-titre:first-of-type{border-top:none;padding-top:0;margin-top:4px;}
 .chk{display:flex;gap:10px;align-items:flex-start;margin-top:14px;font-size:14.5px;font-weight:500;}
 .chk input{margin-top:4px;width:18px;height:18px;}
 .paie{background:#fff;border:2px dashed var(--gold-2);border-radius:14px;padding:16px 18px;margin:12px 0;font-size:15.5px;}
@@ -86,16 +88,18 @@ input:focus,select:focus,button:focus-visible{outline:3px solid var(--gold);outl
   <section class="card" id="bloc-form">
     <h2>Je suis parrainé(e) : je m'inscris</h2>
     <form id="form" novalidate>
-      <label for="f-parrain">Numéro de membre de votre parrain</label>
+      <h3 class="sous-titre">① Votre parrain</h3>
+      <label for="f-parrain">Numéro de membre de la personne qui vous parraine</label>
       <input type="text" id="f-parrain" inputmode="numeric" autocomplete="off" placeholder="ex. 51207">
       <div id="parrain-info"></div>
+      <h3 class="sous-titre">② Vos coordonnées (personne parrainée, nouveau membre)</h3>
       <div class="ligne">
-        <div><label for="f-prenom">Prénom</label><input type="text" id="f-prenom" autocomplete="given-name"></div>
-        <div><label for="f-nom">Nom</label><input type="text" id="f-nom" autocomplete="family-name"></div>
+        <div><label for="f-prenom">Votre prénom</label><input type="text" id="f-prenom" autocomplete="given-name"></div>
+        <div><label for="f-nom">Votre nom</label><input type="text" id="f-nom" autocomplete="family-name"></div>
       </div>
       <div class="ligne">
-        <div><label for="f-email">Adresse e-mail</label><input type="email" id="f-email" autocomplete="email"></div>
-        <div><label for="f-gsm">GSM (facultatif)</label><input type="tel" id="f-gsm" autocomplete="tel"></div>
+        <div><label for="f-email">Votre adresse e-mail</label><input type="email" id="f-email" autocomplete="email"></div>
+        <div><label for="f-gsm">Votre GSM (facultatif)</label><input type="tel" id="f-gsm" autocomplete="tel"></div>
       </div>
       <label for="f-pays">Vous enseignez en</label>
       <select id="f-pays"><option>Belgique</option><option>Luxembourg</option></select>
