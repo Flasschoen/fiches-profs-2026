@@ -76,7 +76,7 @@ input:focus,select:focus,button:focus-visible{outline:3px solid var(--gold);outl
   <section class="card">
     <h2>Comment ça marche</h2>
     <div class="etapes">
-      <div class="etape"><span class="n">1</span><h3>Le parrain partage son lien</h3><p>Un membre Educpass Belux vous donne son lien personnel (ou son numéro de membre).</p></div>
+      <div class="etape"><span class="n">1</span><h3>Le parrain partage son lien</h3><p>Un membre Educpass Belux vous donne son lien personnel (ou son numéro de membre ou de matricule).</p></div>
       <div class="etape"><span class="n">2</span><h3>Vous vous inscrivez</h3><p>Remplissez le formulaire ci-dessous, inscrivez-vous sur www.educpass.eu avec la même adresse e-mail et le code promo <b>PARRAINAGE</b> : vous <b>payez 30 €</b> au lieu de 45 €.</p></div>
       <div class="etape"><span class="n">3</span><h3>Le parrain est remercié</h3><p>Dès votre paiement reçu, votre parrain reçoit 10 € dans sa cagnotte Educpass, sans limite de temps.</p></div>
     </div>
@@ -103,8 +103,8 @@ input:focus,select:focus,button:focus-visible{outline:3px solid var(--gold);outl
       <select id="f-pays"><option>Belgique</option><option>Luxembourg</option></select>
       <label class="chk"><input type="checkbox" id="f-nouveau"> <span>Je ne suis pas encore membre Educpass (offre réservée aux nouveaux membres).</span></label>
       <h3 class="sous-titre">② Votre parrain</h3>
-      <label for="f-parrain">Numéro de membre de la personne qui vous parraine</label>
-      <input type="text" id="f-parrain" inputmode="numeric" autocomplete="off" placeholder="ex. 51207">
+      <label for="f-parrain">Numéro de membre <u>ou</u> numéro de matricule de la personne qui vous parraine</label>
+      <input type="text" id="f-parrain" inputmode="numeric" autocomplete="off" placeholder="ex. 51207 ou 16007170028">
       <div id="parrain-info"></div>
       <div style="margin-top:16px;"><button class="btn" type="submit" id="btn-envoyer">Valider mon parrainage</button></div>
       <div class="msg" id="msg" role="alert"></div>
@@ -129,9 +129,9 @@ input:focus,select:focus,button:focus-visible{outline:3px solid var(--gold);outl
 
   <section class="card">
     <h2>Je suis membre : mon lien de parrainage</h2>
-    <p class="lead" style="font-size:15px;">Indiquez votre numéro de membre : vous obtenez le lien à envoyer à vos collègues.</p>
+    <p class="lead" style="font-size:15px;">Indiquez votre numéro de membre ou votre numéro de matricule : vous obtenez le lien à envoyer à vos collègues.</p>
     <div class="lien">
-      <input type="text" id="m-num" inputmode="numeric" placeholder="Votre n° de membre" style="max-width:200px;font-family:inherit;">
+      <input type="text" id="m-num" inputmode="numeric" placeholder="N° de membre ou matricule" style="max-width:240px;font-family:inherit;">
       <button class="btn gold small" type="button" id="m-btn">Obtenir mon lien</button>
     </div>
     <div id="m-res" hidden>
@@ -167,7 +167,7 @@ $('form').addEventListener('submit', async e => {
   const msg = $('msg'); msg.className='msg'; msg.textContent='';
   const corps = { parrain:$('f-parrain').value.replace(/\D/g,''), prenom:$('f-prenom').value.trim(), nom:$('f-nom').value.trim(),
                   email:$('f-email').value.trim(), gsm:$('f-gsm').value.trim(), pays:$('f-pays').value };
-  if(!corps.parrain){ msg.className='msg err'; msg.textContent='Indiquez le numéro de membre de votre parrain.'; return; }
+  if(!corps.parrain){ msg.className='msg err'; msg.textContent='Indiquez le numéro de membre ou de matricule de votre parrain.'; return; }
   if(!corps.prenom || !corps.nom || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(corps.email)){ msg.className='msg err'; msg.textContent='Indiquez votre prénom, votre nom et une adresse e-mail valide.'; return; }
   if(!$('f-nouveau').checked){ msg.className='msg err'; msg.textContent='Cochez la case : l\'offre est réservée aux nouveaux membres.'; return; }
   if(parrainValide !== corps.parrain && !(await verifierParrain())) { msg.className='msg err'; msg.textContent='Le numéro du parrain n\'est pas valide.'; return; }
@@ -182,10 +182,10 @@ $('form').addEventListener('submit', async e => {
 });
 $('m-btn').addEventListener('click', async () => {
   const n = $('m-num').value.replace(/\D/g,''), m = $('m-msg'); m.className='msg'; m.textContent=''; $('m-res').hidden = true;
-  if(!n){ m.className='msg err'; m.textContent='Indiquez votre numéro de membre.'; return; }
+  if(!n){ m.className='msg err'; m.textContent='Indiquez votre numéro de membre ou de matricule.'; return; }
   m.textContent='Vérification…';
-  try{ await appel('verifier', { parrain:n });
-       $('m-lien').value = location.origin + location.pathname + '?p=' + n; $('m-res').hidden = false; m.className='msg ok'; m.textContent='Envoyez ce lien à vos collègues : leur numéro de parrain sera déjà rempli.'; }
+  try{ const dv = await appel('verifier', { parrain:n });
+       $('m-lien').value = location.origin + location.pathname + '?p=' + (dv.membre || n); $('m-res').hidden = false; m.className='msg ok'; m.textContent='Envoyez ce lien à vos collègues : leur numéro de parrain sera déjà rempli.'; }
   catch(e){ m.className='msg err'; m.textContent = e.message; }
 });
 $('m-copier').addEventListener('click', async () => {
