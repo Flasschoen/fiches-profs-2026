@@ -246,6 +246,33 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:26px;color:var(-
   #coupon-overlay{padding:0;align-items:stretch;}
   .coupon{max-width:none;min-height:100%;border-radius:0;margin:0;}
 }
+
+/* ---- 2026-11-06 : visites de classes (+25 € cagnotte) ---- */
+.bt-classe{background:#1f5fa8;color:#fff;}
+.f-action .bt-classe{margin-top:8px;}
+.visites-box{background:#eef4fb;border:2px solid #1f5fa8;border-radius:12px;padding:12px 16px;margin:0 0 16px;font-size:14px;}
+.visites-box .vb-tete{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;color:#123a66;}
+.visites-box .vb-tete b{font-size:16px;}
+.visites-box .vb-tete span{font-size:13px;color:#3d5a7a;}
+.visites-box .vb-aide{font-size:12.5px;color:#3d5a7a;margin-top:8px;line-height:1.45;}
+.vis-l{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;background:#fff;border:1px solid #c7d7ea;border-radius:9px;padding:8px 10px;margin-top:8px;}
+.vis-l .vi{flex:1;min-width:200px;line-height:1.35;}
+.vis-l .vi small{color:#5c6f85;}
+.vis-st{display:inline-block;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:700;color:#fff;white-space:nowrap;}
+.vs-annoncee{background:#1f5fa8;} .vs-declaree{background:#c77d12;} .vs-confirmee,.vs-creditee{background:#1a7a3c;} .vs-refusee{background:#8a7f6a;}
+.vis-msg{font-size:13px;font-weight:700;margin-top:6px;}
+.vis-msg.ok{color:#1a7a3c;} .vis-msg.err{color:#a5432a;}
+.cl-form{margin:12px 16px 4px;padding:14px;background:#fff;border:2px solid #1f5fa8;border-radius:12px;font-size:14px;color:#222;}
+.cl-form h3{margin:0 0 8px;color:#123a66;font-size:17px;}
+.cl-form label{display:block;font-weight:700;margin:10px 0 3px;}
+.cl-form input[type=text],.cl-form input[type=number],.cl-form input[type=date]{width:100%;padding:9px 10px;border:1.5px solid #c9cfda;border-radius:8px;font:inherit;}
+.cl-form .chk{display:flex;gap:8px;align-items:flex-start;font-weight:500;margin-top:10px;}
+.cl-form .chk input{margin-top:3px;}
+.cl-form .note{font-size:12.5px;color:#5c5344;margin-top:8px;line-height:1.45;}
+.coupon.classe-ok{background:#1f5fa8;color:#fff;}
+.coupon.classe-ok .v-ecran .coche{color:#1f5fa8;font-size:46px;}
+.coupon.classe-ok .c-retour .bt{border-color:#fff;}
+.coupon.classe-ok .cl-suite{background:#fff;color:#123a66;border-radius:10px;padding:10px 12px;margin:14px 0 0;font-size:13.5px;line-height:1.45;text-align:left;}
 </style>
 </head>
 <body>
@@ -271,7 +298,15 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:26px;color:var(-
   <h1 class="title">Mes coupons</h1>
   <p class="subtitle">Choisissez un partenaire pour voir sa carte de visite. Le bouton « Afficher le coupon » s'y trouve : présentez ensuite l'écran du coupon à l'accueil.</p>
 
-  <div class="bandeau-accueil hidden" id="bandeau-accueil">📍 Vous êtes à l'accueil d'un partenaire ? Cherchez-le ci-dessous, ouvrez son coupon, puis appuyez sur « Valider le coupon » devant la personne de l'accueil.</div>
+  <div class="bandeau-accueil hidden" id="bandeau-accueil">📍 Vous êtes à l'accueil d'un partenaire ? Cherchez-le ci-dessous, ouvrez son coupon, puis appuyez sur « Valider le coupon » devant la personne de l'accueil. Vous venez avec votre classe ? Ouvrez sa carte puis «&nbsp;🏫 Je viens avec ma classe&nbsp;».</div>
+  <!-- 2026-11-06 : visites de classes (+25 € dans la cagnotte) -->
+  <div class="visites-box hidden" id="visites-box">
+    <div class="vb-tete"><b>🏫 Mes visites de classes</b><span>+25&nbsp;€ dans votre cagnotte par classe amenée chez un partenaire (au moins 10 élèves)</span></div>
+    <div id="visites-liste"></div>
+    <div class="vis-msg" id="visites-msg"></div>
+    <div class="vb-aide">Pour annoncer une visite : ouvrez la carte du partenaire, puis «&nbsp;🏫 Je viens avec ma classe&nbsp;». Visite déjà faite sans l'avoir annoncée ? Même bouton, puis cochez «&nbsp;La visite a eu lieu un autre jour&nbsp;». Après la visite, envoyez ici la confirmation de réservation ou la facture du groupe : dès que le partenaire confirme, 25&nbsp;€ arrivent dans votre cagnotte.</div>
+  </div>
+  <input type="file" id="vis-fichier" accept="application/pdf,image/jpeg,image/png" style="display:none;">
   <div class="msg-box msg-err hidden" id="msg-erreur"></div>
   <div class="msg-box msg-warn hidden" id="msg-cotisation">
     <span>⚠️ <b>Votre cotisation n'est pas à jour.</b> Vous pouvez parcourir les partenaires, mais les coupons seront débloqués après le règlement de votre cotisation.</span>
@@ -535,6 +570,7 @@ function ouvrirFiche(id){
   const sec = (lbl, txt)=> txt ? `<div class="f-sec"><div class="lbl">${lbl}</div><div class="val">${escHtml(txt)}</div></div>` : '';
   const action = enOrdre
     ? '<button type="button" class="bt bt-or" id="fiche-coupon">🎟️ AFFICHER LE COUPON</button>'
+      + '<br><button type="button" class="bt bt-classe" id="fiche-classe">🏫 JE VIENS AVEC MA CLASSE</button>'
     : '<a class="bt bt-or" href="cotisation.html">💳 Régler ma cotisation</a><span class="note">🔒 Le coupon sera débloqué après le règlement de votre cotisation.</span>';
   const box = document.getElementById('fiche');
   box.innerHTML = '<button class="fermer" type="button" aria-label="Fermer">✕</button>'
@@ -551,6 +587,8 @@ function ouvrirFiche(id){
   box.querySelector('.fermer').addEventListener('click', fermerFiche);
   const bc = document.getElementById('fiche-coupon');
   if(bc) bc.addEventListener('click', ()=>ouvrirCoupon(id));
+  const bcl = document.getElementById('fiche-classe');
+  if(bcl) bcl.addEventListener('click', ()=>ouvrirClasse(id));
   if(enOrdre && modeDe(c)==='Code personnel') afficherCodes(id, document.getElementById('fiche-codes'));
   document.getElementById('fiche-overlay').classList.remove('hidden');
   document.body.classList.add('coupon-ouvert');
@@ -1161,12 +1199,169 @@ function fermerCoupon(){
   if(!ficheOuverte()) document.body.classList.remove('coupon-ouvert');
   document.getElementById('coupon').innerHTML = '';
   document.getElementById('coupon').classList.remove('valide');
+  document.getElementById('coupon').classList.remove('classe-ok');
   clearInterval(horlogeValidation); horlogeValidation = null;
 }
 document.getElementById('coupon-overlay').addEventListener('click', (e)=>{ if(e.target.id==='coupon-overlay') fermerCoupon(); });
 document.getElementById('fiche-overlay').addEventListener('click', (e)=>{ if(e.target.id==='fiche-overlay') fermerFiche(); });
 document.addEventListener('keydown', (e)=>{ if(e.key!=='Escape') return;
   if(!document.getElementById('coupon-overlay').classList.contains('hidden')) fermerCoupon(); else if(ficheOuverte()) fermerFiche(); });
+
+
+// ==================== 2026-11-06 : VISITES DE CLASSES (+25 € dans la cagnotte) ====================
+// Sur place : carte du partenaire › « 🏫 Je viens avec ma classe » → écran BLEU « Visite annoncée ».
+// Après la visite : « Mes visites de classes » › envoyer la confirmation de réservation ou la facture du groupe →
+// le partenaire reçoit un e-mail Confirmer / Refuser → 25 € crédités automatiquement dès sa confirmation.
+let mesVisites = [], visiteFichierPour = '', reglagesVisites = { credit:25, min:10 };
+function libStatutVisite(s){
+  return ({'Annoncée':['vs-annoncee','Annoncée — justificatif à envoyer'], 'Déclarée':['vs-declaree','En attente de confirmation du partenaire'],
+           'Confirmée':['vs-confirmee','Confirmée'], 'Créditée':['vs-creditee','Créditée'], 'Refusée':['vs-refusee','Non confirmée']})[s] || ['vs-annoncee', s||'—'];
+}
+async function chargerVisites(){
+  try{
+    const r = await fetch(`${PROXY}/visites/mes-visites`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ token: session.token }) });
+    const d = await r.json().catch(()=>({}));
+    if(!r.ok || !d.ok) return;
+    mesVisites = d.visites || []; if(d.reglages) reglagesVisites = d.reglages;
+    rendreVisites();
+  }catch(e){}
+}
+function rendreVisites(){
+  const box = document.getElementById('visites-box');
+  box.classList.toggle('hidden', !enOrdre);
+  const l = document.getElementById('visites-liste');
+  if(!mesVisites.length){ l.innerHTML = '<div class="vis-l"><div class="vi"><small>Aucune visite de classe pour l\'instant.</small></div></div>'; return; }
+  l.innerHTML = mesVisites.map(v=>{
+    const st = libStatutVisite(v.statut);
+    let action = '';
+    if(v.statut === 'Annoncée') action = '<button type="button" class="bt bt-classe" data-justif="' + escAttr(v.id) + '">📎 Envoyer la facture / confirmation</button>';
+    else if(v.statut === 'Créditée') action = '<b style="color:#1a7a3c;">+' + escHtml(String(v.credit||reglagesVisites.credit)) + ' € 💰</b>';
+    return '<div class="vis-l"><div class="vi"><b>' + escHtml(v.partenaire) + '</b> — ' + escHtml(dateLongueFr(String(v.date).split('-').reverse().join('/')))
+      + '<br><small>' + escHtml(v.ecole) + ' · ' + escHtml(v.classe) + ' · ' + escHtml(String(v.eleves)) + ' élèves · réf. ' + escHtml(v.reference) + '</small></div>'
+      + '<span class="vis-st ' + st[0] + '">' + escHtml(st[1]) + '</span>' + action + '</div>';
+  }).join('');
+  l.querySelectorAll('[data-justif]').forEach(b=>b.addEventListener('click', ()=>choisirJustificatif(b.getAttribute('data-justif'))));
+}
+function choisirJustificatif(id){
+  visiteFichierPour = id;
+  const f = document.getElementById('vis-fichier'); f.value = ''; f.click();
+}
+function lireFichierBase64(f){ return new Promise((ok,ko)=>{ const r = new FileReader(); r.onload = ()=>ok(String(r.result).split(',')[1]||''); r.onerror = ()=>ko(new Error('Lecture du fichier impossible')); r.readAsDataURL(f); }); }
+async function imageReduite(f){
+  const img = await new Promise((ok,ko)=>{ const i = new Image(); i.onload = ()=>ok(i); i.onerror = ()=>ko(new Error('Image illisible')); i.src = URL.createObjectURL(f); });
+  const k = Math.min(1, 1800 / Math.max(img.naturalWidth, img.naturalHeight));
+  const c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth*k); c.height = Math.round(img.naturalHeight*k);
+  const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0,0,c.width,c.height); ctx.drawImage(img, 0, 0, c.width, c.height);
+  URL.revokeObjectURL(img.src);
+  return c.toDataURL('image/jpeg', 0.85).split(',')[1];
+}
+document.getElementById('vis-fichier').addEventListener('change', async (e)=>{
+  const f = e.target.files && e.target.files[0], id = visiteFichierPour; if(!f || !id) return;
+  const msg = document.getElementById('visites-msg');
+  const zone = document.getElementById('cl-justif-msg');   // si l'envoi part de l'écran bleu
+  const dire = (t, cls)=>{ [msg, zone].forEach(z=>{ if(z){ z.className = 'vis-msg ' + (cls||''); z.textContent = t; } }); };
+  try{
+    let contentType, file, filename = f.name;
+    if(f.type === 'application/pdf'){ if(f.size > 4.5*1024*1024) throw new Error('PDF trop lourd (4,5 Mo maximum).'); contentType = f.type; file = await lireFichierBase64(f); }
+    else if(/^image\//.test(f.type)){ contentType = 'image/jpeg'; file = await imageReduite(f); filename = f.name.replace(/\.[^.]+$/, '') + '.jpg'; }
+    else throw new Error('Envoyez un PDF ou une photo.');
+    dire('⏳ Envoi du justificatif…');
+    const r = await fetch(`${PROXY}/visites/justificatif`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ token: session.token, visite: id, filename, contentType, file }) });
+    const d = await r.json().catch(()=>({}));
+    if(r.status === 401){ clearSession(); location.href = 'connexion-fr.html'; return; }
+    if(!r.ok || !d.ok) throw new Error(d.error || ('Erreur ' + r.status));
+    dire(d.mailPartenaire ? '✅ Justificatif envoyé. Le partenaire va confirmer votre visite : vous recevrez un e-mail dès que les ' + reglagesVisites.credit + ' € seront dans votre cagnotte.'
+                          : '✅ Justificatif envoyé. L\'équipe Educpass vérifie votre visite et crédite votre cagnotte.', 'ok');
+    await chargerVisites();
+  }catch(err){ dire('❌ ' + err.message, 'err'); }
+});
+
+function ouvrirClasse(id){
+  const c = partenaires.find(x=>x.id===id); if(!c || !enOrdre) return;
+  const box = document.getElementById('coupon');
+  let memo = {}; try{ memo = JSON.parse(localStorage.getItem('educpass_classe') || '{}') || {}; }catch(e){}
+  const auj = jourBruxelles(new Date());
+  box.classList.remove('valide'); box.classList.remove('classe-ok');
+  box.innerHTML = '<button class="fermer" type="button" aria-label="Fermer">✕</button>'
+    + `<div class="c-logo-edu"><img src="${LOGO_COUPON}" alt="Educpass"></div>`
+    + '<form class="cl-form" id="cl-form" novalidate>'
+    + '<h3>🏫 Je viens avec ma classe — ' + escHtml(nomDe(c)) + '</h3>'
+    + '<div class="note" style="margin-top:0;">Votre groupe paie le tarif scolaire habituel du partenaire (pas d\'entrée offerte). En échange, Educpass vous offre <b>' + escHtml(String(reglagesVisites.credit)) + ' €</b> dans votre cagnotte dès que le partenaire confirme votre venue.</div>'
+    + '<label for="cl-ecole">École *</label><input type="text" id="cl-ecole" maxlength="150" value="' + escAttr(memo.ecole||'') + '" autocomplete="organization">'
+    + '<label for="cl-classe">Classe / niveau *</label><input type="text" id="cl-classe" maxlength="80" placeholder="ex. 5e primaire B" value="' + escAttr(memo.classe||'') + '">'
+    + '<label for="cl-eleves">Nombre d\'élèves * (au moins ' + escHtml(String(reglagesVisites.min)) + ')</label><input type="number" id="cl-eleves" min="' + reglagesVisites.min + '" max="200" inputmode="numeric">'
+    + '<label class="chk"><input type="checkbox" id="cl-apres"> La visite a eu lieu un autre jour (je la déclare après coup)</label>'
+    + '<div id="cl-date-zone" class="hidden"><label for="cl-date">Date de la visite *</label><input type="date" id="cl-date" max="' + auj + '"></div>'
+    + '<div class="c-msg-val hidden" id="cl-err" style="margin:10px 0 0;"></div>'
+    + '<div class="rang" style="display:flex;gap:8px;margin-top:12px;"><button type="button" class="bt bt-non" id="cl-annuler" style="flex:1;background:#8a7f6a;color:#fff;">Annuler</button><button type="submit" class="bt bt-classe" id="cl-envoyer" style="flex:2;">Annoncer ma visite</button></div>'
+    + '</form>'
+    + '<div class="c-retour"><button type="button" class="bt" data-retour-carte="1">← Retour page précédente</button></div>';
+  box.querySelector('.fermer').addEventListener('click', fermerCoupon);
+  box.querySelectorAll('[data-retour-carte]').forEach(b=>b.addEventListener('click', ()=>retourCarteDeVisite(id)));
+  document.getElementById('cl-annuler').addEventListener('click', ()=>retourCarteDeVisite(id));
+  document.getElementById('cl-apres').addEventListener('change', (e)=>{
+    document.getElementById('cl-date-zone').classList.toggle('hidden', !e.target.checked);
+    document.getElementById('cl-envoyer').textContent = e.target.checked ? 'Déclarer ma visite' : 'Annoncer ma visite';
+  });
+  document.getElementById('cl-form').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const err = document.getElementById('cl-err'), bt = document.getElementById('cl-envoyer');
+    const ecole = document.getElementById('cl-ecole').value.trim(), classe = document.getElementById('cl-classe').value.trim();
+    const eleves = Math.floor(Number(document.getElementById('cl-eleves').value)), apres = document.getElementById('cl-apres').checked, date = document.getElementById('cl-date').value;
+    const montrer = (t)=>{ err.textContent = t; err.classList.remove('hidden'); };
+    err.classList.add('hidden');
+    if(!ecole || !classe) return montrer('Indiquez l\'école et la classe.');
+    if(!(eleves >= reglagesVisites.min)) return montrer('Il faut au moins ' + reglagesVisites.min + ' élèves pour une visite de classe.');
+    if(apres && !date) return montrer('Indiquez la date de la visite.');
+    if(apres && date > auj) return montrer('La date ne peut pas être dans le futur.');
+    bt.disabled = true; bt.textContent = '⏳ Envoi…';
+    try{
+      const r = await fetch(`${PROXY}/visites/annoncer`, { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ token: session.token, carte: id, ecole, classe, eleves, date: apres ? date : '', apres }) });
+      const d = await r.json().catch(()=>({}));
+      if(r.status === 401){ clearSession(); location.href = 'connexion-fr.html'; return; }
+      if(!r.ok || !d.ok) throw new Error(d.error || ('Erreur ' + r.status));
+      try{ localStorage.setItem('educpass_classe', JSON.stringify({ ecole, classe })); }catch(e2){}
+      chargerVisites();
+      afficherEcranClasse(id, d);
+    }catch(x){ montrer(x.message); bt.disabled = false; bt.textContent = apres ? 'Déclarer ma visite' : 'Annoncer ma visite'; }
+  });
+  document.getElementById('coupon-overlay').classList.remove('hidden');
+  document.body.classList.add('coupon-ouvert');
+  document.getElementById('coupon-overlay').scrollTop = 0;
+}
+function afficherEcranClasse(id, v){
+  const box = document.getElementById('coupon');
+  const nomProf = ((compte.prenom||'') + ' ' + (compte.nom||'')).trim();
+  const fmtH = (d)=> d.toLocaleTimeString('fr-BE', {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false, timeZone:'Europe/Brussels'});
+  const fmtJ = (d)=> d.toLocaleDateString('fr-BE', {weekday:'long', day:'numeric', month:'long', year:'numeric', timeZone:'Europe/Brussels'});
+  box.classList.remove('valide'); box.classList.add('classe-ok');
+  box.innerHTML = '<button class="fermer" type="button" aria-label="Fermer">✕</button>'
+    + '<div class="v-ecran">'
+    +   '<div class="coche">🏫</div>'
+    +   '<div class="titre">' + (v.surPlace ? 'VISITE DE CLASSE ANNONCÉE' : 'VISITE DE CLASSE DÉCLARÉE') + '</div>'
+    +   `<div class="attr">${escHtml(v.partenaire)}</div>`
+    +   `<div class="avv" style="background:#dbe8f7;color:#123a66;">${escHtml(v.ecole)}<br>${escHtml(v.classe)} — ${escHtml(String(v.eleves))} élèves</div>`
+    +   `<div class="prof">${escHtml(nomProf.toUpperCase())}</div>`
+    +   (compte.membre ? `<div class="validele">N° de membre : ${escHtml(compte.membre)} · réf. ${escHtml(v.reference)}</div>` : '')
+    +   (v.surPlace ? '<div class="horloge" id="v-horloge"></div><div class="jour" id="v-jour"></div><div class="barre"><i></i></div>'
+                    + '<div class="pied">Montrez cet écran à l\'accueil : votre visite de classe est annoncée au partenaire.<br>Le groupe paie le tarif scolaire habituel.</div>'
+                    : `<div class="jour">Visite du ${escHtml(dateLongueFr(String(v.date).split('-').reverse().join('/')))}</div>`)
+    +   '<div class="cl-suite"><b>Pour recevoir vos ' + escHtml(String(v.credit || reglagesVisites.credit)) + ' € :</b> ' + (v.surPlace ? 'après la visite, e' : 'e') + 'nvoyez la confirmation de réservation ou la facture du groupe (photo ou PDF). Le partenaire la confirme d\'un clic et votre cagnotte est créditée.'
+    +   '<div style="margin-top:8px;"><button type="button" class="bt bt-classe" id="cl-justif">📎 Envoyer la facture / confirmation</button></div><div class="vis-msg" id="cl-justif-msg"></div>'
+    +   '<div style="margin-top:6px;font-size:12px;">Vous pourrez aussi l\'envoyer plus tard depuis «&nbsp;Mes visites de classes&nbsp;», en haut de cette page.</div></div>'
+    + '</div>'
+    + '<div class="c-retour"><button type="button" class="bt" data-retour-carte="1">← Retour page précédente</button></div>';
+  box.querySelector('.fermer').addEventListener('click', fermerCoupon);
+  box.querySelectorAll('[data-retour-carte]').forEach(b=>b.addEventListener('click', ()=>retourCarteDeVisite(id)));
+  document.getElementById('cl-justif').addEventListener('click', ()=>choisirJustificatif(v.id));
+  if(v.surPlace){
+    const tic = ()=>{ const h = document.getElementById('v-horloge'), j = document.getElementById('v-jour'); if(!h){ clearInterval(horlogeValidation); horlogeValidation = null; return; }
+      const n = new Date(); h.textContent = fmtH(n); j.textContent = fmtJ(n); };
+    clearInterval(horlogeValidation); tic(); horlogeValidation = setInterval(tic, 1000);
+  }
+  document.getElementById('coupon-overlay').scrollTop = 0;
+}
 
 let debounce;
 document.getElementById('recherche').addEventListener('input', (e)=>{
@@ -1188,6 +1383,7 @@ document.getElementById('recherche').addEventListener('input', (e)=>{
     if(ARRIVEE_ACCUEIL && enOrdre){ document.getElementById('bandeau-accueil').classList.remove('hidden'); try{ document.getElementById('recherche').focus(); }catch(e){} }
     construireOnglets();
     rendreListe();
+    if(enOrdre) chargerVisites();
     if(CARTE_DEMANDEE && partenaires.some(x=>x.id===CARTE_DEMANDEE)){ ouvrirFiche(CARTE_DEMANDEE); if(enOrdre) ouvrirCoupon(CARTE_DEMANDEE); }
   }catch(e){
     const box = document.getElementById('msg-erreur');
