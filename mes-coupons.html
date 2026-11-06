@@ -248,35 +248,41 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:26px;color:var(-
 }
 
 /* ---- 2026-11-06 : visites de classes (+25 € cagnotte) ---- */
-.bt-classe{background:#1f5fa8;color:#fff;}
+.bt-classe{background:#0f3d3e;color:#fff;}
 .f-action .bt-classe{margin-top:8px;}
-.visites-box{background:#eef4fb;border:2px solid #1f5fa8;border-radius:12px;padding:12px 16px;margin:0 0 16px;font-size:14px;}
-.visites-box .vb-tete{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;color:#123a66;}
+.visites-box{background:#eef5f0;border:2px solid #0f3d3e;border-radius:12px;padding:12px 16px;margin:0 0 16px;font-size:14px;}
+.visites-box .vb-tete{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;color:#0a2b2c;}
 .visites-box .vb-tete b{font-size:16px;}
-.visites-box .vb-tete span{font-size:13px;color:#3d5a7a;}
-.visites-box .vb-aide{font-size:12.5px;color:#3d5a7a;margin-top:8px;line-height:1.45;}
-.vis-l{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;background:#fff;border:1px solid #c7d7ea;border-radius:9px;padding:8px 10px;margin-top:8px;}
+.visites-box summary{cursor:pointer;list-style:none;}
+.visites-box summary::-webkit-details-marker{display:none;}
+.visites-box summary::after{content:'▸';margin-left:auto;font-size:16px;color:#0f3d3e;}
+.visites-box[open] summary::after{content:'▾';}
+.visites-box .vb-a-faire{display:inline-block;background:#c89b3c;color:#0a2b2c;border-radius:999px;padding:1px 9px;font-weight:700;font-size:12px;}
+.vis-sep{font-size:12px;font-weight:700;color:#3f5a50;margin:10px 0 0;}
+.visites-box .vb-tete span{font-size:13px;color:#3f5a50;}
+.visites-box .vb-aide{font-size:12.5px;color:#3f5a50;margin-top:8px;line-height:1.45;}
+.vis-l{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;background:#fff;border:1px solid #cfe0d6;border-radius:9px;padding:8px 10px;margin-top:8px;}
 .vis-l .vi{flex:1;min-width:200px;line-height:1.35;}
-.vis-l .vi small{color:#5c6f85;}
+.vis-l .vi small{color:#5c6f66;}
 .vis-st{display:inline-block;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:700;color:#fff;white-space:nowrap;}
-.vs-annoncee{background:#1f5fa8;} .vs-declaree{background:#c77d12;} .vs-confirmee,.vs-creditee{background:#1a7a3c;} .vs-refusee{background:#8a7f6a;}
+.vs-annoncee{background:#0f3d3e;} .vs-declaree{background:#c77d12;} .vs-confirmee,.vs-creditee{background:#1a7a3c;} .vs-refusee{background:#8a7f6a;}
 .vis-msg{font-size:13px;font-weight:700;margin-top:6px;}
 .vis-msg.ok{color:#1a7a3c;} .vis-msg.err{color:#a5432a;}
-.cl-form{margin:12px 16px 4px;padding:14px;background:#fff;border:2px solid #1f5fa8;border-radius:12px;font-size:14px;color:#222;}
-.cl-form h3{margin:0 0 8px;color:#123a66;font-size:17px;}
+.cl-form{margin:12px 16px 4px;padding:14px;background:#fff;border:2px solid #0f3d3e;border-radius:12px;font-size:14px;color:#222;}
+.cl-form h3{margin:0 0 8px;color:#0a2b2c;font-size:17px;}
 .cl-form label{display:block;font-weight:700;margin:10px 0 3px;}
 .cl-form input[type=text],.cl-form input[type=number],.cl-form input[type=date]{width:100%;padding:9px 10px;border:1.5px solid #c9cfda;border-radius:8px;font:inherit;}
 .cl-form .chk{display:flex;gap:8px;align-items:flex-start;font-weight:500;margin-top:10px;}
 .cl-form .chk input{margin-top:3px;}
 .cl-form .note{font-size:12.5px;color:#5c5344;margin-top:8px;line-height:1.45;}
-.coupon.classe-ok{background:#1f5fa8;color:#fff;}
-.coupon.classe-ok .v-ecran .coche{color:#1f5fa8;font-size:46px;}
+.coupon.classe-ok{background:#0f3d3e;color:#fff;}  /* 2026-11-06 : vert pétrole du site (le vert vif #12733a reste réservé au coupon validé) */
+.coupon.classe-ok .v-ecran .coche{color:#0f3d3e;font-size:46px;}
 .coupon.classe-ok .c-retour .bt{border-color:#fff;}
-.coupon.classe-ok .cl-accueil{background:#fff;color:#123a66;border-radius:12px;padding:12px 14px;margin:34px 0 14px;text-align:left;border:4px solid #f2c94c;}
-.coupon.classe-ok .cl-accueil .t1{font-size:20px;font-weight:900;color:#1f5fa8;letter-spacing:.5px;}
+.coupon.classe-ok .cl-accueil{background:#fff;color:#0a2b2c;border-radius:12px;padding:12px 14px;margin:34px 0 14px;text-align:left;border:4px solid #f2c94c;}
+.coupon.classe-ok .cl-accueil .t1{font-size:20px;font-weight:900;color:#0f3d3e;letter-spacing:.5px;}
 .coupon.classe-ok .cl-accueil .t2{font-size:15px;font-weight:700;margin:2px 0 6px;}
 .coupon.classe-ok .cl-accueil .t3{font-size:15px;line-height:1.5;}
-.coupon.classe-ok .cl-suite{background:#fff;color:#123a66;border-radius:10px;padding:10px 12px;margin:14px 0 0;font-size:13.5px;line-height:1.45;text-align:left;}
+.coupon.classe-ok .cl-suite{background:#fff;color:#0a2b2c;border-radius:10px;padding:10px 12px;margin:14px 0 0;font-size:13.5px;line-height:1.45;text-align:left;}
 </style>
 </head>
 <body>
@@ -304,12 +310,12 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:26px;color:var(-
 
   <div class="bandeau-accueil hidden" id="bandeau-accueil">📍 Vous êtes à l'accueil d'un partenaire ? Cherchez-le ci-dessous, ouvrez son coupon, puis appuyez sur « Valider le coupon » devant la personne de l'accueil. Vous venez avec votre classe ? Ouvrez sa carte puis «&nbsp;🏫 Je viens avec ma classe&nbsp;».</div>
   <!-- 2026-11-06 : visites de classes (+25 € dans la cagnotte) -->
-  <div class="visites-box hidden" id="visites-box">
-    <div class="vb-tete"><b>🏫 Mes visites de classes</b><span>+25&nbsp;€ dans votre cagnotte par classe amenée chez un partenaire (au moins 10 élèves)</span></div>
+  <details class="visites-box hidden" id="visites-box">
+    <summary class="vb-tete"><b>🏫 Mes visites de classes</b><span id="visites-resume">+25&nbsp;€ dans votre cagnotte par classe amenée chez un partenaire (au moins 10 élèves)</span></summary>
     <div id="visites-liste"></div>
     <div class="vis-msg" id="visites-msg"></div>
     <div class="vb-aide">Pour annoncer une visite : ouvrez la carte du partenaire, puis «&nbsp;🏫 Je viens avec ma classe&nbsp;» (chez les partenaires qui participent aux visites de classes). Visite déjà faite sans l'avoir annoncée ? Même bouton, puis cochez «&nbsp;La visite a eu lieu un autre jour&nbsp;». Après la visite, envoyez ici la confirmation de réservation ou la facture du groupe : dès que le partenaire confirme, 25&nbsp;€ arrivent dans votre cagnotte.</div>
-  </div>
+  </details>
   <input type="file" id="vis-fichier" accept="application/pdf,image/jpeg,image/png" style="display:none;">
   <div class="msg-box msg-err hidden" id="msg-erreur"></div>
   <div class="msg-box msg-warn hidden" id="msg-cotisation">
@@ -1235,11 +1241,17 @@ async function chargerVisites(){
   }catch(e){}
 }
 function rendreVisites(){
+  // 2026-11-06 (Marc) : encadré repliable ; visites refusées masquées ; à compléter d'abord, créditées regroupées en bas
   const box = document.getElementById('visites-box');
   box.classList.toggle('hidden', !enOrdre);
-  const l = document.getElementById('visites-liste');
-  if(!mesVisites.length){ l.innerHTML = '<div class="vis-l"><div class="vi"><small>Aucune visite de classe pour l\'instant.</small></div></div>'; return; }
-  l.innerHTML = mesVisites.map(v=>{
+  const l = document.getElementById('visites-liste'), resume = document.getElementById('visites-resume');
+  const utiles = mesVisites.filter(v=>v.statut !== 'Refusée');
+  const aFaire = utiles.filter(v=>v.statut === 'Annoncée'), enCours = utiles.filter(v=>v.statut === 'Déclarée' || v.statut === 'Confirmée'), ok = utiles.filter(v=>v.statut === 'Créditée');
+  const total = ok.reduce((t,v)=>t + (Number(v.credit) || reglagesVisites.credit), 0);
+  resume.innerHTML = aFaire.length ? '<span class="vb-a-faire">' + aFaire.length + ' justificatif' + (aFaire.length>1?'s':'') + ' à envoyer</span>'
+    : (enCours.length ? enCours.length + ' en attente de confirmation' + (ok.length ? ' · ' : '') : '') + (ok.length ? ok.length + ' créditée' + (ok.length>1?'s':'') + ' (+' + escHtml(String(total)) + ' €)' : '')
+    || ('+' + escHtml(String(reglagesVisites.credit)) + ' € par classe amenée chez un partenaire (au moins ' + escHtml(String(reglagesVisites.min)) + ' élèves)');
+  const ligne = v=>{
     const st = libStatutVisite(v.statut);
     let action = '';
     if(v.statut === 'Annoncée') action = '<button type="button" class="bt bt-classe" data-justif="' + escAttr(v.id) + '">📎 Envoyer la facture / confirmation</button>';
@@ -1247,7 +1259,9 @@ function rendreVisites(){
     return '<div class="vis-l"><div class="vi"><b>' + escHtml(v.partenaire) + '</b> — ' + escHtml(dateLongueFr(String(v.date).split('-').reverse().join('/')))
       + '<br><small>' + escHtml(v.ecole) + ' · ' + escHtml(v.classe) + ' · ' + escHtml(String(v.eleves)) + ' élèves · réf. ' + escHtml(v.reference) + '</small></div>'
       + '<span class="vis-st ' + st[0] + '">' + escHtml(st[1]) + '</span>' + action + '</div>';
-  }).join('');
+  };
+  l.innerHTML = !utiles.length ? '<div class="vis-l"><div class="vi"><small>Aucune visite de classe pour l\'instant.</small></div></div>'
+    : aFaire.concat(enCours).map(ligne).join('') + (ok.length ? '<div class="vis-sep">Visites créditées</div>' + ok.map(ligne).join('') : '');
   l.querySelectorAll('[data-justif]').forEach(b=>b.addEventListener('click', ()=>choisirJustificatif(b.getAttribute('data-justif'))));
 }
 function choisirJustificatif(id){
@@ -1280,7 +1294,7 @@ document.getElementById('vis-fichier').addEventListener('change', async (e)=>{
     if(!r.ok || !d.ok) throw new Error(d.error || ('Erreur ' + r.status));
     dire(d.mailPartenaire ? '✅ Justificatif envoyé. Le partenaire va confirmer votre visite : vous recevrez un e-mail dès que les ' + reglagesVisites.credit + ' € seront dans votre cagnotte.'
                           : '✅ Justificatif envoyé. L\'équipe Educpass vérifie votre visite et crédite votre cagnotte.', 'ok');
-    await chargerVisites();
+    await chargerVisites(); document.getElementById('visites-box').open = true;
   }catch(err){ dire('❌ ' + err.message, 'err'); }
 });
 
@@ -1351,11 +1365,10 @@ function afficherEcranClasse(id, v){
         + '<div class="t3">✔ Rien à valider, rien à offrir.<br>✔ Ce n\'est pas un coupon : le groupe paie <b>le tarif scolaire habituel</b>.<br>✔ Merci simplement d\'accueillir cette classe !</div></div>' : '')
     +   '<div class="titre">' + (v.surPlace ? '🏫 CLASSE EDUCPASS' : '🏫 VISITE DE CLASSE DÉCLARÉE') + '</div>'
     +   `<div class="attr">${escHtml(v.partenaire)}</div>`
-    +   `<div class="avv" style="background:#dbe8f7;color:#123a66;font-size:17px;">${escHtml(v.ecole)}<br><b>${escHtml(v.classe)} — ${escHtml(String(v.eleves))} élèves</b></div>`
+    +   `<div class="avv" style="background:#dcebe3;color:#0a2b2c;font-size:17px;">${escHtml(v.ecole)}<br><b>${escHtml(v.classe)} — ${escHtml(String(v.eleves))} élèves</b></div>`
     +   `<div class="prof">Enseignant : ${escHtml(nomProf.toUpperCase())}</div>`
     +   (compte.membre ? `<div class="validele">N° de membre : ${escHtml(compte.membre)} · réf. ${escHtml(v.reference)}</div>` : '')
-    +   (v.surPlace ? '<div class="horloge" id="v-horloge"></div><div class="jour" id="v-jour"></div><div class="barre"><i></i></div>'
-                    : `<div class="jour">Visite du ${escHtml(dateLongueFr(String(v.date).split('-').reverse().join('/')))}</div>`)
+    +   `<div class="jour" style="margin-top:10px;">Visite du ${escHtml(dateLongueFr(String(v.date).split('-').reverse().join('/')))}</div>`
     +   '<div class="cl-suite"><b>👩‍🏫 Pour vous, enseignant — vos ' + escHtml(String(v.credit || reglagesVisites.credit)) + ' € :</b> ' + (v.surPlace ? 'après la visite, e' : 'e') + 'nvoyez la confirmation de réservation ou la facture du groupe (photo ou PDF). Le partenaire la confirme d\'un clic et votre cagnotte est créditée.'
     +   '<div style="margin-top:8px;"><button type="button" class="bt bt-classe" id="cl-justif">📎 Envoyer la facture / confirmation</button></div><div class="vis-msg" id="cl-justif-msg"></div>'
     +   '<div style="margin-top:6px;font-size:12px;">Vous pourrez aussi l\'envoyer plus tard depuis «&nbsp;Mes visites de classes&nbsp;», en haut de cette page.</div></div>'
@@ -1364,11 +1377,6 @@ function afficherEcranClasse(id, v){
   box.querySelector('.fermer').addEventListener('click', fermerCoupon);
   box.querySelectorAll('[data-retour-carte]').forEach(b=>b.addEventListener('click', ()=>retourCarteDeVisite(id)));
   document.getElementById('cl-justif').addEventListener('click', ()=>choisirJustificatif(v.id));
-  if(v.surPlace){
-    const tic = ()=>{ const h = document.getElementById('v-horloge'), j = document.getElementById('v-jour'); if(!h){ clearInterval(horlogeValidation); horlogeValidation = null; return; }
-      const n = new Date(); h.textContent = fmtH(n); j.textContent = fmtJ(n); };
-    clearInterval(horlogeValidation); tic(); horlogeValidation = setInterval(tic, 1000);
-  }
   document.getElementById('coupon-overlay').scrollTop = 0;
 }
 
