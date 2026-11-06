@@ -272,6 +272,10 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:26px;color:var(-
 .coupon.classe-ok{background:#1f5fa8;color:#fff;}
 .coupon.classe-ok .v-ecran .coche{color:#1f5fa8;font-size:46px;}
 .coupon.classe-ok .c-retour .bt{border-color:#fff;}
+.coupon.classe-ok .cl-accueil{background:#fff;color:#123a66;border-radius:12px;padding:12px 14px;margin:34px 0 14px;text-align:left;border:4px solid #f2c94c;}
+.coupon.classe-ok .cl-accueil .t1{font-size:20px;font-weight:900;color:#1f5fa8;letter-spacing:.5px;}
+.coupon.classe-ok .cl-accueil .t2{font-size:15px;font-weight:700;margin:2px 0 6px;}
+.coupon.classe-ok .cl-accueil .t3{font-size:15px;line-height:1.5;}
 .coupon.classe-ok .cl-suite{background:#fff;color:#123a66;border-radius:10px;padding:10px 12px;margin:14px 0 0;font-size:13.5px;line-height:1.45;text-align:left;}
 </style>
 </head>
@@ -304,7 +308,7 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:26px;color:var(-
     <div class="vb-tete"><b>🏫 Mes visites de classes</b><span>+25&nbsp;€ dans votre cagnotte par classe amenée chez un partenaire (au moins 10 élèves)</span></div>
     <div id="visites-liste"></div>
     <div class="vis-msg" id="visites-msg"></div>
-    <div class="vb-aide">Pour annoncer une visite : ouvrez la carte du partenaire, puis «&nbsp;🏫 Je viens avec ma classe&nbsp;». Visite déjà faite sans l'avoir annoncée ? Même bouton, puis cochez «&nbsp;La visite a eu lieu un autre jour&nbsp;». Après la visite, envoyez ici la confirmation de réservation ou la facture du groupe : dès que le partenaire confirme, 25&nbsp;€ arrivent dans votre cagnotte.</div>
+    <div class="vb-aide">Pour annoncer une visite : ouvrez la carte du partenaire, puis «&nbsp;🏫 Je viens avec ma classe&nbsp;» (chez les partenaires qui participent aux visites de classes). Visite déjà faite sans l'avoir annoncée ? Même bouton, puis cochez «&nbsp;La visite a eu lieu un autre jour&nbsp;». Après la visite, envoyez ici la confirmation de réservation ou la facture du groupe : dès que le partenaire confirme, 25&nbsp;€ arrivent dans votre cagnotte.</div>
   </div>
   <input type="file" id="vis-fichier" accept="application/pdf,image/jpeg,image/png" style="display:none;">
   <div class="msg-box msg-err hidden" id="msg-erreur"></div>
@@ -570,7 +574,7 @@ function ouvrirFiche(id){
   const sec = (lbl, txt)=> txt ? `<div class="f-sec"><div class="lbl">${lbl}</div><div class="val">${escHtml(txt)}</div></div>` : '';
   const action = enOrdre
     ? '<button type="button" class="bt bt-or" id="fiche-coupon">🎟️ AFFICHER LE COUPON</button>'
-      + '<br><button type="button" class="bt bt-classe" id="fiche-classe">🏫 JE VIENS AVEC MA CLASSE</button>'
+      + (classesPossibles(c) ? '<br><button type="button" class="bt bt-classe" id="fiche-classe">🏫 JE VIENS AVEC MA CLASSE</button>' : '')
     : '<a class="bt bt-or" href="cotisation.html">💳 Régler ma cotisation</a><span class="note">🔒 Le coupon sera débloqué après le règlement de votre cotisation.</span>';
   const box = document.getElementById('fiche');
   box.innerHTML = '<button class="fermer" type="button" aria-label="Fermer">✕</button>'
@@ -1213,6 +1217,10 @@ document.addEventListener('keydown', (e)=>{ if(e.key!=='Escape') return;
 // Après la visite : « Mes visites de classes » › envoyer la confirmation de réservation ou la facture du groupe →
 // le partenaire reçoit un e-mail Confirmer / Refuser → 25 € crédités automatiquement dès sa confirmation.
 let mesVisites = [], visiteFichierPour = '', reglagesVisites = { credit:25, min:10 };
+// 2026-11-06 (Marc) : bouton seulement chez les partenaires qui participent (case « Visites de classes » de leur carte de visite),
+// sauf pour les comptes de test (400156, 2 : mails envoyés à Marc, jamais au partenaire).
+const COMPTES_TEST_VISITES = ['400156', '2'];
+function classesPossibles(c){ return !!(c && c.fields && c.fields['Visites de classes'] === true) || (compte && COMPTES_TEST_VISITES.includes(String(compte.membre))); }
 function libStatutVisite(s){
   return ({'Annoncée':['vs-annoncee','Annoncée — justificatif à envoyer'], 'Déclarée':['vs-declaree','En attente de confirmation du partenaire'],
            'Confirmée':['vs-confirmee','Confirmée'], 'Créditée':['vs-creditee','Créditée'], 'Refusée':['vs-refusee','Non confirmée']})[s] || ['vs-annoncee', s||'—'];
@@ -1277,7 +1285,7 @@ document.getElementById('vis-fichier').addEventListener('change', async (e)=>{
 });
 
 function ouvrirClasse(id){
-  const c = partenaires.find(x=>x.id===id); if(!c || !enOrdre) return;
+  const c = partenaires.find(x=>x.id===id); if(!c || !enOrdre || !classesPossibles(c)) return;
   const box = document.getElementById('coupon');
   let memo = {}; try{ memo = JSON.parse(localStorage.getItem('educpass_classe') || '{}') || {}; }catch(e){}
   const auj = jourBruxelles(new Date());
@@ -1338,16 +1346,17 @@ function afficherEcranClasse(id, v){
   box.classList.remove('valide'); box.classList.add('classe-ok');
   box.innerHTML = '<button class="fermer" type="button" aria-label="Fermer">✕</button>'
     + '<div class="v-ecran">'
-    +   '<div class="coche">🏫</div>'
-    +   '<div class="titre">' + (v.surPlace ? 'VISITE DE CLASSE ANNONCÉE' : 'VISITE DE CLASSE DÉCLARÉE') + '</div>'
+    +   (v.surPlace ? '<div class="cl-accueil"><div class="t1">📣 POUR L\'ACCUEIL</div>'
+        + '<div class="t2">Classe d\'un enseignant membre Educpass</div>'
+        + '<div class="t3">✔ Rien à valider, rien à offrir.<br>✔ Ce n\'est pas un coupon : le groupe paie <b>le tarif scolaire habituel</b>.<br>✔ Merci simplement d\'accueillir cette classe !</div></div>' : '')
+    +   '<div class="titre">' + (v.surPlace ? '🏫 CLASSE EDUCPASS' : '🏫 VISITE DE CLASSE DÉCLARÉE') + '</div>'
     +   `<div class="attr">${escHtml(v.partenaire)}</div>`
-    +   `<div class="avv" style="background:#dbe8f7;color:#123a66;">${escHtml(v.ecole)}<br>${escHtml(v.classe)} — ${escHtml(String(v.eleves))} élèves</div>`
-    +   `<div class="prof">${escHtml(nomProf.toUpperCase())}</div>`
+    +   `<div class="avv" style="background:#dbe8f7;color:#123a66;font-size:17px;">${escHtml(v.ecole)}<br><b>${escHtml(v.classe)} — ${escHtml(String(v.eleves))} élèves</b></div>`
+    +   `<div class="prof">Enseignant : ${escHtml(nomProf.toUpperCase())}</div>`
     +   (compte.membre ? `<div class="validele">N° de membre : ${escHtml(compte.membre)} · réf. ${escHtml(v.reference)}</div>` : '')
     +   (v.surPlace ? '<div class="horloge" id="v-horloge"></div><div class="jour" id="v-jour"></div><div class="barre"><i></i></div>'
-                    + '<div class="pied">Montrez cet écran à l\'accueil : votre visite de classe est annoncée au partenaire.<br>Le groupe paie le tarif scolaire habituel.</div>'
                     : `<div class="jour">Visite du ${escHtml(dateLongueFr(String(v.date).split('-').reverse().join('/')))}</div>`)
-    +   '<div class="cl-suite"><b>Pour recevoir vos ' + escHtml(String(v.credit || reglagesVisites.credit)) + ' € :</b> ' + (v.surPlace ? 'après la visite, e' : 'e') + 'nvoyez la confirmation de réservation ou la facture du groupe (photo ou PDF). Le partenaire la confirme d\'un clic et votre cagnotte est créditée.'
+    +   '<div class="cl-suite"><b>👩‍🏫 Pour vous, enseignant — vos ' + escHtml(String(v.credit || reglagesVisites.credit)) + ' € :</b> ' + (v.surPlace ? 'après la visite, e' : 'e') + 'nvoyez la confirmation de réservation ou la facture du groupe (photo ou PDF). Le partenaire la confirme d\'un clic et votre cagnotte est créditée.'
     +   '<div style="margin-top:8px;"><button type="button" class="bt bt-classe" id="cl-justif">📎 Envoyer la facture / confirmation</button></div><div class="vis-msg" id="cl-justif-msg"></div>'
     +   '<div style="margin-top:6px;font-size:12px;">Vous pourrez aussi l\'envoyer plus tard depuis «&nbsp;Mes visites de classes&nbsp;», en haut de cette page.</div></div>'
     + '</div>'
