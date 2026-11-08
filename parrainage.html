@@ -310,6 +310,9 @@ const p = new URLSearchParams(location.search).get('p');
 // 2026-11-05 : lien France = parrainage.html?pays=FR (sinon version Belux ; un n° de parrain français bascule aussi en France)
 if(/^fr/i.test(new URLSearchParams(location.search).get('pays')||'')) appliquerZone({ zone:'FR', prix:20, prixNormal:25, code:'PARRAIN' });
 if(p){ $('f-parrain').value = p.replace(/\D/g,''); verifierParrain(); }
+// 2026-11-08 : depuis l'espace membre (menu « Parrainer ») : parrainage.html?moi=<n° membre> -> lien perso affiché directement
+const moi = new URLSearchParams(location.search).get('moi');
+if(moi){ $('m-num').value = moi.replace(/\D/g,''); $('m-btn').click(); setTimeout(()=>{ const b=$('bloc-membre'); if(b) b.scrollIntoView({behavior:'smooth'}); }, 400); }
 </script>
 </body>
 </html>
