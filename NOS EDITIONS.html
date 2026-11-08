@@ -49,6 +49,7 @@ h1{font-family:'Fraunces',serif;font-weight:700;font-size:32px;color:var(--teal-
 
 <div class="wrap">
   <h1>Nos éditions</h1>
+  <div id="choix-pays-ed" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:4px 0 14px;font-size:14px;"></div>
   <p class="intro">Consultez en ligne ou téléchargez nos brochures.</p>
   <div id="liste-editions"><div class="loading">⏳ Chargement…</div></div>
 </div>
@@ -89,13 +90,31 @@ function pdfDe(f){
   return a && a.url ? a : null;
 }
 
+// 2026-11-08 : site educpass.eu — éditions selon le pays choisi sur l'accueil (même mémoire « edu_pays »).
+// Les éditions « Belgique » sont aussi montrées au Luxembourg. Champ « Pays » vide = tous les pays.
+const PAYS_ED = (function(){
+  let p = (new URLSearchParams(location.search).get('pays')||'').toUpperCase();
+  if(['BE','LU','FR'].indexOf(p) === -1){ try{ p = (localStorage.getItem('edu_pays')||'').toUpperCase(); }catch(e){} }
+  if(['BE','LU','FR'].indexOf(p) === -1) p = 'BE';
+  try{ localStorage.setItem('edu_pays', p); }catch(e){}
+  return p;
+})();
+const NOMS_ED = { BE:['Belgique'], LU:['Luxembourg','Belgique'], FR:['France'] };
+function pourMonPays(f){ const l = f['Pays'] || []; return !l.length || l.some(x => NOMS_ED[PAYS_ED].indexOf(x) !== -1); }
+(function(){
+  const z = document.getElementById('choix-pays-ed'); if(!z) return;
+  const lib = { BE:'🇧🇪 Belgique', LU:'🇱🇺 Luxembourg', FR:'🇫🇷 France' };
+  z.innerHTML = '<span style="color:#5c5344;">Éditions pour :</span>' + ['BE','LU','FR'].map(p =>
+    '<a href="?pays='+p+'" style="text-decoration:none;padding:5px 12px;border-radius:999px;font-weight:700;'
+    + (p===PAYS_ED ? 'background:#c89b3c;color:#0a2b2c;' : 'background:#faf5e8;color:#0f3d3e;border:1px solid #d8cca4;') + '">' + lib[p] + '</a>').join('');
+})();
 function afficherEditions(records){
   const zone = document.getElementById('liste-editions');
   const actives = records
-    .filter(r => r.fields && r.fields['Actif'] === true && r.fields['Titre'])
+    .filter(r => r.fields && r.fields['Actif'] === true && r.fields['Titre'] && pourMonPays(r.fields))
     .sort((a,b) => (a.fields['Ordre']||0) - (b.fields['Ordre']||0));
   if(!actives.length){
-    zone.innerHTML = '<div class="vide">Aucune édition disponible pour le moment.</div>';
+    zone.innerHTML = '<div class="vide">' + (PAYS_ED === 'FR' ? 'Aucune édition disponible pour le moment.' : 'Les éditions pour la Belgique et le Luxembourg arrivent bientôt.') + '</div>';
     return;
   }
   zone.innerHTML = '<div class="grille">' + actives.map(r => {
