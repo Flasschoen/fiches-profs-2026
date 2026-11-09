@@ -579,6 +579,13 @@ function ouvrirFiche(id){
   const tarifs = f['Tarifs, réservation et infos pratiques'] || '';
   const photos = Array.isArray(f['Photos']) ? f['Photos'] : [];
   const embed = toEmbedUrl(f['Vidéo YouTube']);
+  // 2026-11-09 : contact pour les profs (champs « Téléphone carte » / « E-mail carte », encodés par l'équipe ; téléphone : sinon celui de la fiche membre)
+  const telC = String(f['Téléphone carte']||'').trim() || premierLookup(f['Téléphone (via Attraction)']);
+  const mailC = String(f['E-mail carte']||'').trim();
+  const contact = (telC || mailC) ? '<div class="f-sec"><div class="lbl">Contact</div><div class="val">'
+    + (telC ? '📞 <a href="tel:' + escAttr(telC.replace(/[^0-9+]/g,'')) + '">' + escHtml(telC) + '</a>' : '')
+    + (telC && mailC ? '<br>' : '')
+    + (mailC ? '✉️ <a href="mailto:' + escAttr(mailC) + '">' + escHtml(mailC) + '</a>' : '') + '</div></div>' : '';
   const sec = (lbl, txt)=> txt ? `<div class="f-sec"><div class="lbl">${lbl}</div><div class="val">${escHtml(txt)}</div></div>` : '';
   const action = enOrdre
     ? '<button type="button" class="bt bt-or" id="fiche-coupon">🎟️ AFFICHER LE COUPON</button>'
@@ -589,12 +596,12 @@ function ouvrirFiche(id){
     + (logo ? `<div class="f-logo"><img src="${escAttr(logo)}" alt="${escAttr(nom)}"></div>` : '')
     + `<h2>${escHtml(nom)}</h2>`
     + `<div class="f-pays">${escHtml(libellePays(paysDe(c)))}</div>`
-    + sec('Description', desc) + sec('Horaires et fermetures', horaires) + sec('Tarifs, réservation et infos pratiques', tarifs)
+    + sec('Description', desc) + sec('Horaires et fermetures', horaires) + sec('Tarifs, réservation et infos pratiques', tarifs) + contact
     // 2026-10-03 (demande de Marc) : l'avantage et le bouton coupon viennent APRÈS le texte (sous les tarifs)
     + (avantage ? `<div class="f-av">${escHtml(avantage)}</div>` : '')
     + (enOrdre && modeDe(c)==='Code personnel' ? '<div id="fiche-codes"></div>' : '')
     + `<div class="f-action">${action}</div>`
-    + (embed ? `<div class="f-sec"><div class="lbl">Vidéo</div><div class="f-video"><iframe src="${escAttr(embed)}" title="${escAttr(nom)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div></div>` : '')
+    + (embed ? `<div class="f-sec"><div class="lbl">Vidéo</div><div class="f-video"><iframe src="${escAttr(embed)}" title="${escAttr(nom)}" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div></div>` : '')
     + (photos.length ? `<div class="f-sec"><div class="lbl">Photos</div><div class="f-photos">${photos.map(p=>`<img src="${escAttr((p.thumbnails&&p.thumbnails.large)?p.thumbnails.large.url:p.url)}" alt="" loading="lazy">`).join('')}</div></div>` : '');
   box.querySelector('.fermer').addEventListener('click', fermerFiche);
   const bc = document.getElementById('fiche-coupon');
@@ -796,7 +803,8 @@ function coupnPapierHtml(c, v){
   const l2 = [compte.cp, compte.ville].filter(Boolean).join(' - ');
   const adr1 = premierLookup(f['Rue (via Attraction)']);
   const adr2 = [premierLookup(f['CP (via Attraction)']), premierLookup(f['Commune (via Attraction)'])].filter(Boolean).join(' - ');
-  const tel = premierLookup(f['Téléphone (via Attraction)']);
+  const tel = String(f['Téléphone carte']||'').trim() || premierLookup(f['Téléphone (via Attraction)']);   // 2026-11-09 : téléphone de la carte d'abord
+  const mailCarte = String(f['E-mail carte']||'').trim();
   const periodes = periodesLisibles(c);
   // Texte complet de l'avantage (conditions du partenaire, code offre caisse…) imprimé sous le coupon (2026-10-11)
   const conditions = String(f['Avantage coupon'] || '').replace(/\r/g,'').replace(/\n{3,}/g,'\n\n').trim();
@@ -813,7 +821,7 @@ function coupnPapierHtml(c, v){
     +   `<div class="pp-img">${logo ? `<img src="${escAttr(logo)}" alt="">` : ''}</div>`
     +   '<div class="pp-part">'
     +     `<div class="pp-nom">${escHtml(nom)}</div>`
-    +     (adr1 ? `<div>${escHtml(adr1)}</div>` : '') + (adr2 ? `<div>${escHtml(adr2)}</div>` : '') + (tel ? `<div>${escHtml(tel)}</div>` : '')
+    +     (adr1 ? `<div>${escHtml(adr1)}</div>` : '') + (adr2 ? `<div>${escHtml(adr2)}</div>` : '') + (tel ? `<div>${escHtml(tel)}</div>` : '') + (mailCarte ? `<div>${escHtml(mailCarte)}</div>` : '')
     +     `<div class="pp-av">${escHtml(avantageDe(c) || '')}</div>`
     +   '</div>'
     + '</div>'
