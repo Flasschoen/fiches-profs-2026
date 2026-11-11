@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head><script>/* EDU-GARDE-SESSION (2026-10-01) */(function(){
+if(location.protocol!=='https:'||!window.fetch) return;
+var orig=window.fetch.bind(window), affiche=false;
+function bandeau(expiree){ if(affiche) return; affiche=true; var go=function(){
+  var b=document.createElement('div'); b.id='edu-garde-session';
+  b.setAttribute('style','position:fixed;left:0;right:0;top:0;z-index:2147483646;background:#c0392b;color:#fff;font:700 15px Calibri,Arial,sans-serif;padding:12px 16px;display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap;box-shadow:0 3px 12px rgba(0,0,0,.35)');
+  b.innerHTML=(expiree?'🔒 Votre session a expiré : la dernière action n’a PAS été enregistrée. Rechargez la page (F5), reconnectez-vous avec le code reçu par mail, puis refaites-la.'
+                      :'📡 Connexion Internet interrompue : la dernière action n’a PAS été enregistrée. Vérifiez la connexion puis rechargez la page (F5).')
+    +'<button type="button" style="background:#fff;color:#c0392b;border:none;border-radius:6px;padding:6px 14px;font-weight:800;cursor:pointer">🔄 Recharger la page</button>';
+  b.querySelector('button').onclick=function(){ location.reload(); };
+  document.body.appendChild(b); };
+  if(document.body) go(); else document.addEventListener('DOMContentLoaded',go); }
+async function sonder(){ try{ var r=await orig('/api/moi',{redirect:'manual',cache:'no-store'});
+  if(r.type==='opaqueredirect'||r.status===401||r.status===403||r.status===302) return 'expiree';
+  var t=(r.headers.get('content-type')||''); if(t.indexOf('json')<0) return 'expiree'; return 'ok'; }catch(e){ return 'coupure'; } }
+window.fetch=async function(input,init){
+  var url=(typeof input==='string')?input:(input&&input.url)||'';
+  var api=/^\/api\//.test(url); try{ var u=new window.URL(url,location.href); api=(u.origin===location.origin&&u.pathname.indexOf('/api/')===0); }catch(e){} /* window.URL : l'outil Attractions a sa propre variable « URL » */
+  if(!api) return orig(input,init);
+  try{
+    var r=await orig(input,init);
+    if(r.redirected&&/cloudflareaccess\.com/.test(r.url)){ bandeau(true); }
+    else if(r.status===403||r.status===401){ var c=r.clone(); c.text().then(function(t){ if(/connexion Cloudflare Access|Session expir|Jeton|Signature/i.test(t)) bandeau(true); }).catch(function(){}); }
+    else if(r.ok&&(r.headers.get('content-type')||'').indexOf('text/html')===0){ bandeau(true); }
+    return r;
+  }catch(e){ sonder().then(function(s){ if(s!=='ok') bandeau(s==='expiree'); }); throw e; }
+};
+})();</script><script>/* EDU-AGENT-AUTO (2026-10-01) */(function(){try{var x=new XMLHttpRequest();x.open('GET','/api/moi',false);x.send(null);if(x.status===200){var d=JSON.parse(x.responseText);if(d&&d.agent){window.EDU_AGENT=d.agent;['auth_agent','auth_agent_inscriptions_a_valider','auth_agent_mails_standards','auth_agent_moyens_paiement','auth_agent_reservations','auth_agent_contenu_accueil','auth_agent_contenu_contacts','auth_agent_contenu_editions','auth_agent_contenu_profsrelais','auth_agent_contenu_videos','auth_agent_planning'].forEach(function(k){try{sessionStorage.setItem(k,d.agent);}catch(e){}});}}}catch(e){}})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BOUTIQUE — EDUCPASS</title>
+<!-- 2026-11-06 (Marc) : back-office de la boutique (case S du Tableau de bord).
+     Commandes : passées par les profs sur la page publique boutique.html (Worker v19) → « Reçue » (stock déjà réservé).
+       ✅ Valider = débite la cagnotte (Mouvement « Utilisation boutique », montant négatif) → « Payée »
+       📨 Envoyer le billet = mail au prof avec le(s) billet(s) en pièce jointe → « Envoyée »
+       ❌ Annuler = stock rendu (+ remboursement de la cagnotte si déjà débitée) → « Annulée »
+     Articles : ajout / modification (pas de suppression : décocher « Actif »).
+     Paiement : cagnotte d'abord ; le reste éventuel par virement sur BE55 9733 9113 4144 (VANDER WAEREN Vanessa),
+     communication « BOUTIQUE <référence> » (décision Marc 2026-11-06). « ✅ Valider » seulement quand le virement est arrivé. -->
+<style>
+:root{ --navy:#1e3a6e; --navy-dark:#152a52; --or:#d4a017; --bg:#f0f4fa; --line:#d7e0ee; --ok:#27ae60; --err:#c0392b; --att:#e67e22; }
+*{box-sizing:border-box;}
+body{margin:0;font-family:Calibri,Arial,sans-serif;background:var(--bg);color:#222;}
+.hdr-bar{background:linear-gradient(155deg,#27ae60,#1e8449);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.hdr-bar .logo{font-weight:900;letter-spacing:1px;}
+.hdr-bar .title{font-weight:700;flex:1;}
+.btn{border:none;border-radius:4px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;background:#eee;color:#222;text-decoration:none;display:inline-block;font-family:inherit;}
+.btn:hover{filter:brightness(0.95);} .btn:disabled{opacity:.5;cursor:not-allowed;}
+.btn-nav{background:var(--navy-dark);color:#fff;} .btn-save{background:var(--ok);color:#fff;} .btn-err{background:var(--err);color:#fff;} .btn-bleu{background:#2980b9;color:#fff;}
+.btn-sm{padding:4px 9px;font-size:12px;}
+.onglets{display:flex;gap:4px;padding:10px 16px 0;}
+.onglet{padding:8px 16px;border-radius:6px 6px 0 0;background:#dfe6f1;font-weight:700;cursor:pointer;border:none;font-family:inherit;font-size:14px;color:var(--navy);}
+.onglet.actif{background:#fff;}
+.toolbar{background:#fff;padding:10px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--line);}
+.toolbar input,.toolbar select{padding:6px 8px;border:1px solid #bbb;border-radius:4px;font-size:13px;font-family:inherit;}
+#st-bar{padding:6px 16px;font-size:12.5px;color:#555;min-height:18px;}
+#st-bar.err{color:var(--err);font-weight:700;} #st-bar.ok{color:var(--ok);font-weight:700;}
+.wrap{padding:8px 16px 30px;}
+.tbl-box{max-height:68vh;overflow:auto;background:#fff;border-radius:6px;box-shadow:0 1px 6px rgba(30,58,110,.10);}
+table.results{border-collapse:collapse;width:100%;font-size:12.5px;}
+table.results th{background:var(--navy);color:#fff;padding:6px 8px;text-align:left;position:sticky;top:0;white-space:nowrap;z-index:1;}
+table.results td{padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top;}
+table.results tr:nth-child(even) td{background:#f7faff;}
+tr.retard td{background:#fdecea !important;}
+td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;}
+td.act{white-space:nowrap;}
+a.fiche{color:var(--navy);font-weight:700;}
+.badge{display:inline-block;border-radius:10px;padding:1px 9px;font-size:11.5px;font-weight:700;color:#fff;white-space:nowrap;}
+.b-recue{background:var(--att);} .b-payee{background:#2980b9;} .b-envoyee{background:var(--ok);} .b-annulee{background:#888;}
+.vide{padding:18px;text-align:center;color:#777;}
+.kpis{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 12px;}
+.kpi{background:#fff;border-radius:8px;box-shadow:0 1px 6px rgba(30,58,110,.12);padding:8px 14px;min-width:130px;}
+.kpi b{display:block;font-size:22px;color:#a67c00;} .kpi span{font-size:12px;color:#555;}
+.hidden{display:none !important;}
+.fond{position:fixed;inset:0;background:rgba(20,30,50,.55);display:flex;align-items:flex-start;justify-content:center;z-index:900;overflow:auto;padding:30px 12px;}
+.boite{background:#fff;border-radius:8px;padding:20px 24px;width:100%;max-width:760px;box-shadow:0 4px 28px rgba(0,0,0,.3);}
+.boite h2{margin:0 0 10px;color:var(--navy);font-size:19px;}
+.boite label{display:block;font-size:12px;font-weight:700;color:#555;margin:10px 0 3px;}
+.boite input,.boite select,.boite textarea{width:100%;padding:7px;border:1px solid #bbb;border-radius:4px;font-size:13.5px;font-family:inherit;}
+.boite textarea{min-height:170px;}
+.grille{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:4px 14px;}
+.chk{display:flex;gap:6px;align-items:center;font-size:13px;margin-top:8px;}
+.chk input{width:auto;}
+.statut{margin-top:10px;font-size:13px;min-height:18px;}
+.statut.err{color:var(--err);font-weight:700;} .statut.ok{color:var(--ok);font-weight:700;}
+.note{font-size:12px;color:#666;margin-top:8px;}
+</style>
+</head>
+<body>
+
+<div class="hdr-bar">
+  <div class="logo">EDUCPASS</div>
+  <div class="title">🛍️ BOUTIQUE / CAGNOTTE</div>
+  <a class="btn btn-nav" href="https://flasschoen.github.io/fiches-profs-2026/boutique.html" target="_blank" title="La page publique où les profs commandent">🌐 Page boutique (profs)</a>
+  <a class="btn btn-nav" href="FICHIER PROFS 2026.html">👥 Fichier Profs</a>
+  <a class="btn btn-nav" href="../../TABLEAU DE BORD.html" data-tdb="1" title="Retour au Tableau de Bord">🗂️ Tableau de Bord</a>
+</div>
+
+<div class="onglets">
+  <button class="onglet actif" id="tab-cmd" onclick="onglet('cmd')">📦 Commandes</button>
+  <button class="onglet" id="tab-art" onclick="onglet('art')">🎟️ Articles</button>
+</div>
+
+<!-- ======================= COMMANDES ======================= -->
+<div id="vue-cmd">
+  <div class="toolbar">
+    <select id="f-statut" onchange="afficherCommandes()">
+      <option value="A traiter">À traiter (reçues + payées)</option>
+      <option>Reçue</option><option>Payée</option><option>Envoyée</option><option>Annulée</option>
+      <option value="">Toutes</option>
+    </select>
+    <input type="search" id="q-cmd" placeholder="🔍 Référence, membre, article…" oninput="afficherCommandes()">
+    <button class="btn" onclick="chargerTout()">🔄 Actualiser</button>
+  </div>
+  <div id="st-bar">⏳ Chargement…</div>
+  <div class="wrap">
+    <div class="kpis" id="kpis"></div>
+    <div class="tbl-box"><table class="results">
+      <thead><tr><th>Date</th><th>Référence</th><th>Membre</th><th>Article</th><th class="num">Qté</th><th class="num">Total</th><th class="num">Cagnotte du prof</th><th>Statut</th><th>Actions</th></tr></thead>
+      <tbody id="tb-cmd"></tbody>
+    </table></div>
+    <div class="note">Une commande « Reçue » depuis plus de 36 h est surlignée en rouge (délai annoncé aux profs : 48 h ouvrables). Le stock est réservé dès la commande ; la cagnotte est débitée au clic sur « ✅ Valider ». « dont virement » : attendre le virement sur BE55 9733 9113 4144 (communication BOUTIQUE + référence) avant de valider.</div>
+  </div>
+</div>
+
+<!-- ======================= ARTICLES ======================= -->
+<div id="vue-art" class="hidden">
+  <div class="toolbar">
+    <button class="btn btn-save" onclick="ouvrirArticle(null)">➕ Nouvel article</button>
+    <label style="font-size:13px;"><input type="checkbox" id="f-inactifs" onchange="afficherArticles()"> afficher les articles inactifs</label>
+  </div>
+  <div class="wrap">
+    <div class="tbl-box"><table class="results">
+      <thead><tr><th>Article</th><th>Partenaire</th><th>Rayon</th><th class="num">Valeur</th><th class="num">Prix Educpass</th><th class="num">Stock initial</th><th class="num">Vendus</th><th class="num">Restant</th><th>Validité</th><th>Pays</th><th class="num">Limite/an</th><th>Actif</th><th></th></tr></thead>
+      <tbody id="tb-art"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- Fiche article -->
+<div class="fond hidden" id="ov-art">
+  <div class="boite">
+    <h2 id="art-titre">Article</h2>
+    <div class="grille">
+      <div style="grid-column:1/-1;"><label>Nom de l'article (ce que voit le prof)</label><input id="a-nom" placeholder="ex. Entrée adulte — Expo « Toutankhamon »"></div>
+      <div><label>Partenaire</label><input id="a-partenaire"></div>
+      <div><label>Rayon</label><select id="a-rayon"><option>Billets</option><option>Goodies</option></select></div>
+      <div><label>Valeur (prix public, €)</label><input id="a-valeur" inputmode="decimal"></div>
+      <div><label>Prix Educpass (débité de la cagnotte, €)</label><input id="a-prix" inputmode="decimal"></div>
+      <div><label>Stock initial</label><input id="a-stock" inputmode="numeric"></div>
+      <div><label>Vendus (réservés + envoyés)</label><input id="a-vendus" inputmode="numeric" title="Mis à jour automatiquement à chaque commande / annulation. À corriger seulement si nécessaire."></div>
+      <div><label>Valable à partir du <small style="font-weight:400">(caché avant)</small></label><input id="a-valable-de" type="date" title="Avant cette date, l'article n'apparaît pas sur la page boutique des profs."></div>
+      <div><label>Valable jusqu'au</label><input id="a-valable" type="date"></div>
+      <div><label>Limite par prof et par an (0 = sans)</label><input id="a-limite" inputmode="numeric"></div>
+      <div><label>Envoi</label><select id="a-livraison"><option>E-mail</option><option>Poste</option><option>Retrait événement</option></select></div>
+      <div><label>Pays</label>
+        <label class="chk" style="font-weight:400;"><input type="checkbox" id="a-z-be" checked> Belgique / Luxembourg</label>
+        <label class="chk" style="font-weight:400;"><input type="checkbox" id="a-z-fr" checked> France</label></div>
+      <div style="grid-column:1/-1;"><label>Conditions (affichées au prof)</label><input id="a-conditions" placeholder="ex. Valable en semaine, hors vacances scolaires"></div>
+      <div style="grid-column:1/-1;"><label>Photo de l'article</label>
+        <div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;">
+          <img id="a-photo-apercu" alt="" style="width:200px;aspect-ratio:16/10;object-fit:cover;border-radius:8px;border:1px solid var(--line);background:#f1e8cf;">
+          <div style="flex:1;min-width:220px;">
+            <input type="file" id="a-photo-fichier" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="photoChoisie(this)">
+            <button type="button" class="btn btn-bleu" onclick="$('a-photo-fichier').click()">📷 Choisir une photo sur l'ordinateur</button>
+            <div id="a-photo-actuelle" class="note"></div>
+            <label class="chk" style="font-weight:400;"><input type="checkbox" id="a-photo-retirer" onchange="photoApercu()"> retirer la photo (une icône 🎟️ s'affiche)</label>
+            <details style="margin-top:6px;font-size:12px;"><summary>ou coller l'adresse (https://) d'une image en ligne</summary><input id="a-photo" placeholder="https://…" oninput="photoApercu()"></details>
+          </div>
+        </div></div>
+    </div>
+    <label class="chk"><input type="checkbox" id="a-actif" checked> <b>Actif</b> (visible et commandable sur la page boutique)</label>
+    <label class="chk"><input type="checkbox" id="a-attente"> <b>⏳ En attente des tickets</b> (visible sur la page boutique, mais pas encore commandable)</label>
+    <div class="statut" id="art-statut"></div>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-save" id="btn-art-save" onclick="enregistrerArticle()">💾 Enregistrer</button>
+      <button class="btn" onclick="fermer('ov-art')">✖ Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Envoi du billet -->
+<div class="fond hidden" id="ov-env">
+  <div class="boite">
+    <h2>📨 Envoyer le billet — <span id="env-ref"></span></h2>
+    <label>À</label><input id="env-to">
+    <label>Objet</label><input id="env-objet">
+    <label>Message</label><textarea id="env-corps"></textarea>
+    <label>Billet(s) en pièce jointe (PDF, JPG ou PNG — 10 fichiers, 7 Mo au total)</label><input type="file" id="env-pj" multiple accept=".pdf,.jpg,.jpeg,.png">
+    <label class="chk"><input type="checkbox" id="env-sans-mail"> Billet remis autrement (poste, retrait…) : marquer « Envoyée » <b>sans</b> envoyer de mail</label>
+    <div class="statut" id="env-statut"></div>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-save" id="btn-env" onclick="envoyerBillet()">📨 Envoyer et marquer « Envoyée »</button>
+      <button class="btn" onclick="fermer('ov-env')">✖ Fermer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const PROXY = '/api/profs';
+const BASE  = 'appWCfo8WBkMGUuc2';
+const ART_API = `${PROXY}/v0/${BASE}/tbl8KCQePVoFQUXRd`;
+const CMD_API = `${PROXY}/v0/${BASE}/tblnzfRcsr7GXUG2f`;
+const MVT_API = `${PROXY}/v0/${BASE}/tblAqnwHQtY9sVyfi`;
+const PROFS_API = `${PROXY}/v0/${BASE}/tbl3e83BINBUCkhMH`;
+const EMAIL_API = `${PROXY}/send-email`;
+const UPLOAD_BASE = `${PROXY}/upload/${BASE}`;   // espace privé : /api/profs/upload/<base>/<rec>/<champ>/uploadAttachment (fonction Cloudflare Pages)
+const CHAMP_PHOTO = 'fldNWtA0mP2jjNpZE';         // Articles boutique › Photo
+let photoFichier = null, photoActuelleUrl = '';
+const HDRS = {'Content-Type':'application/json'};
+let ARTS = [], CMDS = [], PROFS = {}, artCourant = null, cmdCourante = null;
+
+const $ = id => document.getElementById(id);
+const esc = t => String(t==null?'':t).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const eur = n => (Math.round((Number(n)||0)*100)/100).toFixed(2).replace('.',',')+' €';
+const dateFr = d => d ? String(d).slice(0,10).split('-').reverse().join('/') : '';
+const dateHeure = d => d ? new Date(d).toLocaleString('fr-BE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+const num = v => Number(String(v==null?'':v).replace(',','.')) || 0;
+function agent(){ try{ return window.EDU_AGENT || sessionStorage.getItem('auth_agent') || ''; }catch(e){ return window.EDU_AGENT || ''; } }
+function statut(t, cls){ const s=$('st-bar'); s.textContent=t; s.className=cls||''; }
+
+async function atFetch(url, opts){
+  const r = await fetch(url, Object.assign({headers:HDRS}, opts||{}));
+  if(!r.ok){ const t = await r.text().catch(()=> ''); throw new Error('Airtable '+r.status+' : '+t.slice(0,180)); }
+  return r.json();
+}
+async function toutLire(api, params){
+  let out = [], offset = '';
+  do{ const p = new URLSearchParams(params||{}); p.set('pageSize','100'); if(offset) p.set('offset', offset);
+      const d = await atFetch(api+'?'+p.toString()); out = out.concat(d.records||[]); offset = d.offset||''; }while(offset);
+  return out;
+}
+
+function onglet(t){
+  ['cmd','art'].forEach(x=>{ $('vue-'+x).classList.toggle('hidden', x!==t); $('tab-'+x).classList.toggle('actif', x===t); });
+}
+function fermer(id){ $(id).classList.add('hidden'); }
+
+async function chargerTout(){
+  statut('⏳ Chargement…');
+  try{
+    const [a, c] = await Promise.all([ toutLire(ART_API), toutLire(CMD_API, {'sort[0][field]':'Date commande','sort[0][direction]':'desc'}) ]);
+    ARTS = a; CMDS = c;
+    const nums = [...new Set(CMDS.map(x=>Number(x.fields['N° membre'])).filter(n=>n>0))];
+    PROFS = {};
+    for(let i=0;i<nums.length;i+=40){
+      const p = new URLSearchParams({filterByFormula:'OR('+nums.slice(i,i+40).map(n=>'{N° membre}='+n).join(',')+')'});
+      ['N° membre','Prénom','Nom','Email','Solde cagnotte'].forEach(f=>p.append('fields[]',f));
+      (await toutLire(PROFS_API, p)).forEach(r=>{ PROFS[Number(r.fields['N° membre'])] = Object.assign({id:r.id}, r.fields); });
+    }
+    statut('✅ ' + CMDS.length + ' commande(s), ' + ARTS.length + ' article(s) — ' + new Date().toLocaleTimeString('fr-BE'), 'ok');
+    afficherCommandes(); afficherArticles();
+  }catch(e){ statut('❌ '+e.message, 'err'); }
+}
+
+const nomArticle = c => { const a = ARTS.find(x=>x.id===(c.fields['Article']||[])[0]); return a ? (a.fields['Nom']||'') : '—'; };
+const nomProf = p => p ? ((p['Prénom']||'')+' '+(p['Nom']||'')).trim() : '';
+function badge(s){ const k={'Reçue':'b-recue','Payée':'b-payee','Envoyée':'b-envoyee','Annulée':'b-annulee'}[s]||'b-annulee'; return '<span class="badge '+k+'">'+esc(s||'—')+'</span>'; }
+
+function afficherCommandes(){
+  const f = $('f-statut').value, q = $('q-cmd').value.trim().toLowerCase();
+  const L = CMDS.filter(c=>{
+    const s = c.fields['Statut'];
+    if(f==='A traiter' && !(s==='Reçue'||s==='Payée')) return false;
+    if(f && f!=='A traiter' && s!==f) return false;
+    if(!q) return true;
+    const p = PROFS[Number(c.fields['N° membre'])];
+    return [c.fields['Référence'], c.fields['N° membre'], nomProf(p), nomArticle(c)].join(' ').toLowerCase().includes(q);
+  });
+  const n = s => CMDS.filter(c=>c.fields['Statut']===s).length;
+  const debite = CMDS.filter(c=>c.fields['Statut']==='Payée'||c.fields['Statut']==='Envoyée').reduce((t,c)=>t+num(c.fields['Cagnotte utilisée']),0);
+  $('kpis').innerHTML = [['À valider (reçues)',n('Reçue')],['Billet à envoyer (payées)',n('Payée')],['Envoyées',n('Envoyée')],['Cagnottes utilisées',eur(debite)]]
+    .map(k=>'<div class="kpi"><b>'+k[1]+'</b><span>'+k[0]+'</span></div>').join('');
+  const maintenant = Date.now();
+  $('tb-cmd').innerHTML = L.length ? L.map(c=>{
+    const g = c.fields, p = PROFS[Number(g['N° membre'])], s = g['Statut'];
+    const retard = s==='Reçue' && g['Date commande'] && (maintenant - new Date(g['Date commande']).getTime()) > 36*3600*1000;
+    const lien = p ? '<a class="fiche" href="FICHIER PROFS 2026.html?rec='+encodeURIComponent(p.id)+'">'+esc(nomProf(p))+'</a>' : '';
+    let act = '';
+    if(s==='Reçue') act += '<button class="btn btn-save btn-sm" onclick="valider(\''+c.id+'\')">✅ Valider</button> ';
+    if(s==='Payée') act += '<button class="btn btn-bleu btn-sm" onclick="ouvrirEnvoi(\''+c.id+'\')">📨 Envoyer le billet</button> ';
+    if(s==='Reçue'||s==='Payée') act += '<button class="btn btn-err btn-sm" onclick="annuler(\''+c.id+'\')">❌ Annuler</button>';
+    if(s==='Envoyée') act = '<small>'+esc(dateHeure(g['Date envoi']))+(g['Agent']?' · '+esc(g['Agent']):'')+'</small>';
+    return '<tr'+(retard?' class="retard" title="Reçue il y a plus de 36 h"':'')+'><td>'+esc(dateHeure(g['Date commande']))+'</td><td>'+esc(g['Référence']||'')+'</td><td>'+lien+' <small>('+esc(g['N° membre']||'')+')</small></td><td>'+esc(nomArticle(c))+'</td><td class="num">'+(g['Quantité']||1)+'</td><td class="num">'+eur(g['Prix total'])+(num(g['Reste à payer'])>0?'<br><small style="color:#a04000;font-weight:700">dont virement '+eur(g['Reste à payer'])+'</small>':'')+'</td><td class="num">'+(p?eur(p['Solde cagnotte']):'')+'</td><td>'+badge(s)+'</td><td class="act">'+act+'</td></tr>';
+  }).join('') : '<tr><td colspan="9" class="vide">Aucune commande pour ces critères.</td></tr>';
+}
+
+async function valider(id){
+  const c = CMDS.find(x=>x.id===id); if(!c) return;
+  const g = c.fields, p = PROFS[Number(g['N° membre'])], total = num(g['Cagnotte utilisée']), reste = num(g['Reste à payer']);
+  try{
+    if(reste > 0 && !confirm('Le virement de '+eur(reste)+' est-il bien arrivé ?\n\nCompte BE55 9733 9113 4144 (VANDER WAEREN Vanessa)\nCommunication : BOUTIQUE '+(g['Référence']||'')+'\n\nCliquez OK seulement si le virement est reçu.')) return;
+    const prof = await atFetch(PROFS_API+'/'+(p?p.id:(g['Prof']||[])[0]));   // solde relu au dernier moment
+    const solde = num(prof.fields['Solde cagnotte']);
+    if(solde < total){ alert('Solde insuffisant : '+eur(solde)+' dans la cagnotte de '+nomProf(prof.fields)+' pour '+eur(total)+'.\nAnnulez la commande ou corrigez la cagnotte.'); return; }
+    if(!confirm('Valider la commande '+g['Référence']+' ?\n\n'+(g['Quantité']||1)+' × '+nomArticle(c)+'\n'+(total>0?eur(total)+' seront débités de la cagnotte de '+nomProf(prof.fields)+' (solde '+eur(solde)+' → '+eur(solde-total)+')':'Rien à débiter de la cagnotte')+(reste>0?'\n+ virement reçu : '+eur(reste):'')+'.')) return;
+    statut('⏳ Validation…');
+    const auj = new Date().toISOString().slice(0,10);
+    if(total > 0) await atFetch(MVT_API, {method:'POST', body: JSON.stringify({ typecast:true, records:[{ fields:{
+      'Référence':'CAG-'+(g['Référence']||''), 'Prof':[prof.id], 'N° membre':Number(g['N° membre']), 'Date':auj, 'Type':'Utilisation boutique',
+      'Montant':-total, 'Commande':[id], 'Agent':agent(), 'Remarque':'Boutique : '+(g['Quantité']||1)+' × '+nomArticle(c) } }] })});
+    await atFetch(CMD_API+'/'+id, {method:'PATCH', body: JSON.stringify({ typecast:true, fields:{ 'Statut':'Payée', 'Agent':agent(),
+      'Remarque': String(g['Remarque']||'')+'\nValidée le '+dateFr(auj)+(agent()?' par '+agent():'')+' : cagnotte débitée de '+eur(total)+(reste>0?', virement de '+eur(reste)+' reçu':'')+'.' } })});
+    await chargerTout(); statut('✅ Commande '+g['Référence']+' validée : '+eur(total)+' débités de la cagnotte'+(reste>0?' + virement '+eur(reste):'')+'. Il reste à envoyer le billet.', 'ok');
+  }catch(e){ statut('❌ '+e.message, 'err'); }
+}
+
+function ouvrirEnvoi(id){
+  const c = CMDS.find(x=>x.id===id); if(!c) return; cmdCourante = c;
+  const g = c.fields, p = PROFS[Number(g['N° membre'])] || {};
+  const a = ARTS.find(x=>x.id===(g['Article']||[])[0]), af = (a||{}).fields||{}, q = g['Quantité']||1;
+  $('env-ref').textContent = g['Référence']||'';
+  $('env-to').value = p['Email']||'';
+  $('env-objet').value = 'Educpass — ' + (q>1?'vos billets':'votre billet') + ' : ' + (af['Nom']||'') + ' (' + (g['Référence']||'') + ')';
+  $('env-corps').value = 'Bonjour ' + (p['Prénom']||'') + ',\n\n'
+    + 'Voici ' + (q>1?'vos '+q+' billets':'votre billet') + ' pour **' + (af['Nom']||'') + '**' + (af['Partenaire']?' ('+af['Partenaire']+')':'') + ', commandé' + (q>1?'s':'') + ' dans la boutique Educpass avec votre cagnotte (commande ' + (g['Référence']||'') + ').\n\n'
+    + (af['Valable à partir du'] && af["Valable jusqu'au"] ? 'Valable du ' + dateFr(af['Valable à partir du']) + ' au ' + dateFr(af["Valable jusqu'au"]) + '.\n'
+       : af['Valable à partir du'] ? 'Valable à partir du ' + dateFr(af['Valable à partir du']) + '.\n'
+       : af["Valable jusqu'au"] ? 'Valable jusqu\'au ' + dateFr(af["Valable jusqu'au"]) + '.\n' : '')
+    + (af['Conditions'] ? 'Conditions : ' + af['Conditions'] + '\n' : '')
+    + '\nBonne visite !\n\nL\'équipe d\'Educpass';
+  $('env-pj').value = ''; $('env-sans-mail').checked = (af['Livraison'] && af['Livraison']!=='E-mail');
+  $('env-statut').textContent=''; $('env-statut').className='statut';
+  $('ov-env').classList.remove('hidden');
+}
+function lireBase64(f){ return new Promise((ok,ko)=>{ const r=new FileReader(); r.onload=()=>ok(String(r.result).split(',')[1]||''); r.onerror=()=>ko(new Error('Lecture du fichier '+f.name+' impossible')); r.readAsDataURL(f); }); }
+function texteVersHtml(t){
+  return esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1">$1</a>').replace(/\n/g,'<br>');
+}
+async function envoyerBillet(){
+  const c = cmdCourante; if(!c) return;
+  const g = c.fields, st = $('env-statut'), btn = $('btn-env'), sansMail = $('env-sans-mail').checked;
+  const to = $('env-to').value.trim(), files = [...$('env-pj').files];
+  if(!sansMail){
+    if(!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(to)){ st.className='statut err'; st.textContent='❌ Adresse e-mail invalide.'; return; }
+    if(!files.length && !confirm('Aucun billet en pièce jointe. Envoyer quand même le mail ?')) return;
+  }
+  btn.disabled = true; st.className='statut'; st.textContent='⏳ Envoi…';
+  try{
+    if(!sansMail){
+      const pj = [];
+      for(const f of files) pj.push({ filename:f.name, content: await lireBase64(f) });
+      const body = $('env-corps').value;
+      const r = await fetch(EMAIL_API, {method:'POST', headers:HDRS, body: JSON.stringify({ type:'boutique', to, subject:$('env-objet').value, body, html:texteVersHtml(body), attachments:pj, from:'info@educpass.eu' })});
+      const d = await r.json().catch(()=>({}));
+      if(!r.ok || d.ok===false) throw new Error(d.error || ('HTTP '+r.status));
+    }
+    const maintenant = new Date().toISOString();
+    await atFetch(CMD_API+'/'+c.id, {method:'PATCH', body: JSON.stringify({ typecast:true, fields:{ 'Statut':'Envoyée', 'Date envoi':maintenant, 'Agent':agent(),
+      'Remarque': String(g['Remarque']||'')+'\n'+(sansMail?'Marquée envoyée (sans mail)':'Billet envoyé par mail à '+to+(files.length?' ('+files.map(f=>f.name).join(', ')+')':''))+' le '+dateFr(maintenant)+(agent()?' par '+agent():'')+'.' } })});
+    fermer('ov-env'); await chargerTout(); statut('✅ Commande '+(g['Référence']||'')+' envoyée.', 'ok');
+  }catch(e){ st.className='statut err'; st.textContent='❌ '+e.message; }
+  finally{ btn.disabled = false; }
+}
+
+async function annuler(id){
+  const c = CMDS.find(x=>x.id===id); if(!c) return;
+  const g = c.fields, total = num(g['Cagnotte utilisée']), reste = num(g['Reste à payer']), q = Number(g['Quantité']||1), payee = g['Statut']==='Payée';
+  const raison = prompt('Annuler la commande '+(g['Référence']||'')+' ?\nLe stock est rendu'+(payee&&total>0?' et '+eur(total)+' sont remboursés dans la cagnotte du prof':'')+'.'
+    +(reste>0?'\n⚠️ Virement de '+eur(reste)+' : s\'il a été reçu, remboursez-le vous-même au prof (rien d\'automatique).':'')+'\n\nRaison :', '');
+  if(raison===null) return;
+  statut('⏳ Annulation…');
+  try{
+    const idArt = (g['Article']||[])[0];
+    if(idArt){ const a = await atFetch(ART_API+'/'+idArt);
+      await atFetch(ART_API+'/'+idArt, {method:'PATCH', body: JSON.stringify({ fields:{ 'Vendus': Math.max(0, Number(a.fields['Vendus']||0) - q) } })}); }
+    if(payee && total > 0){
+      await atFetch(MVT_API, {method:'POST', body: JSON.stringify({ typecast:true, records:[{ fields:{
+        'Référence':'CAG-ANN-'+(g['Référence']||''), 'Prof':g['Prof']||[], 'N° membre':Number(g['N° membre']), 'Date':new Date().toISOString().slice(0,10),
+        'Type':'Correction', 'Montant':total, 'Commande':[id], 'Agent':agent(), 'Remarque':'Remboursement : commande boutique annulée'+(raison?' ('+raison+')':'') } }] })});
+    }
+    await atFetch(CMD_API+'/'+id, {method:'PATCH', body: JSON.stringify({ typecast:true, fields:{ 'Statut':'Annulée', 'Agent':agent(),
+      'Remarque': String(g['Remarque']||'')+'\nAnnulée le '+dateFr(new Date().toISOString())+(agent()?' par '+agent():'')+(raison?' : '+raison:'')+(payee&&total>0?' — '+eur(total)+' remboursés dans la cagnotte.':'.')+(reste>0?' Virement de '+eur(reste)+' à rembourser manuellement s\'il a été reçu.':'') } })});
+    await chargerTout(); statut('✅ Commande '+(g['Référence']||'')+' annulée'+(payee&&total>0?', cagnotte remboursée':'')+(reste>0?' — pensez à rembourser le virement de '+eur(reste)+' s\'il a été reçu':'')+'.', 'ok');
+  }catch(e){ statut('❌ '+e.message, 'err'); }
+}
+
+// ---------------- Photo (2026-11-06) : réduite dans le navigateur (1600 px max, JPEG) puis envoyée à Airtable ----------------
+function photoApercu(){
+  const img = $('a-photo-apercu'), url = $('a-photo').value.trim();
+  if($('a-photo-retirer').checked){ img.removeAttribute('src'); return; }
+  if(photoFichier) img.src = 'data:'+photoFichier.contentType+';base64,'+photoFichier.file;
+  else if(/^https:\/\//i.test(url)) img.src = url;
+  else if(photoActuelleUrl) img.src = photoActuelleUrl; else img.removeAttribute('src');
+}
+async function photoChoisie(inp){
+  const f = inp.files && inp.files[0]; if(!f) return;
+  const st = $('art-statut');
+  if(!/^image\/(jpeg|png|webp)$/.test(f.type)){ st.className='statut err'; st.textContent='❌ Choisissez une image JPG, PNG ou WEBP.'; return; }
+  try{
+    const bmp = await new Promise((ok,ko)=>{ const i=new Image(); i.onload=()=>ok(i); i.onerror=()=>ko(new Error('Image illisible')); i.src=URL.createObjectURL(f); });
+    const max = 1600, k = Math.min(1, max/Math.max(bmp.naturalWidth, bmp.naturalHeight));
+    const c = document.createElement('canvas'); c.width = Math.round(bmp.naturalWidth*k); c.height = Math.round(bmp.naturalHeight*k);
+    const ctx = c.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,c.width,c.height); ctx.drawImage(bmp,0,0,c.width,c.height);
+    URL.revokeObjectURL(bmp.src);
+    const b64 = c.toDataURL('image/jpeg', 0.85).split(',')[1];
+    if(b64.length*3/4 > 4.8*1024*1024) throw new Error('Image trop lourde, même réduite.');
+    photoFichier = { contentType:'image/jpeg', filename: f.name.replace(/\.[^.]+$/,'')+'.jpg', file: b64 };
+    $('a-photo-retirer').checked = false; $('a-photo').value = '';
+    st.className='statut'; st.textContent='📷 Photo prête ('+c.width+' × '+c.height+') — cliquez sur « 💾 Enregistrer ».';
+    photoApercu();
+  }catch(e){ photoFichier=null; st.className='statut err'; st.textContent='❌ '+e.message; }
+}
+
+// ---------------- Articles ----------------
+function afficherArticles(){
+  const tous = $('f-inactifs').checked;
+  const L = ARTS.filter(a=>tous || a.fields['Actif']).sort((x,y)=>String(x.fields['Nom']||'').localeCompare(String(y.fields['Nom']||''),'fr'));
+  $('tb-art').innerHTML = L.length ? L.map(a=>{ const f=a.fields, z=f['Zones']||[];
+    const rest = Number(f['Restant']!=null ? f['Restant'] : (num(f['Stock initial'])-num(f['Vendus'])));
+    return '<tr><td><b>'+esc(f['Nom']||'')+'</b></td><td>'+esc(f['Partenaire']||'')+'</td><td>'+esc(f['Rayon']||'')+'</td><td class="num">'+eur(f['Valeur'])+'</td><td class="num">'+eur(f['Prix Educpass'])+'</td><td class="num">'+(f['Stock initial']||0)+'</td><td class="num">'+(f['Vendus']||0)+'</td><td class="num"'+(rest<=0?' style="color:#c0392b;font-weight:700"':'')+'>'+rest+'</td><td>'+(f['Valable à partir du']?'du '+dateFr(f['Valable à partir du'])+(f["Valable jusqu'au"]?' ':''):'')+(f["Valable jusqu'au"]?(f['Valable à partir du']?'au ':'jusqu\'au ')+dateFr(f["Valable jusqu'au"]):'')+((f['Valable à partir du']&&f['Valable à partir du']>new Date().toISOString().slice(0,10))?' <span title="Pas encore visible pour les profs">⏳</span>':'')+'</td><td>'+(z.length===2||!z.length?'BE + FR':(z[0]==='Belgique'?'Belux':'France'))+'</td><td class="num">'+(f['Limite par prof et par an']||'—')+'</td><td>'+(f['Actif']?'✅':'—')+(f['En attente des tickets']?' ⏳':'')+'</td><td><button class="btn btn-sm" onclick="ouvrirArticle(\''+a.id+'\')">✏️ Modifier</button></td></tr>';
+  }).join('') : '<tr><td colspan="13" class="vide">Aucun article. Cliquez sur « ➕ Nouvel article ».</td></tr>';
+}
+function ouvrirArticle(id){
+  artCourant = id ? ARTS.find(x=>x.id===id) : null; const f = (artCourant||{}).fields || {};
+  $('art-titre').textContent = artCourant ? 'Modifier : '+(f['Nom']||'') : 'Nouvel article';
+  $('a-nom').value=f['Nom']||''; $('a-partenaire').value=f['Partenaire']||''; $('a-rayon').value=f['Rayon']||'Billets';
+  $('a-valeur').value=f['Valeur']!=null?f['Valeur']:''; $('a-prix').value=f['Prix Educpass']!=null?f['Prix Educpass']:'';
+  $('a-stock').value=f['Stock initial']!=null?f['Stock initial']:''; $('a-vendus').value=f['Vendus']||0;
+  $('a-valable').value=f["Valable jusqu'au"]||''; $('a-valable-de').value=f['Valable à partir du']||''; $('a-limite').value=f['Limite par prof et par an']||0; $('a-livraison').value=f['Livraison']||'E-mail';
+  const z = f['Zones']||['Belgique','France / Luxembourg']; $('a-z-be').checked=z.includes('Belgique'); $('a-z-fr').checked=z.includes('France / Luxembourg');
+  $('a-conditions').value=f['Conditions']||''; $('a-photo').value=''; $('a-actif').checked = artCourant ? !!f['Actif'] : true; $('a-attente').checked = !!f['En attente des tickets'];
+  const ph=(f['Photo']||[])[0]; photoFichier = null; $('a-photo-fichier').value=''; $('a-photo-retirer').checked=false;
+  photoActuelleUrl = ph ? ((ph.thumbnails&&ph.thumbnails.large&&ph.thumbnails.large.url)||ph.url) : '';
+  $('a-photo-actuelle').textContent = ph ? 'Photo actuelle : '+(ph.filename||'image')+'. Choisissez-en une autre pour la remplacer.' : 'Pas encore de photo. Idéal : image en largeur (environ 1200 × 750).';
+  photoApercu();
+  $('art-statut').textContent=''; $('art-statut').className='statut';
+  $('ov-art').classList.remove('hidden'); $('a-nom').focus();
+}
+async function enregistrerArticle(){
+  const st=$('art-statut'), nom=$('a-nom').value.trim(), prix=num($('a-prix').value), stock=Math.floor(num($('a-stock').value));
+  if(!nom){ st.className='statut err'; st.textContent='❌ Le nom est obligatoire.'; return; }
+  if(!(prix>0)){ st.className='statut err'; st.textContent='❌ Indiquez le prix Educpass (montant débité de la cagnotte).'; return; }
+  if(!(stock>=0)){ st.className='statut err'; st.textContent='❌ Stock initial invalide.'; return; }
+  const zones=[]; if($('a-z-be').checked) zones.push('Belgique'); if($('a-z-fr').checked) zones.push('France / Luxembourg');
+  if(!zones.length){ st.className='statut err'; st.textContent='❌ Cochez au moins un pays.'; return; }
+  if($('a-valable-de').value && $('a-valable').value && $('a-valable-de').value > $('a-valable').value){ st.className='statut err'; st.textContent='❌ La date de début est après la date de fin.'; return; }
+  const fields = { 'Nom':nom, 'Partenaire':$('a-partenaire').value.trim(), 'Rayon':$('a-rayon').value, 'Valeur':num($('a-valeur').value)||null, 'Prix Educpass':prix,
+    'Stock initial':stock, 'Vendus':Math.max(0,Math.floor(num($('a-vendus').value))), "Valable jusqu'au":$('a-valable').value||null, 'Valable à partir du':$('a-valable-de').value||null,
+    'Limite par prof et par an':Math.floor(num($('a-limite').value))||null, 'Livraison':$('a-livraison').value, 'Zones':zones,
+    'Conditions':$('a-conditions').value.trim(), 'Actif':$('a-actif').checked, 'En attente des tickets':$('a-attente').checked };
+  const url = $('a-photo').value.trim();
+  if($('a-photo-retirer').checked) fields['Photo'] = [];
+  else if(photoFichier) fields['Photo'] = [];   // remplacée par le fichier envoyé juste après
+  else if(url){ if(!/^https:\/\//i.test(url)){ st.className='statut err'; st.textContent='❌ L\'adresse de la photo doit commencer par https://'; return; } fields['Photo']=[{url}]; }
+  $('btn-art-save').disabled=true; st.className='statut'; st.textContent='⏳ Enregistrement…';
+  try{
+    let idArt;
+    if(artCourant){ await atFetch(ART_API+'/'+artCourant.id, {method:'PATCH', body: JSON.stringify({ typecast:true, fields })}); idArt = artCourant.id; }
+    else { const d = await atFetch(ART_API, {method:'POST', body: JSON.stringify({ typecast:true, records:[{ fields }] })}); idArt = d.records[0].id; }
+    if(photoFichier && !$('a-photo-retirer').checked){
+      st.textContent='⏳ Envoi de la photo…';
+      const d = await atFetch(UPLOAD_BASE+'/'+idArt+'/'+CHAMP_PHOTO+'/uploadAttachment', {method:'POST', body: JSON.stringify(photoFichier)});
+      if(d && d.error) throw new Error('Photo : '+(d.error.message||d.error));
+    }
+    fermer('ov-art'); await chargerTout(); onglet('art'); statut('✅ Article « '+nom+' » enregistré.', 'ok');
+  }catch(e){ st.className='statut err'; st.textContent='❌ '+e.message; }
+  finally{ $('btn-art-save').disabled=false; }
+}
+
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ fermer('ov-art'); fermer('ov-env'); } });
+document.addEventListener('DOMContentLoaded', chargerTout);
+</script>
+<script>/* EDU-AGENT-AUTO-FIN (2026-10-01) */
+(function(){
+  var A = window.EDU_AGENT; if(!A) return;
+  var PINS_DEF = {'MARC':'1111','MAÏTE':'2222','ANTOINE':'3333','VANESSA':'4444'};
+  // 1) L'agent reconnu est accepté par l'outil, même s'il n'était pas dans sa liste de codes
+  try{ if(typeof AGENT_PINS!=='undefined' && AGENT_PINS && !AGENT_PINS[A]) AGENT_PINS[A] = PINS_DEF[A] || '----'; }catch(e){}
+  // 2) Plannings Brochures annuelles / News (code demandé à chaque ouverture) : entrée directe
+  try{
+    if(typeof checkPin==='function' && typeof buildTabs==='function' && typeof loadData==='function' && typeof ouvrir!=='function'){
+      document.addEventListener('DOMContentLoaded', function(){
+        try{ agent = A; }catch(e){}
+        var o=document.getElementById('pin-overlay'); if(o) o.style.display='none';
+        var app=document.getElementById('app'); if(app) app.style.display='block';
+        var b=document.getElementById('agent-badge'); if(b) b.textContent='Agent : '+A;
+        buildTabs(); loadData();
+      });
+    }
+  }catch(e){}
+  // 3) Code PIN conservé pour les actions sensibles (validité 2 minutes après saisie)
+  var okJusqua = 0;
+  function pinAttendu(){ try{ if(typeof AGENT_PINS!=='undefined' && AGENT_PINS && AGENT_PINS[A] && AGENT_PINS[A]!=='----') return String(AGENT_PINS[A]); }catch(e){} return PINS_DEF[A] || null; }
+  function demanderPin(libelle){
+    return new Promise(function(fin){
+      var essais = 0;
+      var fond = document.createElement('div');
+      fond.setAttribute('style','position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2147483000;display:flex;align-items:center;justify-content:center;font-family:Calibri,Arial,sans-serif');
+      fond.innerHTML = '<div style="background:#fff;border-radius:12px;padding:26px 30px;min-width:300px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.35)">'
+        + '<div style="font-size:17px;font-weight:800;color:#1e3a6e;margin-bottom:6px">🔒 Action protégée</div>'
+        + '<div style="font-size:13px;color:#555;margin-bottom:14px">'+libelle+'<br>Code PIN de <b>'+A+'</b> :</div>'
+        + '<input type="password" inputmode="numeric" maxlength="8" autocomplete="off" style="font-size:24px;letter-spacing:8px;width:140px;text-align:center;border:2px solid #ccc;border-radius:8px;padding:6px 10px">'
+        + '<div class="edu-pin-err" style="color:#c0392b;font-size:12.5px;min-height:18px;margin-top:8px"></div>'
+        + '<div style="margin-top:10px;display:flex;gap:10px;justify-content:center">'
+        + '<button type="button" class="edu-pin-ok" style="background:#1e3a6e;color:#fff;border:none;border-radius:6px;padding:8px 22px;font-weight:700;cursor:pointer">Valider</button>'
+        + '<button type="button" class="edu-pin-annuler" style="background:#eee;color:#333;border:none;border-radius:6px;padding:8px 18px;font-weight:700;cursor:pointer">Annuler</button></div></div>';
+      document.body.appendChild(fond);
+      var inp = fond.querySelector('input'), err = fond.querySelector('.edu-pin-err');
+      function fermer(r){ fond.remove(); fin(r); }
+      function valider(){
+        var attendu = pinAttendu();
+        if(attendu && inp.value === attendu){ okJusqua = Date.now() + 120000; fermer(true); return; }
+        essais++; inp.value=''; inp.focus();
+        if(essais >= 3){ err.textContent = '3 essais incorrects — action annulée.'; setTimeout(function(){ fermer(false); }, 1200); }
+        else err.textContent = 'Code incorrect ('+essais+'/3)';
+      }
+      fond.querySelector('.edu-pin-ok').onclick = valider;
+      fond.querySelector('.edu-pin-annuler').onclick = function(){ fermer(false); };
+      inp.addEventListener('keydown', function(e){ if(e.key==='Enter') valider(); if(e.key==='Escape') fermer(false); });
+      setTimeout(function(){ inp.focus(); }, 50);
+    });
+  }
+  window.eduConfirmerPin = async function(libelle){ if(Date.now() < okJusqua) return true; return await demanderPin(libelle); };
+  var SENSIBLES = {
+    genererDocument: 'Générer une facture / note de crédit (numéro définitif).',
+    corrigerDerniereFacture: 'Corriger la dernière facture (le numéro est réutilisé).',
+    executerControleMollie: 'Exécuter la synchronisation des paiements Mollie.',
+    confirmerValidation: 'Valider une inscription (création du n° de membre).'
+  };
+  Object.keys(SENSIBLES).forEach(function(n){
+    var f = window[n]; if(typeof f !== 'function') return;
+    window[n] = async function(){ if(!(await window.eduConfirmerPin(SENSIBLES[n]))) return; return f.apply(this, arguments); };
+  });
+})();
+</script>
+<script>/* EDU-VERSION (2026-11-04) */(function(){
+if(location.protocol!=='https:'||!window.fetch) return;
+var MOI='e802fc6bfbde', CHEMIN='/BOUTIQUE.html', vu=0, fait=false;
+function bandeau(){ if(fait) return; fait=true; var go=function(){
+  var b=document.createElement('div'); b.id='edu-nouvelle-version';
+  b.setAttribute('style','position:fixed;left:0;right:0;bottom:0;z-index:2147483645;background:#1e3a6e;color:#fff;font:700 15px Calibri,Arial,sans-serif;padding:10px 16px;display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap;box-shadow:0 -3px 12px rgba(0,0,0,.35)');
+  b.innerHTML='🆕 Une nouvelle version de cette page est en ligne. Enregistrez votre travail en cours, puis rechargez.'
+    +'<button type="button" style="background:#f4c430;color:#1e3a6e;border:none;border-radius:6px;padding:6px 16px;font-weight:800;cursor:pointer">🔄 Recharger maintenant</button>'
+    +'<button type="button" title="Masquer ce bandeau (il reviendra au prochain chargement)" style="background:transparent;color:#fff;border:1px solid rgba(255,255,255,.6);border-radius:6px;padding:5px 12px;font-weight:700;cursor:pointer">✕ Plus tard</button>';
+  var bts=b.querySelectorAll('button');
+  bts[0].onclick=function(){ fetch(location.href,{cache:'reload',credentials:'same-origin'}).catch(function(){}).then(function(){ location.reload(); }); };
+  /* 2026-11-10 (Marc) : le bandeau cachait les boutons du bas -> place réservée en bas de page + bouton « Plus tard » */
+  var pb=document.body.style.paddingBottom;
+  bts[1].onclick=function(){ b.remove(); document.body.style.paddingBottom=pb; };
+  document.body.appendChild(b);
+  document.body.style.paddingBottom=(b.offsetHeight+12)+'px'; };
+  if(document.body) go(); else document.addEventListener('DOMContentLoaded',go); }
+function verifier(){ var t=Date.now(); if(fait||t-vu<60000) return; vu=t;
+  fetch('/version.json?t='+t,{cache:'no-store',credentials:'same-origin'}).then(function(r){ return r.ok?r.json():null; })
+  .then(function(d){ if(d&&d.pages&&d.pages[CHEMIN]&&d.pages[CHEMIN]!==MOI) bandeau(); }).catch(function(){}); }
+verifier(); setInterval(verifier,300000);
+window.addEventListener('focus',verifier);
+window.addEventListener('pageshow',function(e){ if(e.persisted){ vu=0; verifier(); } });
+document.addEventListener('visibilitychange',function(){ if(!document.hidden) verifier(); });
+})();</script>
+</body>
+</html>
