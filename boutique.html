@@ -195,6 +195,7 @@ const ERR_NL = {
   'Article ou quantité invalide.':'Ongeldig artikel of aantal.',
   'Article introuvable.':'Artikel niet gevonden.',
   "Cet article n'est plus disponible.":'Dit artikel is niet meer beschikbaar.',
+  "Cet article n'est pas encore disponible : nous attendons les tickets.":'Dit artikel is nog niet beschikbaar: we wachten op de tickets.',
   "Cet article n'est pas proposé dans votre pays.":'Dit artikel wordt in jouw land niet aangeboden.',
   'Boutique indisponible pour le moment.':'De shop is momenteel niet beschikbaar.',
   'Service momentanément indisponible, merci de réessayer.':'Dienst tijdelijk niet beschikbaar, probeer het opnieuw.'
@@ -250,7 +251,8 @@ function afficher(){
     const epuise = a.restant <= 0;
     const horsZone = COMPTE && a.zones.length && a.zones.indexOf(COMPTE.zone) < 0;
     let etat = '';
-    if(epuise) etat = T('Épuisé','Uitverkocht');
+    if(a.attente) etat = '⏳ ' + T('En attente des tickets – bientôt disponible','Tickets onderweg – binnenkort beschikbaar');   // 2026-11-11
+    else if(epuise) etat = T('Épuisé','Uitverkocht');
     else if(!COMPTE) etat = T('Identifiez-vous pour commander','Meld je aan om te bestellen');
     else if(!COMPTE.enOrdre) etat = T('Réservé aux membres en ordre de cotisation','Voorbehouden aan leden die hun lidgeld betaald hebben');
     else if(horsZone) etat = T('Non proposé dans votre pays','Niet aangeboden in jouw land');
@@ -262,7 +264,9 @@ function afficher(){
       + '<div class="art-prix">' + eur(a.prix) + (a.valeur > a.prix ? ' <s>' + eur(a.valeur) + '</s>' : '') + '</div>'
       + '<ul class="art-i">'
       + '<li>' + (epuise ? '<b class="rouge">' + T('Épuisé','Uitverkocht') + '</b>' : T('Encore <b>' + a.restant + '</b> disponible' + (a.restant > 1 ? 's' : ''), 'Nog <b>' + a.restant + '</b> beschikbaar')) + '</li>'
-      + (a.valable ? '<li>' + T('Valable jusqu\'au ','Geldig tot ') + dateFr(a.valable) + '</li>' : '')
+      + (a.valableDe && a.valable ? '<li>' + T('Valable du ','Geldig van ') + dateFr(a.valableDe) + T(' au ',' tot ') + dateFr(a.valable) + '</li>'
+         : a.valableDe ? '<li>' + T('Valable à partir du ','Geldig vanaf ') + dateFr(a.valableDe) + '</li>'
+         : a.valable ? '<li>' + T('Valable jusqu\'au ','Geldig tot ') + dateFr(a.valable) + '</li>' : '')
       + (a.zones.length === 1 ? '<li>' + (a.zones[0] === 'Belgique' ? T('Membres Belux','Leden Belux') : T('Membres France','Leden Frankrijk')) + '</li>' : '')
       + (a.limite ? '<li>' + T('Maximum ' + a.limite + ' par membre et par an', 'Maximum ' + a.limite + ' per lid en per jaar') + '</li>' : '')
       + (a.livraison ? '<li>' + T('Envoi : ','Verzending: ') + esc(a.livraison === 'E-mail' ? T('par e-mail','per e-mail') : a.livraison === 'Poste' ? T('par la poste','per post') : a.livraison) + '</li>' : '')
