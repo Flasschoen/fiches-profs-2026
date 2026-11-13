@@ -471,8 +471,8 @@ const SPONSOR_ACTION_ID = 'recHU6GeSKmAdBdpX'; // fiche "Sponsor Action" (table 
 // Valeurs par défaut utilisées tant que la fiche n'existe pas ou ne répond pas. Sans logo : bloc masqué.
 const SPONSORS = {
   FR: { id: SPONSOR_ACTION_ID, logo: 'assets/logo-credit-mutuel.png', texte: 'Action', lien: '' },
-  BE: { id: '', logo: '', texte: 'Monde Sauvage', lien: 'https://www.mondesauvage.be' },
-  LU: { id: '', logo: '', texte: 'Kulturhuef', lien: 'https://www.kulturhuef.lu' },
+  BE: { id: 'recobW8EnZPBCfNy5', logo: '', texte: 'Monde Sauvage', lien: 'https://www.mondesauvage.be' },
+  LU: { id: 'reci2XublMc32ts3e', logo: '', texte: 'Kulturhuef', lien: 'https://www.kulturhuef.lu' },
 };
 // 2026-11-08 : site educpass.eu bilingue (FR/NL) et par pays (BE/LU/FR) — voir PAYS / LANGUE plus bas
 let LANGUE_COURANTE = 'FR';
@@ -847,6 +847,7 @@ async function chargerSponsor(){
     if(l && l.url) logo = (l.thumbnails && l.thumbnails.large && l.thumbnails.large.url) || l.url;
     if(f['Texte bouton']) texte = f['Texte bouton'];
     if(f['Lien bouton']) lien = f['Lien bouton'];
+    if(!f['Actif']) logo = '';                       // case « Afficher ce bloc » décochée au back-office : bloc masqué
     afficherSponsor(logo, texte, lien);
   }catch(e){
     // Silencieux : les valeurs par défaut restent affichées.
