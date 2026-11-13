@@ -642,7 +642,7 @@ function closeAllHeroDropdowns(){
 function clicConnexion(e){
   let connu = false;
   try{ connu = !!localStorage.getItem('edu_pays') && (sessionStorage.getItem('edu_choix_fait') === '1' || !!localStorage.getItem('edu_pays_choisi')); }catch(x){}
-  if(window.matchMedia('(max-width:760px)').matches && connu){ location.href = 'connexion-fr.html'; return; }
+  if(window.matchMedia('(max-width:760px)').matches && connu){ location.href = lienConnexion(); return; }
   toggleHeroDropdown('connexion-dropdown', e);
 }
 function toggleHeroDropdown(id, e){
@@ -909,11 +909,18 @@ function lien(href, texte, opts){
   const badge = opts.nouveau ? '<span class="nouveau">' + T('NOUVEAU','NIEUW', 'NEU') + '</span>' : '';
   return '<a href="' + (href ? esc(href) : 'javascript:void(0)') + '"' + (opts.choisi ? ' class="choisi"' : '') + '>' + esc(texte) + badge + soon + '</a>';
 }
+// 2026-11-14 (Marc, option 1) : jusqu'à la bascule WinDev (17/01/2027 21 h), connexion (coupons) et inscription
+// Belgique/Luxembourg se font sur l'ancien site WinDev .EU. Après cette date, le site utilise automatiquement ses
+// propres pages (connexion-fr.html, inscriptions). Si la bascule est décalée : changer la date ci-dessous.
+const BASCULE_WINDEV = new Date('2027-01-17T21:00:00+01:00');
+function avantBascule(){ return Date.now() < BASCULE_WINDEV.getTime(); }
+function lienWinDev(){ return 'https://www.educpass.eu/' + (LANG === 'nl' ? 'NL' : 'FR') + '/Connexion.awp'; }
+function lienConnexion(){ return avantBascule() ? lienWinDev() : 'connexion-fr.html'; }
 function remplirMenusHero(){
   const ouv = T('Ouverture le 17/01/2027', 'Opent op 17/01/2027', 'Eröffnung am 17.01.2027');
   const pays = [
-    { p:'BE', ins:T('Enseignant belge','Belgische leerkracht', 'Belgische Lehrkraft'), insHref:null, insSoon:ouv },
-    { p:'LU', ins:T('Enseignant luxembourgeois','Luxemburgse leerkracht', 'Luxemburgische Lehrkraft'), insHref:null, insSoon:ouv },
+    { p:'BE', ins:T('Enseignant belge','Belgische leerkracht', 'Belgische Lehrkraft'), insHref: avantBascule() ? lienWinDev() : null, insSoon: avantBascule() ? null : ouv },
+    { p:'LU', ins:T('Enseignant luxembourgeois','Luxemburgse leerkracht', 'Luxemburgische Lehrkraft'), insHref: avantBascule() ? lienWinDev() : null, insSoon: avantBascule() ? null : ouv },
     { p:'FR', ins:T('Enseignant français','Franse leerkracht', 'Französische Lehrkraft'), insHref:'inscription-fr.html' },
   ];
   // le pays choisi en premier
@@ -930,11 +937,11 @@ function remplirMenusHero(){
     + lien(lienBoutique(), T('🛍️ Boutique (cagnotte)','🛍️ Shop (spaarpot)', '🛍️ Shop (Spartopf)'), { nouveau:true });
   document.getElementById('inscription-dropdown').innerHTML =
       pays.map(x => lien(x.insHref, x.ins, { soon:x.insSoon, choisi:x.p === PAYS })).join('')
-    + (PAYS === 'BE' ? lien(null, T('Éducateur sans matricule','Opvoeder zonder stamnummer', 'Erzieher ohne Matrikelnummer'), { soon:ouv }) : '')
+    + (PAYS === 'BE' ? lien(avantBascule() ? lienWinDev() : null, T('Éducateur sans matricule','Opvoeder zonder stamnummer', 'Erzieher ohne Matrikelnummer'), avantBascule() ? {} : { soon:ouv }) : '')
     + '<div class="sep">' + T('Parrainage','Aanbrengen', 'Empfehlung') + '</div>'
     + lien(lienParrainage(), T('🤝 Parrainé(e) par un collègue ?','🤝 Aangebracht door een collega?', '🤝 Von einem Kollegen empfohlen?'));
   document.getElementById('connexion-dropdown').innerHTML =
-      pays.map(x => lien('connexion-fr.html', x.ins, { choisi:x.p === PAYS })).join('');
+      pays.map(x => lien(lienConnexion(), x.ins, { choisi:x.p === PAYS })).join('');
 }
 function appliquerPaysLangue(){
   if(PAYS !== 'BE') LANG = 'fr';       // le néerlandais et l'allemand ne concernent que la Belgique

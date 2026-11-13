@@ -68,7 +68,7 @@ ul{margin:0;padding-left:20px;} li{margin:5px 0;font-size:15px;}
     <section class="card cag"><h2 data-nl="💰 Je Educpass-spaarpot" data-de="💰 Ihr Educpass-Spartopf">💰 Votre cagnotte Educpass</h2><ul><li data-nl="Een Educpass-tegoed, zonder vervaldatum." data-de="Ein Educpass-Guthaben ohne zeitliche Begrenzung.">Un crédit Educpass, sans limite de temps.</li><li data-nl="Te gebruiken in de Educpass-shop: tickets aan verlaagde prijs bij onze partners." data-de="Einzulösen im Educpass-Shop: ermäßigte Eintrittskarten bei unseren Partnern.">À utiliser dans la boutique Educpass&nbsp;: des entrées à prix réduit chez nos partenaires.</li><li data-nl="Je spaarpot groeit ook als je een collega aanbrengt: +10 €." data-de="Ihr Spartopf wächst auch, wenn Sie eine Kollegin oder einen Kollegen empfehlen: +10 €.">Elle se remplit aussi en parrainant un collègue&nbsp;: +10&nbsp;€.</li><li data-nl="Niet terugbetaalbaar en niet inwisselbaar voor geld." data-de="Weder erstattbar noch in Geld umtauschbar.">Ni remboursable, ni convertible en argent.</li></ul></section>
   </div>
   <div class="actions">
-    <a class="btn" href="mes-coupons.html"><span data-nl="🏫 Ik meld mijn klas aan (Mijn coupons)" data-de="🏫 Klasse anmelden (Meine Coupons)">🏫 J'annonce ma classe (Mes coupons)</span></a>
+    <a class="btn" id="lien-annoncer" href="mes-coupons.html"><span data-nl="🏫 Ik meld mijn klas aan (Mijn coupons)" data-de="🏫 Klasse anmelden (Meine Coupons)">🏫 J'annonce ma classe (Mes coupons)</span></a>
     <a class="btn or" id="lien-boutique" href="boutique.html"><span data-nl="🛍️ Naar de shop" data-de="🛍️ Zum Shop">🛍️ Voir la boutique</span></a>
   </div>
 </div>
@@ -92,6 +92,11 @@ const LANG = (function(){
   const suffixe = PAYS_FR ? '?pays=FR' : '?lang=' + LANG;
   document.getElementById('retour').href = 'ACCUEIL.html' + suffixe;
   document.getElementById('lien-boutique').href = 'boutique.html?lang=' + (LANG === 'nl' ? 'nl' : 'fr');
+  // 2026-11-14 : avant la bascule WinDev (17/01/2027 21 h), « Mes coupons » du nouveau site n'est pas encore ouvert
+  if(Date.now() < new Date('2027-01-17T21:00:00+01:00').getTime()){
+    const b = document.getElementById('lien-annoncer'); b.removeAttribute('href'); b.style.opacity = '.75'; b.style.cursor = 'default';
+    b.innerHTML = LANG === 'nl' ? '🏫 Beschikbaar vanaf 17/01/2027' : LANG === 'de' ? '🏫 Verfügbar ab 17.01.2027' : '🏫 Disponible à partir du 17/01/2027';
+  }
   if(LANG === 'fr') return;
   document.documentElement.lang = LANG;
   document.title = LANG === 'nl' ? 'Klasbezoeken — Educpass' : 'Klassenbesuche — Educpass';
