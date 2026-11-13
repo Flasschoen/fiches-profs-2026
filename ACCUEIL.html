@@ -293,7 +293,17 @@ h1.title{
 .hero-dropdown .sep{font-size:10px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--gold);padding:8px 10px 3px;border-top:1px solid var(--line);margin-top:4px;}
 .hero-dropdown a.choisi{font-weight:700;background:var(--paper-2);}
 .sponsor-block.masque{display:none;}
-.hero-3col.sans-sponsor .banner-col{grid-column:1 / -1;}
+.hero-3col.sans-sponsor .banner-col{grid-column:1;}   /* 2026-11-13 (Marc) : bannière alignée sur la photo (même largeur) */
+.hero-3col.sans-sponsor .carousel{max-height:none;}
+/* 2026-11-13 (Marc) : sur smartphone, la bannière « Offres du moment » vient juste après le bouton Avantages
+   (au lieu de tout en bas). Les 4 boutons sortent de leur colonne pour pouvoir être intercalés. */
+@media (max-width:760px){
+  .hero-actions{display:contents;}
+  .hero-3col{gap:14px;}
+  #hero-photos{order:1;} #connexion-wrap{order:2;} #avantages-wrap{order:3;} .banner-col{order:4;}
+  #inscription-wrap{order:5;} #educpass-wrap{order:6;} .sponsor-block{order:7;}
+  .hero-dropdown{z-index:20;}
+}
 @media (max-width:860px){
   .site-header-inner{flex-wrap:wrap;}
   .pays-langue{order:3;width:100%;margin:6px 0 0;justify-content:center;}
@@ -317,8 +327,8 @@ body.cp-ouvert{overflow:hidden;}
 <!-- 2026-11-13 (réunion d'équipe) : choix obligatoire du profil à chaque visite (1 fois par session) -->
 <div id="choix-pays" role="dialog" aria-modal="true" aria-labelledby="cp-titre" hidden>
   <div class="cp-boite">
-    <div class="cp-titre" id="cp-titre">Bienvenue · Welkom · Willkommen</div>
-    <p class="cp-sous">Qui êtes-vous ? · Wie bent u? · Wer sind Sie?</p>
+    <div class="cp-titre" id="cp-titre">Bienvenue chez Educpass, qui êtes-vous ?</div>
+    <p class="cp-sous">Welkom bij Educpass, wie bent u? · Willkommen bei Educpass, wer sind Sie?</p>
     <button type="button" class="cp-btn" data-choix="BE-fr"><span class="drapeau be"></span><span>Je suis enseignant ou éducateur belge<small>Belgique · français</small></span></button>
     <button type="button" class="cp-btn" data-choix="BE-nl"><span class="drapeau be"></span><span>Ik ben een Belgische leraar of opvoeder<small>België · Nederlands</small></span></button>
     <button type="button" class="cp-btn" data-choix="FR-fr"><span class="drapeau fr"></span><span>Je suis enseignant français<small>France</small></span></button>
@@ -403,7 +413,7 @@ body.cp-ouvert{overflow:hidden;}
         </div>
       </div>
       <div class="hero-action-wrap" id="connexion-wrap">
-        <button type="button" class="hero-action-btn btn-connexion" onclick="toggleHeroDropdown('connexion-dropdown', event)">
+        <button type="button" class="hero-action-btn btn-connexion" onclick="clicConnexion(event)">
           <span class="hab-icon">🔑</span><span class="hab-label" id="lbl-connexion">Connexion à mon compte</span>
         </button>
         <div class="hero-dropdown" id="connexion-dropdown">
@@ -455,7 +465,15 @@ const BANNIERES_TBL = 'tblPvu1219W1xUnAY';
 const BANNIERES_API = `${PROXY}/v0/${BASE}/${BANNIERES_TBL}`;
 const CONTENU_TBL = 'tblvNiGHmWXwI4Htz';
 const CONTENU_API = `${PROXY}/v0/${BASE}/${CONTENU_TBL}`;
-const SPONSOR_ACTION_ID = 'recHU6GeSKmAdBdpX'; // fiche "Sponsor Action" (table Contenu Accueil)
+const SPONSOR_ACTION_ID = 'recHU6GeSKmAdBdpX'; // fiche "Sponsor Action" (table Contenu Accueil) — France
+// 2026-11-13 (demande de Marc) : un espace sponsor par pays, à louer ou à offrir à une attraction.
+// id = fiche de la table Contenu Accueil (logo, texte du bouton, lien), modifiable au back-office ACCUEIL.
+// Valeurs par défaut utilisées tant que la fiche n'existe pas ou ne répond pas. Sans logo : bloc masqué.
+const SPONSORS = {
+  FR: { id: SPONSOR_ACTION_ID, logo: 'assets/logo-credit-mutuel.png', texte: 'Action', lien: '' },
+  BE: { id: '', logo: '', texte: 'Monde Sauvage', lien: 'https://www.mondesauvage.be' },
+  LU: { id: '', logo: '', texte: 'Kulturhuef', lien: 'https://www.kulturhuef.lu' },
+};
 // 2026-11-08 : site educpass.eu bilingue (FR/NL) et par pays (BE/LU/FR) — voir PAYS / LANGUE plus bas
 let LANGUE_COURANTE = 'FR';
 
@@ -618,6 +636,14 @@ function closeAllHeroDropdowns(){
     const el = document.getElementById(id);
     if(el) el.classList.remove('open');
   });
+}
+// 2026-11-13 (Marc) : sur GSM, le prof vient surtout se connecter (valider un coupon).
+// Si son pays est déjà connu sur cet appareil, le bouton Connexion ouvre directement la page de connexion.
+function clicConnexion(e){
+  let connu = false;
+  try{ connu = !!localStorage.getItem('edu_pays') && (sessionStorage.getItem('edu_choix_fait') === '1' || !!localStorage.getItem('edu_pays_choisi')); }catch(x){}
+  if(window.matchMedia('(max-width:760px)').matches && connu){ location.href = 'connexion-fr.html'; return; }
+  toggleHeroDropdown('connexion-dropdown', e);
 }
 function toggleHeroDropdown(id, e){
   if(e) e.stopPropagation();
@@ -796,21 +822,34 @@ if(window.ResizeObserver){
   const _roSponsor = new ResizeObserver(alignerSponsor);
   document.addEventListener('DOMContentLoaded', ()=>{ const c=document.getElementById('carousel'); if(c){ _roSponsor.observe(c); _roSponsor.observe(c.parentElement); } alignerSponsor(); });
 }
+let _sponsorDemande = 0;
+function afficherSponsor(logo, texte, lien){
+  const img = document.getElementById('sponsor-logo-img');
+  const btn = document.getElementById('sponsor-action-btn');
+  const visible = !!logo;
+  if(img){ if(logo) img.src = logo; img.alt = texte || 'Sponsor'; }
+  if(btn){ btn.textContent = texte || 'Action'; btn.onclick = lien ? () => window.open(lien, '_blank', 'noopener') : null; }
+  document.getElementById('sponsor-block').classList.toggle('masque', !visible);
+  document.getElementById('hero-3col').classList.toggle('sans-sponsor', !visible);
+  if(visible) setTimeout(alignerSponsor, 0);
+}
 async function chargerSponsor(){
+  const n = ++_sponsorDemande;                       // ignore une réponse arrivée après un changement de pays
+  const d = SPONSORS[PAYS] || {};
+  let logo = d.logo, texte = d.texte, lien = d.lien;
+  afficherSponsor(logo, texte, lien);
+  if(!d.id) return;
   try{
-    const data = await atFetch(CONTENU_API + '/' + SPONSOR_ACTION_ID);
+    const data = await atFetch(CONTENU_API + '/' + d.id);
+    if(n !== _sponsorDemande) return;
     const f = data.fields || {};
-    const img = document.getElementById('sponsor-logo-img');
-    const btn = document.getElementById('sponsor-action-btn');
-    const logo = f['Logo'] && f['Logo'][0];
-    if(img && logo && logo.url) img.src = (logo.thumbnails && logo.thumbnails.large && logo.thumbnails.large.url) || logo.url;
-    if(btn){
-      if(f['Texte bouton']) btn.textContent = f['Texte bouton'];
-      const lien = f['Lien bouton'];
-      if(lien){ btn.onclick = () => window.open(lien, '_blank'); }
-    }
+    const l = f['Logo'] && f['Logo'][0];
+    if(l && l.url) logo = (l.thumbnails && l.thumbnails.large && l.thumbnails.large.url) || l.url;
+    if(f['Texte bouton']) texte = f['Texte bouton'];
+    if(f['Lien bouton']) lien = f['Lien bouton'];
+    afficherSponsor(logo, texte, lien);
   }catch(e){
-    // Silencieux : le logo et le texte par défaut codés en dur restent affichés.
+    // Silencieux : les valeurs par défaut restent affichées.
   }
 }
 
@@ -911,16 +950,14 @@ function appliquerPaysLangue(){
   document.getElementById('lbl-offres').textContent = T('✨ Offres du moment','✨ Aanbiedingen van het moment', '✨ Aktuelle Angebote');
   document.getElementById('menu-toggle').setAttribute('aria-label', T('Ouvrir le menu','Menu openen', 'Menü öffnen'));
   // L'action Crédit Mutuel ne concerne que les enseignants français
-  const sansSponsor = PAYS !== 'FR';
-  document.getElementById('sponsor-block').classList.toggle('masque', sansSponsor);
-  document.getElementById('hero-3col').classList.toggle('sans-sponsor', sansSponsor);
+  // 2026-11-13 : bloc sponsor propre à chaque pays (voir SPONSORS / chargerSponsor)
   construireNav(); renderNav(); remplirMenusHero(); closeAllHeroDropdowns();
 }
 function changerPaysLangue(p, l){
   const avant = PAYS + LANG;
   if(p) PAYS = p; if(l) LANG = l;
   appliquerPaysLangue();
-  if(avant !== PAYS + LANG){ loadAllBannieres(); chargerPhraseAccueil(); alignerSponsor(); }
+  if(avant !== PAYS + LANG){ loadAllBannieres(); chargerPhraseAccueil(); chargerSponsor(); }
 }
 document.addEventListener('DOMContentLoaded', function(){
   document.querySelectorAll('[data-pays]').forEach(b => b.addEventListener('click', () => changerPaysLangue(b.getAttribute('data-pays'), null)));
@@ -936,7 +973,7 @@ function ouvrirChoixPays(){
 }
 function choisirProfil(code){
   const [p, l] = code.split('-');
-  try{ sessionStorage.setItem('edu_choix_fait', '1'); }catch(e){}
+  try{ sessionStorage.setItem('edu_choix_fait', '1'); localStorage.setItem('edu_pays_choisi', '1'); }catch(e){}
   document.getElementById('choix-pays').hidden = true; document.body.classList.remove('cp-ouvert');
   changerPaysLangue(p, l);
   window.scrollTo(0, 0);
