@@ -299,9 +299,33 @@ h1.title{
   .pays-langue{order:3;width:100%;margin:6px 0 0;justify-content:center;}
   .site-logo img{height:34px;padding:5px 10px;}
 }
+/* 2026-11-13 (réunion d'équipe) : fenêtre « Qui êtes-vous ? » à l'arrivée sur le site */
+#choix-pays{position:fixed;inset:0;z-index:10000;background:rgba(8,40,40,.72);display:flex;align-items:center;justify-content:center;padding:16px;}
+#choix-pays[hidden]{display:none;}
+#choix-pays .cp-boite{background:#fffdf6;border-radius:16px;box-shadow:0 18px 50px rgba(0,0,0,.4);max-width:520px;width:100%;padding:22px 20px 18px;text-align:center;max-height:calc(100vh - 32px);overflow:auto;}
+#choix-pays .cp-titre{font:800 22px 'Work Sans',Arial,sans-serif;color:var(--teal-dark,#0b4f4f);margin:2px 0 4px;}
+#choix-pays .cp-sous{font:500 13.5px 'Work Sans',Arial,sans-serif;color:#556;margin:0 0 14px;}
+#choix-pays .cp-btn{display:flex;align-items:center;gap:12px;width:100%;text-align:left;margin:8px 0;padding:13px 14px;border:2px solid #d8d2bf;border-radius:11px;background:#fff;cursor:pointer;font:600 15.5px 'Work Sans',Arial,sans-serif;color:#1d2a2a;transition:border-color .15s,background .15s,transform .1s;}
+#choix-pays .cp-btn:hover,#choix-pays .cp-btn:focus-visible{border-color:var(--gold,#e0b03a);background:#fff8e3;outline:none;}
+#choix-pays .cp-btn:active{transform:scale(.99);}
+#choix-pays .cp-btn .drapeau{width:30px;height:20px;}
+#choix-pays .cp-btn small{display:block;font-weight:500;font-size:12px;color:#778;margin-top:1px;}
+body.cp-ouvert{overflow:hidden;}
 </style>
 </head>
 <body>
+<!-- 2026-11-13 (réunion d'équipe) : choix obligatoire du profil à chaque visite (1 fois par session) -->
+<div id="choix-pays" role="dialog" aria-modal="true" aria-labelledby="cp-titre" hidden>
+  <div class="cp-boite">
+    <div class="cp-titre" id="cp-titre">Bienvenue · Welkom · Willkommen</div>
+    <p class="cp-sous">Qui êtes-vous ? · Wie bent u? · Wer sind Sie?</p>
+    <button type="button" class="cp-btn" data-choix="BE-fr"><span class="drapeau be"></span><span>Je suis enseignant ou éducateur belge<small>Belgique · français</small></span></button>
+    <button type="button" class="cp-btn" data-choix="BE-nl"><span class="drapeau be"></span><span>Ik ben een Belgische leraar of opvoeder<small>België · Nederlands</small></span></button>
+    <button type="button" class="cp-btn" data-choix="FR-fr"><span class="drapeau fr"></span><span>Je suis enseignant français<small>France</small></span></button>
+    <button type="button" class="cp-btn" data-choix="LU-fr"><span class="drapeau lu"></span><span>Je suis enseignant luxembourgeois<small>Luxembourg</small></span></button>
+    <button type="button" class="cp-btn" data-choix="BE-de"><span class="drapeau be"></span><span>Ich bin ein deutschsprachiger Lehrer aus Belgien<small>Belgien · Deutsch</small></span></button>
+  </div>
+</div>
 <div class="firework-bg" aria-hidden="true">
   <svg class="fw fw-gold" style="top:4%;left:5%;width:50px;height:50px;opacity:.14;transform:rotate(-10deg);" viewBox="0 0 100 100"><g stroke-width="3"><line x1="50" y1="50" x2="90" y2="50"/><line x1="50" y1="50" x2="78.3" y2="21.7"/><line x1="50" y1="50" x2="50" y2="10"/><line x1="50" y1="50" x2="21.7" y2="21.7"/><line x1="50" y1="50" x2="10" y2="50"/><line x1="50" y1="50" x2="21.7" y2="78.3"/><line x1="50" y1="50" x2="50" y2="90"/><line x1="50" y1="50" x2="78.3" y2="78.3"/><line x1="90" y1="50" x2="96" y2="44"/><line x1="90" y1="50" x2="96" y2="56"/><line x1="50" y1="10" x2="44" y2="16"/><line x1="50" y1="10" x2="56" y2="16"/></g></svg>
   <svg class="fw fw-green" style="top:8%;left:87%;width:60px;height:60px;opacity:.16;transform:rotate(15deg);" viewBox="0 0 100 100"><g stroke-width="2.6"><line x1="50" y1="50" x2="90" y2="50"/><line x1="50" y1="50" x2="78.3" y2="21.7"/><line x1="50" y1="50" x2="50" y2="10"/><line x1="50" y1="50" x2="21.7" y2="21.7"/><line x1="50" y1="50" x2="10" y2="50"/><line x1="50" y1="50" x2="21.7" y2="78.3"/><line x1="50" y1="50" x2="50" y2="90"/><line x1="50" y1="50" x2="78.3" y2="78.3"/><line x1="10" y1="50" x2="4" y2="44"/><line x1="10" y1="50" x2="4" y2="56"/><line x1="50" y1="90" x2="44" y2="96"/><line x1="50" y1="90" x2="56" y2="96"/></g></svg>
@@ -321,9 +345,10 @@ h1.title{
         <button type="button" data-pays="LU" title="Luxembourg"><span class="drapeau lu"></span>LU</button>
         <button type="button" data-pays="FR" title="France"><span class="drapeau fr"></span>FR</button>
       </div>
-      <div class="pl-groupe" role="group" aria-label="Langue / Taal" id="pl-langues">
+      <div class="pl-groupe" role="group" aria-label="Langue / Taal / Sprache" id="pl-langues">
         <button type="button" data-lang="fr">FR</button>
         <button type="button" data-lang="nl">NL</button>
+        <button type="button" data-lang="de">DE</button>
       </div>
     </div>
     <button class="menu-toggle" id="menu-toggle" onclick="toggleMenu()" aria-label="Ouvrir le menu">☰</button>
@@ -496,20 +521,20 @@ function buildSlideList(records, emplacement){
 let NAV_GROUPS = [];
 function construireNav(){
   NAV_GROUPS = [
-    { label: T("NOS ÉDITIONS","ONZE EDITIES"), items: [
-      { label: T("NOS ÉDITIONS","ONZE EDITIES"), href: "NOS EDITIONS.html" },
+    { label: T("NOS ÉDITIONS","ONZE EDITIES", "UNSERE AUSGABEN"), items: [
+      { label: T("NOS ÉDITIONS","ONZE EDITIES", "UNSERE AUSGABEN"), href: "NOS EDITIONS.html" },
     ]},
-    { label: T("PROFS RELAIS","CONTACTLEERKRACHTEN"), items: [
-      { label: T("PROFS RELAIS","CONTACTLEERKRACHTEN"), href: "INFOS PROFS RELAIS.html" },
+    { label: T("PROFS RELAIS","CONTACTLEERKRACHTEN", "KONTAKTLEHRER"), items: [
+      { label: T("PROFS RELAIS","CONTACTLEERKRACHTEN", "KONTAKTLEHRER"), href: "INFOS PROFS RELAIS.html" },
     ]},
-    { label: T("VIDÉOS","VIDEO'S"), items: [
-      { label: T("VIDÉOS","VIDEO'S"), href: "VIDEOS.html" },
+    { label: T("VIDÉOS","VIDEO'S","VIDEOS"), items: [
+      { label: T("VIDÉOS","VIDEO'S","VIDEOS"), href: "VIDEOS.html" },
     ]},
     // 2026-11-08 : nouveaux outils 2027 (parrainage, boutique, visites de classes) réunis sous CAGNOTTE
-    { label: T("CAGNOTTE","SPAARPOT"), nouveau: true, items: [
-      { label: T("🤝 Parrainage : +10 € par collègue","🤝 Aanbrengen: +10 € per collega"), href: lienParrainage() },
-      { label: T("🏫 Visites de classes : +25 €","🏫 Klasbezoeken: +25 €"), href: "mes-coupons.html" },
-      { label: T("🛍️ Boutique : dépenser ma cagnotte","🛍️ Shop: mijn spaarpot gebruiken"), href: lienBoutique() },
+    { label: T("CAGNOTTE","SPAARPOT", "SPARTOPF"), nouveau: true, items: [
+      { label: T("🤝 Parrainage : +10 € par collègue","🤝 Aanbrengen: +10 € per collega", "🤝 Empfehlung: +10 € pro Kollege"), href: lienParrainage() },
+      { label: T("🏫 Visites de classes : +25 €","🏫 Klasbezoeken: +25 €", "🏫 Klassenbesuche: +25 €"), href: "mes-coupons.html" },
+      { label: T("🛍️ Boutique : dépenser ma cagnotte","🛍️ Shop: mijn spaarpot gebruiken", "🛍️ Shop: meinen Spartopf nutzen"), href: lienBoutique() },
     ]},
     { label: "CONTACTS", items: [
       { label: "CONTACT", href: "CONTACTS.html" },
@@ -528,7 +553,7 @@ function renderNav(){
     const trigger = document.createElement('button');
     trigger.type = 'button';
     trigger.className = 'nav-trigger';
-    trigger.innerHTML = esc(group.label) + (group.nouveau ? '<span class="nouveau">' + T('NOUVEAU','NIEUW') + '</span>' : '') + ' <span class="caret">▾</span>';
+    trigger.innerHTML = esc(group.label) + (group.nouveau ? '<span class="nouveau">' + T('NOUVEAU','NIEUW', 'NEU') + '</span>' : '') + ' <span class="caret">▾</span>';
     trigger.onclick = (e) => { e.stopPropagation(); toggleNavItem(i); };
     item.appendChild(trigger);
 
@@ -541,7 +566,7 @@ function renderNav(){
         a.innerHTML = esc(sub.label);
       } else {
         a.href = 'javascript:void(0)';
-        a.innerHTML = esc(sub.label) + '<span class="soon">' + T('Bientôt disponible','Binnenkort beschikbaar') + '</span>';
+        a.innerHTML = esc(sub.label) + '<span class="soon">' + T('Bientôt disponible','Binnenkort beschikbaar', 'Demnächst verfügbar') + '</span>';
       }
       dropdown.appendChild(a);
     });
@@ -737,7 +762,11 @@ function phraseNettoyer(html){
   return tpl.innerHTML.replace(/^(\s*<br>)+|(<br>\s*)+$/g,'').trim();
 }
 async function chargerPhraseAccueil(){
+  // 2026-11-13 : on remet d'abord la phrase française d'origine (sinon, après NL/DE → FR, l'ancienne langue restait si Airtable ne répond pas)
+  const elP = document.getElementById('phrase-accueil');
+  if(window._phraseFR == null) window._phraseFR = elP.innerHTML; else elP.innerHTML = window._phraseFR;
   if(LANG === 'nl'){ document.getElementById('phrase-accueil').textContent = 'Educpass, de eerste pas voor leerkrachten en opvoeders…'; return; }
+  if(LANG === 'de'){ document.getElementById('phrase-accueil').textContent = 'Educpass, der erste Pass für Lehrkräfte und Erzieher…'; return; }
   try{
     const data = await atFetch(CONTENU_API + '/' + PHRASE_ID);
     const html = phraseNettoyer((data.fields||{})['Texte HTML']);
@@ -820,65 +849,67 @@ let PAYS = (function(){
 let LANG = (function(){
   const q = new URLSearchParams(location.search);
   let l = (q.get('lang')||'').toLowerCase();
-  if(l !== 'fr' && l !== 'nl'){ try{ l = localStorage.getItem('edu_lang')||''; }catch(e){} }
-  if(l !== 'fr' && l !== 'nl') l = /^nl/i.test(navigator.language||'') ? 'nl' : 'fr';
+  // 2026-11-13 : la langue choisie sur l'accueil (dont DE) prime pendant la session (parrainage/boutique ne connaissent que FR/NL)
+  if(['fr','nl','de'].indexOf(l) === -1){ try{ l = sessionStorage.getItem('edu_lang_accueil')||''; }catch(e){} }
+  if(['fr','nl','de'].indexOf(l) === -1){ try{ l = localStorage.getItem('edu_lang')||''; }catch(e){} }
+  if(['fr','nl','de'].indexOf(l) === -1) l = /^nl/i.test(navigator.language||'') ? 'nl' : /^de/i.test(navigator.language||'') ? 'de' : 'fr';
   return l;
 })();
-function T(fr, nl){ return LANG === 'nl' ? nl : fr; }
-function memoriser(){ try{ localStorage.setItem('edu_pays', PAYS); localStorage.setItem('edu_lang', LANG); }catch(e){} }
+function T(fr, nl, de){ return LANG === 'nl' ? nl : LANG === 'de' ? (de || fr) : fr; }   // 2026-11-13 : + allemand (Belgique germanophone)
+function memoriser(){ try{ localStorage.setItem('edu_pays', PAYS); localStorage.setItem('edu_lang', LANG); sessionStorage.setItem('edu_lang_accueil', LANG); }catch(e){} }
 function lienParrainage(){ return 'parrainage.html' + (PAYS === 'FR' ? '?pays=FR' : (LANG === 'nl' ? '?lang=nl' : '?lang=fr')); }
 function lienBoutique(){ return 'boutique.html' + (LANG === 'nl' && PAYS === 'BE' ? '?lang=nl' : '?lang=fr'); }
-const OUVERTURE = T('Ouverture le 17/01/2027', 'Opent op 17/01/2027');
+const OUVERTURE = T('Ouverture le 17/01/2027', 'Opent op 17/01/2027', 'Eröffnung am 17.01.2027');
 
 function lien(href, texte, opts){
   opts = opts || {};
   const soon = opts.soon ? '<span class="soon">' + esc(opts.soon) + '</span>' : '';
-  const badge = opts.nouveau ? '<span class="nouveau">' + T('NOUVEAU','NIEUW') + '</span>' : '';
+  const badge = opts.nouveau ? '<span class="nouveau">' + T('NOUVEAU','NIEUW', 'NEU') + '</span>' : '';
   return '<a href="' + (href ? esc(href) : 'javascript:void(0)') + '"' + (opts.choisi ? ' class="choisi"' : '') + '>' + esc(texte) + badge + soon + '</a>';
 }
 function remplirMenusHero(){
-  const ouv = T('Ouverture le 17/01/2027', 'Opent op 17/01/2027');
+  const ouv = T('Ouverture le 17/01/2027', 'Opent op 17/01/2027', 'Eröffnung am 17.01.2027');
   const pays = [
-    { p:'BE', ins:T('Enseignant belge','Belgische leerkracht'), insHref:null, insSoon:ouv },
-    { p:'LU', ins:T('Enseignant luxembourgeois','Luxemburgse leerkracht'), insHref:null, insSoon:ouv },
-    { p:'FR', ins:T('Enseignant français','Franse leerkracht'), insHref:'inscription-fr.html' },
+    { p:'BE', ins:T('Enseignant belge','Belgische leerkracht', 'Belgische Lehrkraft'), insHref:null, insSoon:ouv },
+    { p:'LU', ins:T('Enseignant luxembourgeois','Luxemburgse leerkracht', 'Luxemburgische Lehrkraft'), insHref:null, insSoon:ouv },
+    { p:'FR', ins:T('Enseignant français','Franse leerkracht', 'Französische Lehrkraft'), insHref:'inscription-fr.html' },
   ];
   // le pays choisi en premier
   pays.sort((a,b) => (a.p === PAYS ? -1 : b.p === PAYS ? 1 : 0));
   document.getElementById('educpass-dropdown').innerHTML =
-      lien('QUI SOMMES NOUS.html', T('Qui sommes-nous ?','Wie zijn we?'))
-    + lien(null, T('Passeport Educpass','De Educpass-pas'), { soon:T('Bientôt disponible','Binnenkort beschikbaar') });
+      lien('QUI SOMMES NOUS.html', T('Qui sommes-nous ?','Wie zijn we?', 'Wer sind wir?'))
+    + lien(null, T('Passeport Educpass','De Educpass-pas', 'Der Educpass-Pass'), { soon:T('Bientôt disponible','Binnenkort beschikbaar', 'Demnächst verfügbar') });
   document.getElementById('avantages-dropdown').innerHTML =
-      lien('AVANTAGES ENSEIGNANTS.html', T('Avantages enseignants','Voordelen voor leerkrachten'))
-    + lien('ESPACE VIP.html', T('Espace VIP','VIP-ruimte'))
-    + lien(null, T('Partenaires','Partners'), { soon:T('Bientôt disponible','Binnenkort beschikbaar') })
-    + '<div class="sep">' + T('Nouveau en 2027','Nieuw in 2027') + '</div>'
-    + lien(lienParrainage(), T('🤝 Parrainage : un collègue à ','🤝 Aanbrengen: een collega voor ') + (PAYS === 'FR' ? '20 €' : '30 €'), { nouveau:true })
-    + lien('mes-coupons.html', T('🏫 Visites de classes : +25 €','🏫 Klasbezoeken: +25 €'), { nouveau:true })
-    + lien(lienBoutique(), T('🛍️ Boutique (cagnotte)','🛍️ Shop (spaarpot)'), { nouveau:true });
+      lien('AVANTAGES ENSEIGNANTS.html', T('Avantages enseignants','Voordelen voor leerkrachten', 'Vorteile für Lehrkräfte'))
+    + lien('ESPACE VIP.html', T('Espace VIP','VIP-ruimte', 'VIP-Bereich'))
+    + lien(null, T('Partenaires','Partners', 'Partner'), { soon:T('Bientôt disponible','Binnenkort beschikbaar', 'Demnächst verfügbar') })
+    + '<div class="sep">' + T('Nouveau en 2027','Nieuw in 2027', 'Neu in 2027') + '</div>'
+    + lien(lienParrainage(), T('🤝 Parrainage : un collègue à ','🤝 Aanbrengen: een collega voor ', '🤝 Empfehlung: ein Kollege für ') + (PAYS === 'FR' ? '20 €' : '30 €'), { nouveau:true })
+    + lien('mes-coupons.html', T('🏫 Visites de classes : +25 €','🏫 Klasbezoeken: +25 €', '🏫 Klassenbesuche: +25 €'), { nouveau:true })
+    + lien(lienBoutique(), T('🛍️ Boutique (cagnotte)','🛍️ Shop (spaarpot)', '🛍️ Shop (Spartopf)'), { nouveau:true });
   document.getElementById('inscription-dropdown').innerHTML =
       pays.map(x => lien(x.insHref, x.ins, { soon:x.insSoon, choisi:x.p === PAYS })).join('')
-    + (PAYS === 'BE' ? lien(null, T('Éducateur sans matricule','Opvoeder zonder stamnummer'), { soon:ouv }) : '')
-    + '<div class="sep">' + T('Parrainage','Aanbrengen') + '</div>'
-    + lien(lienParrainage(), T('🤝 Parrainé(e) par un collègue ?','🤝 Aangebracht door een collega?'));
+    + (PAYS === 'BE' ? lien(null, T('Éducateur sans matricule','Opvoeder zonder stamnummer', 'Erzieher ohne Matrikelnummer'), { soon:ouv }) : '')
+    + '<div class="sep">' + T('Parrainage','Aanbrengen', 'Empfehlung') + '</div>'
+    + lien(lienParrainage(), T('🤝 Parrainé(e) par un collègue ?','🤝 Aangebracht door een collega?', '🤝 Von einem Kollegen empfohlen?'));
   document.getElementById('connexion-dropdown').innerHTML =
       pays.map(x => lien('connexion-fr.html', x.ins, { choisi:x.p === PAYS })).join('');
 }
 function appliquerPaysLangue(){
-  if(PAYS !== 'BE') LANG = 'fr';       // le néerlandais ne concerne que la Belgique
+  if(PAYS !== 'BE') LANG = 'fr';       // le néerlandais et l'allemand ne concernent que la Belgique
   LANGUE_COURANTE = LANG.toUpperCase();
   memoriser();
   document.documentElement.lang = LANG;
-  document.title = T('Accueil — Educpass', 'Home — Educpass');
+  document.title = T('Accueil — Educpass', 'Home — Educpass', 'Startseite — Educpass');
   document.querySelectorAll('[data-pays]').forEach(b => { const ok = b.getAttribute('data-pays') === PAYS; b.classList.toggle('actif', ok); b.setAttribute('aria-pressed', ok); });
   document.querySelectorAll('[data-lang]').forEach(b => { const ok = b.getAttribute('data-lang') === LANG; b.classList.toggle('actif', ok); b.setAttribute('aria-pressed', ok); });
   document.getElementById('pl-langues').hidden = PAYS !== 'BE';
-  document.getElementById('lbl-educpass').textContent = T('Qui sommes-nous ?','Wie zijn we?');
-  document.getElementById('lbl-avantages').textContent = T('Avantages','Voordelen');
-  document.getElementById('lbl-inscription').textContent = T('Inscription','Inschrijven');
-  document.getElementById('lbl-connexion').textContent = T('Connexion à mon compte','Aanmelden op mijn account');
-  document.getElementById('lbl-offres').textContent = T('✨ Offres du moment','✨ Aanbiedingen van het moment');
-  document.getElementById('menu-toggle').setAttribute('aria-label', T('Ouvrir le menu','Menu openen'));
+  document.getElementById('lbl-educpass').textContent = T('Qui sommes-nous ?','Wie zijn we?', 'Wer sind wir?');
+  document.getElementById('lbl-avantages').textContent = T('Avantages','Voordelen', 'Vorteile');
+  document.getElementById('lbl-inscription').textContent = T('Inscription','Inschrijven', 'Anmeldung');
+  document.getElementById('lbl-connexion').textContent = T('Connexion à mon compte','Aanmelden op mijn account', 'Anmeldung in meinem Konto');
+  document.getElementById('lbl-offres').textContent = T('✨ Offres du moment','✨ Aanbiedingen van het moment', '✨ Aktuelle Angebote');
+  document.getElementById('menu-toggle').setAttribute('aria-label', T('Ouvrir le menu','Menu openen', 'Menü öffnen'));
   // L'action Crédit Mutuel ne concerne que les enseignants français
   const sansSponsor = PAYS !== 'FR';
   document.getElementById('sponsor-block').classList.toggle('masque', sansSponsor);
@@ -894,6 +925,28 @@ function changerPaysLangue(p, l){
 document.addEventListener('DOMContentLoaded', function(){
   document.querySelectorAll('[data-pays]').forEach(b => b.addEventListener('click', () => changerPaysLangue(b.getAttribute('data-pays'), null)));
   document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => changerPaysLangue(null, b.getAttribute('data-lang'))));
+});
+
+// 2026-11-13 (réunion d'équipe) : fenêtre de choix à chaque visite (une fois par session de navigation).
+// Pas de fenêtre si le lien précise déjà le pays (?pays=…, ex. mails, QR) ou si le choix a été fait dans cette session.
+function ouvrirChoixPays(){
+  const m = document.getElementById('choix-pays'); if(!m) return;
+  m.hidden = false; document.body.classList.add('cp-ouvert');
+  const b = m.querySelector('.cp-btn'); if(b) setTimeout(() => b.focus(), 50);
+}
+function choisirProfil(code){
+  const [p, l] = code.split('-');
+  try{ sessionStorage.setItem('edu_choix_fait', '1'); }catch(e){}
+  document.getElementById('choix-pays').hidden = true; document.body.classList.remove('cp-ouvert');
+  changerPaysLangue(p, l);
+  window.scrollTo(0, 0);
+}
+document.addEventListener('DOMContentLoaded', function(){
+  document.querySelectorAll('#choix-pays [data-choix]').forEach(b => b.addEventListener('click', () => choisirProfil(b.getAttribute('data-choix'))));
+  document.getElementById('choix-pays').addEventListener('keydown', e => { if(e.key === 'Escape') e.preventDefault(); });
+  let deja = false; try{ deja = sessionStorage.getItem('edu_choix_fait') === '1'; }catch(e){}
+  const parLien = new URLSearchParams(location.search).has('pays');
+  if(!deja && !parLien) ouvrirChoixPays();
 });
 
 function toggleMenu(){
