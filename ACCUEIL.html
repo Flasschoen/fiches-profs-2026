@@ -551,7 +551,7 @@ function construireNav(){
     // 2026-11-08 : nouveaux outils 2027 (parrainage, boutique, visites de classes) réunis sous CAGNOTTE
     { label: T("CAGNOTTE","SPAARPOT", "SPARTOPF"), nouveau: true, items: [
       { label: T("🤝 Parrainage : +10 € par collègue","🤝 Aanbrengen: +10 € per collega", "🤝 Empfehlung: +10 € pro Kollege"), href: lienParrainage() },
-      { label: T("🏫 Visites de classes : +25 €","🏫 Klasbezoeken: +25 €", "🏫 Klassenbesuche: +25 €"), href: "mes-coupons.html" },
+      { label: T("🏫 Visites de classes : +25 €","🏫 Klasbezoeken: +25 €", "🏫 Klassenbesuche: +25 €"), href: lienVisites() },
       { label: T("🛍️ Boutique : dépenser ma cagnotte","🛍️ Shop: mijn spaarpot gebruiken", "🛍️ Shop: meinen Spartopf nutzen"), href: lienBoutique() },
     ]},
     { label: "CONTACTS", items: [
@@ -898,6 +898,8 @@ let LANG = (function(){
 function T(fr, nl, de){ return LANG === 'nl' ? nl : LANG === 'de' ? (de || fr) : fr; }   // 2026-11-13 : + allemand (Belgique germanophone)
 function memoriser(){ try{ localStorage.setItem('edu_pays', PAYS); localStorage.setItem('edu_lang', LANG); sessionStorage.setItem('edu_lang_accueil', LANG); }catch(e){} }
 function lienParrainage(){ return 'parrainage.html' + (PAYS === 'FR' ? '?pays=FR' : (LANG === 'nl' ? '?lang=nl' : '?lang=fr')); }
+// 2026-11-13 (Marc) : page d'info publique « Visites de classes » (1 page par outil du menu CAGNOTTE)
+function lienVisites(){ return 'visites-classes.html' + (PAYS === 'FR' ? '?pays=FR' : '?lang=' + LANG); }
 function lienBoutique(){ return 'boutique.html' + (LANG === 'nl' && PAYS === 'BE' ? '?lang=nl' : '?lang=fr'); }
 const OUVERTURE = T('Ouverture le 17/01/2027', 'Opent op 17/01/2027', 'Eröffnung am 17.01.2027');
 
@@ -924,7 +926,7 @@ function remplirMenusHero(){
     + lien('ESPACE VIP.html', T('Espace VIP','VIP-ruimte', 'VIP-Bereich'))
     + '<div class="sep">' + T('Nouveau en 2027','Nieuw in 2027', 'Neu in 2027') + '</div>'
     + lien(lienParrainage(), T('🤝 Parrainage : un collègue à ','🤝 Aanbrengen: een collega voor ', '🤝 Empfehlung: ein Kollege für ') + (PAYS === 'FR' ? '20 €' : '30 €'), { nouveau:true })
-    + lien('mes-coupons.html', T('🏫 Visites de classes : +25 €','🏫 Klasbezoeken: +25 €', '🏫 Klassenbesuche: +25 €'), { nouveau:true })
+    + lien(lienVisites(), T('🏫 Visites de classes : +25 €','🏫 Klasbezoeken: +25 €', '🏫 Klassenbesuche: +25 €'), { nouveau:true })
     + lien(lienBoutique(), T('🛍️ Boutique (cagnotte)','🛍️ Shop (spaarpot)', '🛍️ Shop (Spartopf)'), { nouveau:true });
   document.getElementById('inscription-dropdown').innerHTML =
       pays.map(x => lien(x.insHref, x.ins, { soon:x.insSoon, choisi:x.p === PAYS })).join('')
