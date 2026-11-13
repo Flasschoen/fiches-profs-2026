@@ -324,7 +324,14 @@ async function onSubmit(e){
     await creerDossierEnAttente(d);
     showResult('📋 Dossier bien reçu !',
       "Votre demande d'inscription a bien été enregistrée. Notre équipe va vérifier votre dossier et vous attribuera prochainement votre numéro de membre. "
-      + "Vous recevrez alors par email les instructions pour régler votre cotisation sur notre compte au Crédit Mutuel.");
+      + "Vous recevrez alors par email les instructions pour régler votre cotisation sur notre compte au Crédit Mutuel."
+      // 2026-11-13 (Marc) : juste après l'inscription, on propose de parrainer un collègue
+      + '<div style="margin-top:18px;padding:14px 16px;border-radius:12px;background:#fff8e3;border:2px solid #e0b03a;text-align:left">'
+      +   '<div style="font-weight:700;font-size:16px;margin-bottom:6px">🤝 Parrainez un collègue !</div>'
+      +   '<div>Dès que vous aurez votre numéro de membre, invitez un(e) collègue : il ou elle paie <b>20 €</b> au lieu de 25 €, '
+      +   'et vous recevez <b>10 €</b> dans votre cagnotte Educpass, sans limite de temps.</div>'
+      +   '<a href="parrainage.html?pays=FR" style="display:inline-block;margin-top:10px;padding:9px 16px;border-radius:9px;background:#1e3a6e;color:#fff;font-weight:700;text-decoration:none">Découvrir le parrainage</a>'
+      + '</div>');
   }catch(e){
     showMsg('err', '❌ Une erreur est survenue pendant l\'envoi : '+e.message+' — merci de réessayer dans un instant ou de nous contacter si le problème persiste.');
   }finally{
