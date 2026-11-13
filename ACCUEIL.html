@@ -920,9 +920,8 @@ function remplirMenusHero(){
       lien('QUI SOMMES NOUS.html', T('Qui sommes-nous ?','Wie zijn we?', 'Wer sind wir?'))
     + lien(null, T('Passeport Educpass','De Educpass-pas', 'Der Educpass-Pass'), { soon:T('Bientôt disponible','Binnenkort beschikbaar', 'Demnächst verfügbar') });
   document.getElementById('avantages-dropdown').innerHTML =
-      lien('AVANTAGES ENSEIGNANTS.html', T('Avantages enseignants','Voordelen voor leerkrachten', 'Vorteile für Lehrkräfte'))
+      lien('AVANTAGES ENSEIGNANTS.html', T('Avantages partenaires','Voordelen van de partners', 'Vorteile der Partner'))   // 2026-11-13 (Marc)
     + lien('ESPACE VIP.html', T('Espace VIP','VIP-ruimte', 'VIP-Bereich'))
-    + lien(null, T('Partenaires','Partners', 'Partner'), { soon:T('Bientôt disponible','Binnenkort beschikbaar', 'Demnächst verfügbar') })
     + '<div class="sep">' + T('Nouveau en 2027','Nieuw in 2027', 'Neu in 2027') + '</div>'
     + lien(lienParrainage(), T('🤝 Parrainage : un collègue à ','🤝 Aanbrengen: een collega voor ', '🤝 Empfehlung: ein Kollege für ') + (PAYS === 'FR' ? '20 €' : '30 €'), { nouveau:true })
     + lien('mes-coupons.html', T('🏫 Visites de classes : +25 €','🏫 Klasbezoeken: +25 €', '🏫 Klassenbesuche: +25 €'), { nouveau:true })
