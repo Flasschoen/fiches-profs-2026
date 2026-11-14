@@ -7,7 +7,16 @@
 <script>(function(){
   var base = /github\.io$/i.test(location.hostname) ? '/fiches-profs-2026/' : '/';
   var q = location.search || '';
-  if(/\.lu$/i.test(location.hostname) && !/pays=/i.test(q)) q = (q ? q + '&' : '?') + 'pays=LU';
+  // 2026-11-14 (Marc) : anciennes adresses du site Webnode .BE les plus visitées → bonne page du nouveau site
+  var chemin = location.pathname.toLowerCase().replace(/^\/fiches-profs-2026/, '').replace(/\/+$/, '');
+  var avantBascule = Date.now() < new Date('2027-01-17T21:00:00+01:00').getTime();   // même date que ACCUEIL.html
+  var anciennes = {
+    '/connexion-a-mon-compte': avantBascule ? 'https://www.educpass.eu/FR/Connexion.awp' : base + 'connexion-fr.html',
+    '/partenaires-2026': base + 'AVANTAGES%20ENSEIGNANTS.html',
+    '/avantages-enseignants': base + 'AVANTAGES%20ENSEIGNANTS.html',
+    '/noel-en-fete': base + 'noel-en-fete.html'
+  };
+  if(anciennes[chemin]){ location.replace(anciennes[chemin]); return; }
   location.replace(base + 'ACCUEIL.html' + q);
 })();</script>
 <style>body{margin:0;font-family:Arial,sans-serif;background:#e9dcb8;color:#0f3d3e;display:flex;min-height:100vh;align-items:center;justify-content:center;text-align:center}a{color:#0f3d3e;font-weight:700}</style>
