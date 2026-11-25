@@ -54,6 +54,11 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:26px;color:var(-
 .grille{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px;}
 .carte-p{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;cursor:pointer;text-align:left;font-family:inherit;color:inherit;display:flex;flex-direction:column;gap:8px;box-shadow:0 3px 12px rgba(19,36,32,.08);transition:transform .12s, box-shadow .12s;}
 .carte-p:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(19,36,32,.15);}
+/* 2026-11-25 : passeports (France / BELUX / Premium / VIP) */
+.carte-p.horspass{opacity:.55;filter:grayscale(.7);}
+.carte-p .horspass-lbl{font-size:12px;font-weight:700;color:#7a5c00;background:#fff3cd;border-radius:6px;padding:3px 7px;align-self:flex-start;}
+.mon-passeport{background:#eef4ff;border:1px solid #c9d8f5;border-radius:10px;padding:10px 14px;margin:10px 0;font-size:14px;}
+.mon-passeport b{color:#1e3a6e;}
 .carte-p .logo{height:90px;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid var(--line);}
 .carte-p .logo img{max-width:100%;max-height:100%;object-fit:contain;display:block;}
 .carte-p .logo .sans{font-size:12px;color:var(--off);}
@@ -324,6 +329,7 @@ h1.title{font-family:'Fraunces',serif;font-weight:700;font-size:26px;color:var(-
   </details>
   <input type="file" id="vis-fichier" accept="application/pdf,image/jpeg,image/png" style="display:none;">
   <div class="msg-box msg-err hidden" id="msg-erreur"></div>
+  <div class="mon-passeport hidden" id="mon-passeport"></div>
   <div class="msg-box msg-warn hidden" id="msg-cotisation">
     <span>⚠️ <b>Votre cotisation n'est pas à jour.</b> Vous pouvez parcourir les partenaires, mais les coupons seront débloqués après le règlement de votre cotisation.</span>
     <a class="bt bt-or" href="cotisation.html">💳 Régler ma cotisation</a>
@@ -357,6 +363,62 @@ function anneeLisible(a){ a = String(a||'').trim(); return /^\d{2}$/.test(a) ? '
 
 const PAYS_ORDRE = ['BELGIQUE', 'FRANCE', 'LUXEMBOURG'];
 const NON_CLASSE = 'NON CLASSÉ';
+
+// ═══ 2026-11-25 (Marc) : PASSEPORTS — lus dans le code « Sélection » de la fiche prof ═══
+// Lettre finale : E = BELUX (45 €), W = France (25 €), C = Crédit Mutuel (comme France), Z = Premium (tout) ;
+// 555 / 555E = VIP : partenaires de SON pays (BE → Belgique+Luxembourg ; FR/LU → France) ayant « VIP accepté » = 1.
+// MÊMES RÈGLES dans le relais profs (v26) : le serveur refuse de toute façon un coupon hors passeport.
+const FORMULES_2027_ACTIVES = false;   // false tant que les nouvelles formules ne sont pas lancées : E/W/C/Z = tout
+const VIP_PAR_PAYS_ACTIF = true;       // règle VIP (pays + « VIP accepté ») appliquée dès maintenant
+const PREMIUM_VISIBLE = false;         // bouton « Passer au Premium » caché jusqu'au feu vert de Marc
+function typePasseport(sel){
+  const s = String(sel||'').trim().toUpperCase(); if(!s) return '';
+  if(/^555/.test(s)) return 'VIP';
+  const l = s.slice(-1);
+  return l==='Z' ? 'PREMIUM' : (l==='W' || l==='C') ? 'FRANCE' : l==='E' ? 'BELUX' : '';
+}
+function paysProf(cp, federation){
+  const c = String(cp||'').trim().toUpperCase();
+  if(/^F/.test(c)) return 'FR'; if(/^L/.test(c)) return 'LU'; if(/^B/.test(c)) return 'BE';
+  const f = String(federation||'').toLowerCase();
+  if(f.indexOf('français')!==-1 || f.indexOf('francais')!==-1) return 'FR';
+  if(f.indexOf('luxembourg')!==-1) return 'LU';
+  return 'BE';
+}
+function zonePartenaire(v){
+  const s = String(Array.isArray(v) ? (v[0]||'') : (v||'')).trim().toUpperCase();
+  return !s ? '' : (/^FR/.test(s) ? 'FR' : 'BELUX');
+}
+function accesCoupon(c){
+  if(!compte) return 'ok';
+  const type = typePasseport(compte.selection), pays = paysProf(compte.cp, compte.federation);
+  const zc = zonePartenaire(c.fields['Pays (via Attraction)']);
+  if(type==='VIP'){
+    if(!VIP_PAR_PAYS_ACTIF) return 'ok';
+    if(zc && zc !== (pays==='BE' ? 'BELUX' : 'FR')) return 'pays';
+    const v = c.fields['VIP accepté (via Attraction)'], x = Array.isArray(v) ? v[0] : v;
+    return (x===1 || x==='1' || x===true) ? 'ok' : 'vip';
+  }
+  if(!FORMULES_2027_ACTIVES || type==='PREMIUM') return 'ok';
+  const zp = type==='FRANCE' ? 'FR' : type==='BELUX' ? 'BELUX' : (pays==='BE' ? 'BELUX' : 'FR');
+  return (zc && zc!==zp) ? 'pays' : 'ok';
+}
+function libelleAcces(a){
+  return a==='vip' ? '🔒 Non accessible avec la carte VIP' : '🔒 Hors de votre passeport' + (PREMIUM_VISIBLE ? ' — disponible avec le Premium' : '');
+}
+function afficherMonPasseport(){
+  const el = document.getElementById('mon-passeport'); if(!el || !compte) return;
+  const type = typePasseport(compte.selection), pays = paysProf(compte.cp, compte.federation);
+  let txt = '';
+  if(type==='VIP') txt = '<b>Carte VIP</b> — partenaires ' + (pays==='BE' ? 'de Belgique et du Luxembourg' : 'français') + ' qui acceptent la carte VIP.';
+  else if(!FORMULES_2027_ACTIVES || type==='PREMIUM') txt = type ? '<b>' + (type==='PREMIUM' ? 'Passeport Premium' : 'Passeport digital') + '</b> — tous les partenaires Educpass.' : '';
+  else if(type==='FRANCE') txt = '<b>Passeport France</b> — partenaires français.';
+  else if(type==='BELUX') txt = '<b>Passeport BELUX</b> — partenaires de Belgique et du Luxembourg.';
+  if(!txt){ el.classList.add('hidden'); return; }
+  const a = String(compte.anneeCotisation==null?'':compte.anneeCotisation).trim();
+  el.innerHTML = '🎫 Mon passeport : ' + txt + (a && enOrdre ? ' <span style="color:#555;">(cotisation ' + escHtml(anneeLisible(a)) + ')</span>' : '');
+  el.classList.remove('hidden');
+}
 
 // Même troncature que l'aperçu coupon-éclaireur de l'outil Attractions (4 lignes / 200 caractères).
 const AVANTAGE_MAXLEN = 200;
@@ -543,13 +605,15 @@ function rendreListe(){
   }
   zone.innerHTML = '<div class="grille">' + liste.map(c=>{
     const logo = logoDe(c, true);
-    return `<button type="button" class="carte-p${enOrdre?'':' verrou'}" data-id="${escAttr(c.id)}">`
+    const acces = accesCoupon(c);
+    return `<button type="button" class="carte-p${enOrdre?'':' verrou'}${acces!=='ok'?' horspass':''}" data-id="${escAttr(c.id)}">`
       + `<div class="logo">${logo ? `<img src="${escAttr(logo)}" alt="" loading="lazy">` : '<span class="sans">Logo à venir</span>'}</div>`
       + `<div class="nom">${escHtml(nomDe(c))}</div>`
       + `<div class="pays">${escHtml(libellePays(paysDe(c)))}</div>`
       + (avantageDe(c) ? `<div class="av">${escHtml(avantageDe(c))}</div>` : '')
       + (validations[c.id]!==undefined ? `<div class="utilise">✔ ${(validationsInfo[c.id]||{}).mode==='Coupon papier' ? 'Imprimé' : ((validationsInfo[c.id]||{}).mode==='Demande de réservation' ? 'Demandé' : 'Utilisé')}${dateCourte(validations[c.id]) ? ' le '+dateCourte(validations[c.id]) : ''}${(validationsInfo[c.id]||{}).autre ? ' à '+escHtml(validationsInfo[c.id].autre) : ''}</div>`
         : (enOrdre && modeDe(c)==='Standard' && nonValableAujourdhui(c).bloque ? '<div class="nonvalable">⛔ Non valable aujourd\'hui</div>' : ''))
+      + (acces!=='ok' ? `<div class="horspass-lbl">${escHtml(libelleAcces(acces))}</div>` : '')
       + `<div class="ouvrir">🔎 Voir la carte de visite</div>`
       + `</button>`;
   }).join('') + '</div>';
@@ -591,7 +655,11 @@ function ouvrirFiche(id){
     + (telC && mailC ? '<br>' : '')
     + (mailC ? '✉️ <a href="mailto:' + escAttr(mailC) + '">' + escHtml(mailC) + '</a>' : '') + '</div></div>' : '';
   const sec = (lbl, txt)=> txt ? `<div class="f-sec"><div class="lbl">${lbl}</div><div class="val">${escHtml(txt)}</div></div>` : '';
-  const action = enOrdre
+  const accesF = accesCoupon(c);
+  const action = (enOrdre && accesF!=='ok')
+    ? '<span class="note">' + escHtml(libelleAcces(accesF)) + '.</span>'
+      + (classesPossibles(c) ? '<br><button type="button" class="bt bt-classe" id="fiche-classe">🏫 JE VIENS AVEC MA CLASSE</button>' : '')
+    : enOrdre
     ? '<button type="button" class="bt bt-or" id="fiche-coupon">🎟️ AFFICHER LE COUPON</button>'
       + (classesPossibles(c) ? '<br><button type="button" class="bt bt-classe" id="fiche-classe">🏫 JE VIENS AVEC MA CLASSE</button>' : '')
     : '<a class="bt bt-or" href="cotisation.html">💳 Régler ma cotisation</a><span class="note">🔒 Le coupon sera débloqué après le règlement de votre cotisation.</span>';
@@ -612,7 +680,7 @@ function ouvrirFiche(id){
   if(bc) bc.addEventListener('click', ()=>ouvrirCoupon(id));
   const bcl = document.getElementById('fiche-classe');
   if(bcl) bcl.addEventListener('click', ()=>ouvrirClasse(id));
-  if(enOrdre && modeDe(c)==='Code personnel') afficherCodes(id, document.getElementById('fiche-codes'));
+  if(enOrdre && accesF==='ok' && modeDe(c)==='Code personnel') afficherCodes(id, document.getElementById('fiche-codes'));
   document.getElementById('fiche-overlay').classList.remove('hidden');
   document.body.classList.add('coupon-ouvert');
   document.getElementById('fiche-overlay').scrollTop = 0;
@@ -627,6 +695,7 @@ function fermerFiche(){
 function ouvrirCoupon(id){
   const c = partenaires.find(x=>x.id===id);
   if(!c) return;
+  if(enOrdre && accesCoupon(c)!=='ok') return;   // 2026-11-25 : coupon hors passeport (le serveur refuse aussi)
   const box = document.getElementById('coupon');
   const nom = nomDe(c);
   if(!enOrdre){
@@ -1441,6 +1510,7 @@ document.getElementById('recherche').addEventListener('input', (e)=>{
     compte = c;
     enOrdre = ANNEES_EN_ORDRE.includes(String(c.anneeCotisation==null?'':c.anneeCotisation).trim());
     document.getElementById('msg-cotisation').classList.toggle('hidden', enOrdre);
+    afficherMonPasseport();
     partenaires = p;
     if(ARRIVEE_ACCUEIL && enOrdre){ document.getElementById('bandeau-accueil').classList.remove('hidden'); try{ document.getElementById('recherche').focus(); }catch(e){} }
     construireOnglets();
