@@ -68,6 +68,30 @@ h2{font-family:'Fraunces',serif;font-weight:700;font-size:21px;color:var(--teal-
   .f.span2{grid-column:auto;}
   .calcul .total{margin-left:0;}
 }
+/* 2026-11-27 : liste Excel + impression */
+.xl-barre{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 16px;}
+.btn-xl{background:#fff;border:1px solid var(--teal);color:var(--teal-dark);padding:9px 16px;font-size:14px;}
+.btn-xl:hover{background:#f3efe2;}
+.xl-msg{font-size:14px;margin:-6px 0 14px;}
+.xl-msg.ok{color:#1f7a45;} .xl-msg.err{color:var(--err);}
+#impression{display:none;}
+@media print{
+  @page{size:A4 landscape;margin:10mm;}
+  body{background:#fff !important;}
+  body > *:not(#impression){display:none !important;}
+  #impression{display:block;font-family:Arial,sans-serif;font-size:10.5px;color:#000;}
+  #impression h1{font-size:17px;margin:0 0 2px;}
+  .imp-sous{margin:0 0 8px;}
+  .imp-2col{display:flex;gap:16px;margin-bottom:8px;}
+  .imp-info{border-collapse:collapse;flex:1;}
+  .imp-info caption{text-align:left;font-weight:bold;font-size:12px;}
+  .imp-info th{text-align:left;padding:1px 8px 1px 0;width:70px;}
+  .imp-liste{width:100%;border-collapse:collapse;}
+  .imp-liste th,.imp-liste td{border:1px solid #999;padding:3px 4px;text-align:left;vertical-align:top;}
+  .imp-liste thead{display:table-header-group;} .imp-liste tr{page-break-inside:avoid;}
+  .imp-liste th{background:#eee;}
+  .imp-total,.imp-banque{margin-top:8px;border:1px solid #999;padding:6px;page-break-inside:avoid;}
+}
 </style>
 </head>
 <body>
@@ -111,6 +135,13 @@ h2{font-family:'Fraunces',serif;font-weight:700;font-size:21px;color:var(--teal-
       <h2>👩‍🏫 Les enseignants</h2>
       <p style="margin:-6px 0 16px;font-size:14px;color:var(--text-soft);">Une fiche par enseignant. Si vous prenez aussi votre passeport, remplissez votre propre fiche et cochez « C'est moi ».
         Le n° de matricule (11 chiffres) est facultatif : uniquement pour un renouvellement.</p>
+      <div class="xl-barre">
+        <button type="button" class="btn btn-xl" id="btn-xl-reprendre" title="Recharger le fichier Excel enregistré l'an passé">📂 Reprendre ma liste de l'an passé</button>
+        <button type="button" class="btn btn-xl" id="btn-xl-dl" title="Enregistrer la liste dans un fichier Excel, pour la reprendre l'an prochain">💾 Télécharger ma liste (Excel)</button>
+        <button type="button" class="btn btn-xl" id="btn-imprimer">🖨️ Imprimer</button>
+        <input type="file" id="xl-fichier" accept=".xlsx,.csv" hidden>
+      </div>
+      <div class="xl-msg" id="xl-msg"></div>
       <div id="liste-profs"></div>
       <button type="button" class="btn btn-add" id="btn-ajout">➕ Ajouter un enseignant</button>
 
@@ -145,6 +176,11 @@ h2{font-family:'Fraunces',serif;font-weight:700;font-size:21px;color:var(--teal-
       Communication : <b id="conf-comm"></b>
     </div>
     <p class="intro" style="margin-top:16px;">Les passeports seront activés dès réception du paiement.</p>
+    <div class="xl-barre" style="justify-content:center;margin-top:10px;">
+      <button type="button" class="btn btn-xl" id="btn-conf-imprimer">🖨️ Imprimer le récapitulatif</button>
+      <button type="button" class="btn btn-xl" id="btn-conf-dl">💾 Garder ma liste pour l'an prochain (Excel)</button>
+    </div>
+    <div class="xl-msg" style="text-align:center;"></div>
   </div>
 </div>
 
@@ -398,6 +434,7 @@ document.getElementById('form-relais').addEventListener('submit', async e=>{
     msg.textContent = '❌ La demande n\'a pas pu être envoyée. Réessayez dans un instant ou contactez-nous. ('+err.message+')';
     return;
   }
+  _dernierEnvoi = d;
   document.getElementById('form-relais').classList.add('hidden');
   document.getElementById('conf-ref').textContent = d.ref;
   document.getElementById('conf-mail').textContent = d.relais.mail;
@@ -408,6 +445,205 @@ document.getElementById('form-relais').addEventListener('submit', async e=>{
   window.scrollTo({top:0, behavior:'smooth'});
 });
 function val(id){ return document.getElementById(id).value.trim(); }
+
+// ════ 2026-11-27 (demande de Marc) : garder sa liste pour l'an prochain (fichier Excel) + imprimer ════
+const XL_COLS = [['nom','Nom'],['prenom','Prénom'],['naissance','Date de naissance (JJ/MM/AAAA)'],['matricule','N° matricule'],
+  ['rue','Rue'],['nmaison','N°'],['cp','Code postal'],['ville','Ville'],['email','E-mail'],['tel','Téléphone (GSM)'],
+  ['niveau','Niveau'],['branche','Branche'],['moi','Prof relais (oui)']];
+const XL_ECOLE = [['e-nom',"Nom de l'établissement"],['e-adresse','Adresse complète'],['e-tel',"Téléphone de l'établissement"],['e-mail',"E-mail de l'établissement"],
+  ['r-nom','Prof relais - Nom'],['r-prenom','Prof relais - Prénom'],['r-tel','Prof relais - Téléphone'],['r-mail','Prof relais - E-mail']];
+function xlNorm(s){ return String(s==null?'':s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]/g,''); }
+function xlXml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,''); }
+function xlCol(i){ let s=''; i++; while(i>0){ const m=(i-1)%26; s=String.fromCharCode(65+m)+s; i=Math.floor((i-1)/26); } return s; }
+function xlColIndex(ref){ const l=String(ref).replace(/[0-9]/g,''); let n=0; for(const c of l) n=n*26+(c.charCodeAt(0)-64); return n-1; }
+// Dates : « JJ/MM/AAAA » ⇄ ISO ; accepte aussi un n° de série Excel et AAAA-MM-JJ
+function xlDateVersIso(v){
+  v = String(v==null?'':v).trim(); if(!v) return '';
+  if(/^\d+(\.\d+)?$/.test(v) && Number(v)>1000 && Number(v)<80000){ const d=new Date(Date.UTC(1899,11,30)+Math.round(Number(v))*864e5); return d.toISOString().slice(0,10); }
+  let m = v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/); if(m) return m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0');
+  m = v.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/); if(m) return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
+  return '';
+}
+function xlChoix(v, liste){ const k=xlNorm(v); if(!k) return ''; return liste.find(x=>xlNorm(x)===k) || ''; }
+
+// ── ZIP « stocké » (sans compression) pour écrire le .xlsx ──
+const XL_CRC = (()=>{ const t=new Uint32Array(256); for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c = (c&1) ? (0xEDB88320^(c>>>1)) : (c>>>1); t[n]=c>>>0; } return t; })();
+function xlCrc32(u8){ let c=0xFFFFFFFF; for(let i=0;i<u8.length;i++) c = XL_CRC[(c^u8[i])&0xFF]^(c>>>8); return (c^0xFFFFFFFF)>>>0; }
+function xlZip(fichiers){
+  const enc=new TextEncoder(), parts=[], centr=[]; let off=0;
+  for(const f of fichiers){
+    const nom=enc.encode(f.nom), data=typeof f.data==='string'?enc.encode(f.data):f.data, crc=xlCrc32(data);
+    const h=new DataView(new ArrayBuffer(30));
+    h.setUint32(0,0x04034b50,true); h.setUint16(4,20,true); h.setUint16(6,0x0800,true); h.setUint16(8,0,true);
+    h.setUint32(14,crc,true); h.setUint32(18,data.length,true); h.setUint32(22,data.length,true); h.setUint16(26,nom.length,true);
+    parts.push(new Uint8Array(h.buffer), nom, data);
+    const c=new DataView(new ArrayBuffer(46));
+    c.setUint32(0,0x02014b50,true); c.setUint16(4,20,true); c.setUint16(6,20,true); c.setUint16(8,0x0800,true);
+    c.setUint32(16,crc,true); c.setUint32(20,data.length,true); c.setUint32(24,data.length,true); c.setUint16(28,nom.length,true); c.setUint32(42,off,true);
+    centr.push(new Uint8Array(c.buffer), nom);
+    off += 30+nom.length+data.length;
+  }
+  const tailleC = centr.reduce((s,a)=>s+a.length,0), e=new DataView(new ArrayBuffer(22));
+  e.setUint32(0,0x06054b50,true); e.setUint16(8,fichiers.length,true); e.setUint16(10,fichiers.length,true); e.setUint32(12,tailleC,true); e.setUint32(16,off,true);
+  return new Blob([...parts, ...centr, new Uint8Array(e.buffer)], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+function xlFeuille(lignes, largeurs){
+  const cols = '<cols>'+largeurs.map((w,i)=>'<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+w+'" customWidth="1"/>').join('')+'</cols>';
+  const rows = lignes.map((l,r)=>'<row r="'+(r+1)+'">'+l.map((v,c)=>'<c r="'+xlCol(c)+(r+1)+'" t="inlineStr" s="'+(r===0?1:0)+'"><is><t xml:space="preserve">'+xlXml(v)+'</t></is></c>').join('')+'</row>').join('');
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>'+cols+'<sheetData>'+rows+'</sheetData></worksheet>';
+}
+function xlClasseur(feuilles){ // [{nom, lignes, largeurs}]
+  const ns='http://schemas.openxmlformats.org/', f=[];
+  f.push({nom:'[Content_Types].xml', data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="'+ns+'package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'
+    +feuilles.map((s,i)=>'<Override PartName="/xl/worksheets/sheet'+(i+1)+'.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>').join('')+'</Types>'});
+  f.push({nom:'_rels/.rels', data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="'+ns+'package/2006/relationships"><Relationship Id="rId1" Type="'+ns+'officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'});
+  f.push({nom:'xl/workbook.xml', data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="'+ns+'spreadsheetml/2006/main" xmlns:r="'+ns+'officeDocument/2006/relationships"><sheets>'
+    +feuilles.map((s,i)=>'<sheet name="'+xlXml(s.nom)+'" sheetId="'+(i+1)+'" r:id="rId'+(i+1)+'"/>').join('')+'</sheets></workbook>'});
+  f.push({nom:'xl/_rels/workbook.xml.rels', data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="'+ns+'package/2006/relationships">'
+    +feuilles.map((s,i)=>'<Relationship Id="rId'+(i+1)+'" Type="'+ns+'officeDocument/2006/relationships/worksheet" Target="worksheets/sheet'+(i+1)+'.xml"/>').join('')
+    +'<Relationship Id="rId'+(feuilles.length+1)+'" Type="'+ns+'officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'});
+  f.push({nom:'xl/styles.xml', data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="'+ns+'spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="49" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="49" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1" applyNumberFormat="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>'});
+  feuilles.forEach((s,i)=>f.push({nom:'xl/worksheets/sheet'+(i+1)+'.xml', data:xlFeuille(s.lignes, s.largeurs)}));
+  return xlZip(f);
+}
+// ── Lecture d'un .xlsx (aussi après modification dans Excel : fichiers compressés) ou d'un .csv ──
+async function xlDezip(buf){
+  const u8=new Uint8Array(buf), dv=new DataView(buf); let e=-1;
+  for(let i=u8.length-22;i>=Math.max(0,u8.length-66000);i--){ if(dv.getUint32(i,true)===0x06054b50){ e=i; break; } }
+  if(e<0) throw new Error('fichier Excel illisible');
+  const n=dv.getUint16(e+10,true); let p=dv.getUint32(e+16,true); const out={}, dec=new TextDecoder();
+  for(let k=0;k<n;k++){
+    const meth=dv.getUint16(p+10,true), taille=dv.getUint32(p+20,true), ln=dv.getUint16(p+28,true), lx=dv.getUint16(p+30,true), lc=dv.getUint16(p+32,true), loc=dv.getUint32(p+42,true);
+    const nom=dec.decode(u8.subarray(p+46,p+46+ln)); p += 46+ln+lx+lc;
+    const debut=loc+30+dv.getUint16(loc+26,true)+dv.getUint16(loc+28,true);
+    out[nom] = {meth, brut:u8.subarray(debut,debut+taille)};
+  }
+  return async nom=>{ const f=out[nom]; if(!f) return null;
+    if(f.meth===0) return dec.decode(f.brut);
+    const s=new Blob([f.brut]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+    return dec.decode(await new Response(s).arrayBuffer()); };
+}
+async function xlLireClasseur(buf){
+  const lire=await xlDezip(buf), dp=new DOMParser(), X=t=>dp.parseFromString(t||'<x/>','application/xml');
+  const sst=[]; const ss=await lire('xl/sharedStrings.xml');
+  if(ss) Array.from(X(ss).getElementsByTagName('si')).forEach(si=>sst.push(Array.from(si.getElementsByTagName('t')).map(t=>t.textContent).join('')));
+  const wb=X(await lire('xl/workbook.xml')), rels=X(await lire('xl/_rels/workbook.xml.rels')), cible={};
+  Array.from(rels.getElementsByTagName('Relationship')).forEach(r=>{ cible[r.getAttribute('Id')]=r.getAttribute('Target'); });
+  const feuilles=[];
+  for(const s of Array.from(wb.getElementsByTagName('sheet'))){
+    const id=s.getAttribute('r:id')||s.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships','id');
+    let t=cible[id]||''; t = t.startsWith('/') ? t.slice(1) : 'xl/'+t.replace(/^\.\//,'');
+    const doc=X(await lire(t)), lignes=[];
+    Array.from(doc.getElementsByTagName('row')).forEach(row=>{ const l=[];
+      Array.from(row.getElementsByTagName('c')).forEach(c=>{ const ty=c.getAttribute('t'), v=c.getElementsByTagName('v')[0];
+        const val = ty==='s' ? (sst[Number(v&&v.textContent)]||'') : ty==='inlineStr' ? Array.from(c.getElementsByTagName('t')).map(x=>x.textContent).join('') : (v?v.textContent:'');
+        l[xlColIndex(c.getAttribute('r'))]=val; });
+      lignes.push(Array.from(l,x=>x==null?'':String(x))); });
+    feuilles.push({nom:s.getAttribute('name')||'', lignes});
+  }
+  return feuilles;
+}
+function xlLireCsv(txt){
+  txt = txt.replace(/^﻿/,''); const l0=txt.split('\n')[0], sep = l0.split(';').length >= l0.split(',').length ? ';' : ',';
+  const lignes=[]; let l=[], v='', q=false;
+  for(let i=0;i<txt.length;i++){ const c=txt[i];
+    if(q){ if(c==='"'){ if(txt[i+1]==='"'){ v+='"'; i++; } else q=false; } else v+=c; }
+    else if(c==='"') q=true; else if(c===sep){ l.push(v); v=''; }
+    else if(c==='\n'){ l.push(v.replace(/\r$/,'')); lignes.push(l); l=[]; v=''; } else v+=c; }
+  if(v||l.length){ l.push(v); lignes.push(l); }
+  return [{nom:'Enseignants', lignes}];
+}
+// Fonction pure (testée) : feuilles → {ecole:{id:valeur}, profs:[{nom,…,moi}]}
+function xlInterpreter(feuilles){
+  const res={ecole:{}, profs:[]};
+  const fP = feuilles.find(f=>/enseignant/i.test(f.nom)) || feuilles.find(f=>(f.lignes[0]||[]).some(h=>xlNorm(h)==='nom')) || feuilles[0];
+  const fE = feuilles.find(f=>f!==fP && /tablissement/i.test(f.nom));
+  if(fE) fE.lignes.forEach(l=>{ const c=XL_ECOLE.find(x=>xlNorm(x[1])===xlNorm(l[0])); if(c) res.ecole[c[0]]=String(l[1]||'').trim(); });
+  if(!fP || !fP.lignes.length) return res;
+  const ent=fP.lignes[0].map(xlNorm), idx={};
+  XL_COLS.forEach(([k,lib])=>{ let i=ent.indexOf(xlNorm(lib)); if(i<0) i=ent.findIndex(h=>h && h.startsWith(xlNorm(lib).slice(0,6))); if(i>=0) idx[k]=i; });
+  if(idx.nom==null || idx.prenom==null) throw new Error('colonnes « Nom » et « Prénom » introuvables');
+  fP.lignes.slice(1).forEach(l=>{
+    const g=k=>idx[k]==null?'':String(l[idx[k]]==null?'':l[idx[k]]).trim();
+    if(!g('nom') && !g('prenom')) return;
+    let mat=g('matricule').replace(/[\s.\-]/g,''); if(/^\d{9,10}$/.test(mat)) mat=mat.padStart(11,'0');
+    res.profs.push({ nom:g('nom'), prenom:g('prenom'), naissance:xlDateVersIso(g('naissance')), matricule:mat, rue:g('rue'), nmaison:g('nmaison'),
+      cp:g('cp'), ville:g('ville'), email:g('email'), tel:g('tel'), niveau:xlChoix(g('niveau'),NIVEAUX), branche:xlChoix(g('branche'),BRANCHES),
+      moi:/^(oui|o|x|yes|ja|1|true|vrai)$/i.test(g('moi')) });
+  });
+  return res;
+}
+function xlListeActuelle(){
+  const moi=document.querySelector('input[name="moi"]:checked');
+  return fiches().map(f=>{ const o={}; f.querySelectorAll('[data-k]').forEach(el=>{ o[el.dataset.k]=el.value.trim(); }); o.moi=!!moi && f.dataset.id===moi.value; return o; })
+    .filter(o=>XL_COLS.some(([k])=>k!=='moi' && o[k]));
+}
+function telechargerListe(){
+  const profs=xlListeActuelle();
+  if(!profs.length){ alert('Aucun enseignant à enregistrer : remplissez d\'abord au moins une fiche.'); return; }
+  const lignes=[XL_COLS.map(c=>c[1])].concat(profs.map(p=>XL_COLS.map(([k])=> k==='naissance' ? dateFr(p.naissance) : k==='moi' ? (p.moi?'oui':'') : (p[k]||''))));
+  const ecole=[['Rubrique','Valeur']].concat(XL_ECOLE.map(([id,lib])=>[lib, (document.getElementById(id)||{}).value||'']));
+  const blob=xlClasseur([{nom:'Enseignants', lignes, largeurs:[18,16,16,15,26,6,11,18,30,15,26,30,10]},{nom:'Établissement', lignes:ecole, largeurs:[32,50]}]);
+  const d=new Date(), p=n=>String(n).padStart(2,'0');
+  const nomEcole=(val('e-nom')||'mon établissement').replace(/[\\/:*?"<>|]/g,'-').slice(0,50);
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='Educpass Profs Relais - '+nomEcole+' - '+d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'.xlsx';
+  document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+  xlMsg('💾 Liste enregistrée ('+profs.length+' enseignant'+(profs.length>1?'s':'')+'). Gardez ce fichier : l\'an prochain, cliquez sur « 📂 Reprendre ma liste » pour tout retrouver.', 'ok');
+}
+function xlMsg(t, type){ document.querySelectorAll('.xl-msg').forEach(m=>{ m.textContent=t; m.className='xl-msg '+(type||''); }); }
+function remplirDepuis(res){
+  Object.entries(res.ecole).forEach(([id,v])=>{ const el=document.getElementById(id); if(el && v) el.value=v; });
+  document.getElementById('liste-profs').innerHTML='';
+  res.profs.forEach(p=>{ const id=ajouterFiche(), f=document.getElementById('prof-'+id);
+    f.querySelectorAll('[data-k]').forEach(el=>{ const v=p[el.dataset.k]; if(v!=null) el.value=v; });
+    if(p.moi){ const r=f.querySelector('input[name="moi"]'); if(r) r.checked=true; } });
+  while(fiches().length < MINIMUM) ajouterFiche();
+  document.querySelectorAll('#form-relais .f.invalide').forEach(f=>f.classList.remove('invalide'));
+  renumeroter();
+}
+async function reprendreListe(fichier){
+  if(!fichier) return;
+  try{
+    const feuilles = /\.csv$/i.test(fichier.name) ? xlLireCsv(await fichier.text()) : await xlLireClasseur(await fichier.arrayBuffer());
+    const res=xlInterpreter(feuilles);
+    if(!res.profs.length){ xlMsg('❌ Aucun enseignant trouvé dans ce fichier.', 'err'); return; }
+    if(xlListeActuelle().length && !confirm('Remplacer les fiches déjà remplies par les '+res.profs.length+' enseignants du fichier ?')) return;
+    remplirDepuis(res);
+    const incomplets=res.profs.filter(p=>!p.naissance||!p.niveau||!p.branche).length;
+    xlMsg('✅ '+res.profs.length+' enseignant'+(res.profs.length>1?'s':'')+' repris de votre fichier. Vérifiez les fiches, retirez ceux qui sont partis (🗑️ Retirer) et ajoutez les nouveaux (➕).'
+      +(incomplets?' ⚠️ '+incomplets+' fiche(s) à compléter (date, niveau ou branche).':''), 'ok');
+  }catch(e){ console.error(e); xlMsg('❌ Fichier illisible ('+(e&&e.message||e)+'). Utilisez le fichier Excel téléchargé depuis cette page.', 'err'); }
+}
+// ── Impression : récapitulatif complet (avant ou après l'envoi) ──
+let _dernierEnvoi = null;
+function imprimerRecap(){
+  const profs = lireFiches().filter(p=>XL_COLS.some(([k])=>k!=='moi' && p[k]));
+  const c = calculer(profs.length), ref = _dernierEnvoi ? _dernierEnvoi.ref : '', auj = new Date().toLocaleDateString('fr-FR');
+  const t = (l,v)=>'<tr><th>'+esc(l)+'</th><td>'+esc(v||'—')+'</td></tr>';
+  const h = '<h1>Inscription groupée Profs Relais — Educpass</h1>'
+    + '<p class="imp-sous">'+(ref ? 'Référence : <b>'+esc(ref)+'</b> — envoyée le '+esc(auj) : 'Brouillon (pas encore envoyé) — imprimé le '+esc(auj))+'</p>'
+    + '<div class="imp-2col"><table class="imp-info"><caption>Établissement</caption>'+t('Nom',val('e-nom'))+t('Adresse',val('e-adresse'))+t('Téléphone',val('e-tel'))+t('E-mail',val('e-mail'))+'</table>'
+    + '<table class="imp-info"><caption>Prof relais</caption>'+t('Nom',(val('r-nom').toUpperCase()+' '+val('r-prenom')).trim())+t('Téléphone',val('r-tel'))+t('E-mail',val('r-mail'))+'</table></div>'
+    + '<table class="imp-liste"><thead><tr><th>#</th><th>Nom</th><th>Prénom</th><th>Naissance</th><th>Matricule</th><th>Adresse</th><th>E-mail / Tél.</th><th>Niveau / Branche</th><th></th></tr></thead><tbody>'
+    + profs.map((p,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc((p.nom||'').toUpperCase())+'</td><td>'+esc(p.prenom)+'</td><td>'+esc(dateFr(p.naissance))+'</td><td>'+esc(p.matricule)+'</td><td>'
+        +esc([p.rue,p.nmaison].filter(Boolean).join(' ')+', '+[p.cp,p.ville].filter(Boolean).join(' '))+'</td><td>'+esc(p.email)+(p.tel?'<br>'+esc(p.tel):'')+'</td><td>'
+        +esc(p.niveau)+'<br>'+esc(p.branche)+'</td><td>'+(p.profRelais?'Prof relais ':'')+(p.gratuit?'<b>OFFERT</b>':'')+'</td></tr>').join('')
+    + '</tbody></table>'
+    + '<div class="imp-total">Enseignants : <b>'+c.n+'</b> — Offerts : <b>'+c.offerts+'</b> — Payants : <b>'+c.payants+'</b> × '+esc(euros(prix))+' — Total à verser : <b>'+esc(euros(c.total))+'</b><br><small>'+esc(texteTarif())+'</small></div>'
+    + '<div class="imp-banque"><b>Virement</b> — Bénéficiaire : '+esc(banque.benef)+' — IBAN : '+esc(banque.iban)+(banque.bic?' — BIC : '+esc(banque.bic):'')
+    + '<br>Communication : <b>'+(ref ? esc(ref+' '+val('e-nom')) : 'la référence vous sera donnée après l\'envoi du formulaire')+'</b></div>';
+  let box=document.getElementById('impression');
+  if(!box){ box=document.createElement('div'); box.id='impression'; document.body.appendChild(box); }
+  box.innerHTML=h; window.print();
+}
+document.getElementById('btn-xl-dl').addEventListener('click', telechargerListe);
+document.getElementById('btn-xl-reprendre').addEventListener('click', ()=>document.getElementById('xl-fichier').click());
+document.getElementById('xl-fichier').addEventListener('change', e=>{ reprendreListe(e.target.files[0]); e.target.value=''; });
+document.getElementById('btn-imprimer').addEventListener('click', imprimerRecap);
+document.getElementById('btn-conf-imprimer').addEventListener('click', imprimerRecap);
+document.getElementById('btn-conf-dl').addEventListener('click', telechargerListe);
+
 
 // ── Démarrage : 10 fiches + prix lu dans Airtable (modifiable dans le Back-office) ──
 for(let i=0;i<MINIMUM;i++) ajouterFiche();
