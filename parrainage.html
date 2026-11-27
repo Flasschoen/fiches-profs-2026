@@ -84,7 +84,7 @@ input:focus,select:focus,button:focus-visible{outline:3px solid var(--gold);outl
   <section class="card hero">
     <div>
       <h1 data-nl="Een collega brengt je aan: je Educpass-pas&lt;span class=&quot;z-annee&quot;&gt; 2027&lt;/span&gt; voor &lt;span class=&quot;z-prix&quot;&gt;30&lt;/span&gt; €">Un collègue vous parraine&nbsp;: votre passeport Educpass<span class="z-annee"> 2027</span> à <span class="z-prix">30</span> €</h1>
-      <p class="lead" data-nl="Gratis toegang bij onze partners (musea, pretparken…) voor jezelf en om je schooluitstappen voor te bereiden, &lt;span class=&quot;z-lieu&quot;&gt;in België en Luxemburg&lt;/span&gt;.">Entrées gratuites chez nos partenaires (musées, parcs d'attractions…) pour vous et pour préparer vos sorties scolaires, <span class="z-lieu">en Belgique et au Luxembourg</span>.</p>
+      <p class="lead" data-nl="Gratis toegang bij onze partners (musea, pretparken…) voor jezelf en om je schooluitstappen voor te bereiden, &lt;span class=&quot;z-lieu&quot;&gt;in België, Luxemburg en Frankrijk&lt;/span&gt;.">Entrées gratuites chez nos partenaires (musées, parcs d'attractions…) pour vous et pour préparer vos sorties scolaires, <span class="z-lieu">en Belgique, au Luxembourg et en France</span>.</p>
       <p class="bonus" data-nl="🎁 Schrijf je nu in: je betaalt het lidgeld 2027 en je geniet vanaf vandaag gratis van je pas, voor de rest van 2026.">🎁 Inscrivez-vous maintenant : vous payez la cotisation 2027 et vous profitez gratuitement de votre passeport dès aujourd'hui, pour le reste de 2026.</p>
     </div>
     <div class="prix"><s><span class="z-normal">45</span> €</s><b><span class="z-prix">30</span> €</b><small data-nl="voor een nieuw aangebracht lid">pour un nouveau membre parrainé</small></div>
@@ -251,7 +251,7 @@ function appliquerZone(d){
   document.querySelectorAll('.z-annee').forEach(e=>e.textContent= fr ? '' : ' 2027');
   document.querySelectorAll('.z-pays').forEach(e=>e.textContent= fr ? 'en France' : T('en Belgique ou au Luxembourg','in België of Luxemburg'));
   document.querySelectorAll('.z-ordre').forEach(e=>e.textContent= fr ? '2026 ou 2027' : '2027');
-  document.querySelectorAll('.z-lieu').forEach(e=>e.textContent= fr ? 'en France' : T('en Belgique et au Luxembourg','in België en Luxemburg'));
+  document.querySelectorAll('.z-lieu').forEach(e=>e.textContent= fr ? 'en France' : T('en Belgique, au Luxembourg et en France','in België, Luxemburg en Frankrijk'));
   const sel = $('f-pays');
   [...sel.options].forEach(o=>{ o.hidden = fr ? o.value!=='France' : o.value==='France'; });
   sel.value = fr ? 'France' : (sel.value==='France' ? 'Belgique' : sel.value);
