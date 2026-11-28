@@ -952,7 +952,8 @@ function remplirMenusHero(){
       pays.map(x => lien(x.insHref, x.ins, { soon:x.insSoon, choisi:x.p === PAYS })).join('')
     + (PAYS === 'BE' ? lien(avantBascule() ? lienWinDev() : null, T('Éducateur sans matricule','Opvoeder zonder stamnummer', 'Erzieher ohne Matrikelnummer'), avantBascule() ? {} : { soon:ouv }) : '')
     + '<div class="sep">' + T('Parrainage','Aanbrengen', 'Empfehlung') + '</div>'
-    + lien(lienParrainage(), T('🤝 Parrainé(e) par un collègue ?','🤝 Aangebracht door een collega?', '🤝 Von einem Kollegen empfohlen?'));
+    // 2026-11-28 (Marc) : avant la bascule, l'inscription d'un parrainé BE/LU passe par WinDev comme les autres (France : nouveau site)
+    + lien((PAYS !== 'FR' && avantBascule()) ? lienWinDev() : lienParrainage(), T('🤝 Inscription avec parrainage','🤝 Inschrijving met aanbrenger', '🤝 Anmeldung mit Empfehlung'));
   document.getElementById('connexion-dropdown').innerHTML =
       pays.map(x => lien(lienConnexion(), x.ins, { choisi:x.p === PAYS })).join('');
 }
