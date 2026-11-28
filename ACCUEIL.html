@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Accueil — Educpass</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Work+Sans:wght@400;500;600;700&family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@400;700&display=swap">
 <style>
 :root{
   --paper:#faf5e8;
@@ -230,6 +230,8 @@ h1.title{
   box-sizing:border-box;
 }
 .sponsor-block.aligne{align-self:start;min-height:0;}
+/* 2026-11-14 (Marc) : titre facultatif au-dessus du logo (champ « Titre » de la fiche sponsor, ex. PROFS-CONTACTS) */
+.sponsor-block .sponsor-titre{font-family:'Fraunces',Georgia,serif;font-weight:800;font-size:20px;letter-spacing:.04em;color:#0f3d3e;text-align:center;line-height:1.1;}
 .sponsor-block .sponsor-logo{max-width:86%;max-height:62%;object-fit:contain;
   /* 2026-10-03 : cadre blanc arrondi, pour qu'un logo à fond blanc ne fasse plus un rectangle brut sur le mauve */
   background:#fff;border-radius:10px;padding:8px 12px;box-sizing:border-box;box-shadow:0 2px 8px rgba(19,36,32,.10);}
@@ -322,6 +324,11 @@ h1.title{
 #choix-pays .cp-btn small{display:block;font-weight:500;font-size:12px;color:#778;margin-top:1px;}
 body.cp-ouvert{overflow:hidden;}
 </style>
+<script>/* 2026-11-28 (demande de Marc) : polices autorisées dans les textes mis en forme */
+const ED_POLICES = {'work sans':"'Work Sans',Arial,sans-serif", 'fraunces':"'Fraunces',Georgia,serif", 'arial':"Arial,Helvetica,sans-serif",
+  'georgia':"Georgia,serif", 'montserrat':"'Montserrat',Arial,sans-serif", 'playfair display':"'Playfair Display',Georgia,serif"};
+function edPolice(v){ const f=String(v||'').split(',')[0].replace(/["']/g,'').trim().toLowerCase(); return ED_POLICES[f]||''; }
+</script>
 </head>
 <body>
 <!-- 2026-11-13 (réunion d'équipe) : choix obligatoire du profil à chaque visite (1 fois par session) -->
@@ -446,6 +453,7 @@ body.cp-ouvert{overflow:hidden;}
          4 boutons, meme largeur qu'eux ; meme hauteur que la banniere par
          etirement automatique de la grille CSS (align-items:stretch par defaut). -->
     <div class="sponsor-block" id="sponsor-block">
+      <div class="sponsor-titre" id="sponsor-titre" hidden></div>
       <img src="assets/logo-credit-mutuel.png" alt="Sponsor" class="sponsor-logo" id="sponsor-logo-img">
       <button type="button" class="sponsor-action-btn" id="sponsor-action-btn">Action</button>
     </div>
@@ -774,8 +782,10 @@ function phraseNettoyer(html){
         const nm=at.name.toLowerCase();
         if(c.tagName==='A' && nm==='href'){ if(!/^(https?:|mailto:|tel:)/i.test(at.value.trim())) c.removeAttribute('href'); return; }
         if(c.tagName==='FONT' && (nm==='color'||nm==='size')) return;
+        if(c.tagName==='FONT' && nm==='face'){ const pf=edPolice(at.value); if(pf) c.setAttribute('face', pf.replace(/'/g,'')); else c.removeAttribute('face'); return; }
         if(nm==='style'){
           const keep=[]; at.value.split(';').forEach(d=>{ const p=d.split(':'); if(p.length<2) return; const k=p[0].trim().toLowerCase(), v=p.slice(1).join(':').trim();
+            if(k==='font-family'){ const pf=edPolice(v); if(pf) keep.push('font-family:'+pf); return; }
             if(/^(color|background-color|font-weight|font-style|text-decoration|text-decoration-line|font-size)$/.test(k) && !/url\(|expression/i.test(v)) keep.push(k+':'+v); });
           if(keep.length) c.setAttribute('style',keep.join(';')); else c.removeAttribute('style'); return;
         }
@@ -823,7 +833,9 @@ if(window.ResizeObserver){
   document.addEventListener('DOMContentLoaded', ()=>{ const c=document.getElementById('carousel'); if(c){ _roSponsor.observe(c); _roSponsor.observe(c.parentElement); } alignerSponsor(); });
 }
 let _sponsorDemande = 0;
-function afficherSponsor(logo, texte, lien){
+function afficherSponsor(logo, texte, lien, titre){
+  const tt = document.getElementById('sponsor-titre');
+  if(tt){ tt.textContent = titre || ''; tt.hidden = !titre; }
   const img = document.getElementById('sponsor-logo-img');
   const btn = document.getElementById('sponsor-action-btn');
   const visible = !!logo;
@@ -836,8 +848,8 @@ function afficherSponsor(logo, texte, lien){
 async function chargerSponsor(){
   const n = ++_sponsorDemande;                       // ignore une réponse arrivée après un changement de pays
   const d = SPONSORS[PAYS] || {};
-  let logo = d.logo, texte = d.texte, lien = d.lien;
-  afficherSponsor(logo, texte, lien);
+  let logo = d.logo, texte = d.texte, lien = d.lien, titre = '';
+  afficherSponsor(logo, texte, lien, titre);
   if(!d.id) return;
   try{
     const data = await atFetch(CONTENU_API + '/' + d.id);
@@ -847,8 +859,9 @@ async function chargerSponsor(){
     if(l && l.url) logo = (l.thumbnails && l.thumbnails.large && l.thumbnails.large.url) || l.url;
     if(f['Texte bouton']) texte = f['Texte bouton'];
     if(f['Lien bouton']) lien = f['Lien bouton'];
+    if(f['Titre']) titre = f['Titre'];
     if(!f['Actif']) logo = '';                       // case « Afficher ce bloc » décochée au back-office : bloc masqué
-    afficherSponsor(logo, texte, lien);
+    afficherSponsor(logo, texte, lien, titre);
   }catch(e){
     // Silencieux : les valeurs par défaut restent affichées.
   }
