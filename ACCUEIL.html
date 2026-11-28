@@ -934,7 +934,7 @@ function remplirMenusHero(){
   const pays = [
     { p:'BE', ins:T('Enseignant belge','Belgische leerkracht', 'Belgische Lehrkraft'), insHref: avantBascule() ? lienWinDev() : null, insSoon: avantBascule() ? null : ouv },
     { p:'LU', ins:T('Enseignant luxembourgeois','Luxemburgse leerkracht', 'Luxemburgische Lehrkraft'), insHref: avantBascule() ? lienWinDev() : null, insSoon: avantBascule() ? null : ouv },
-    { p:'FR', ins:T('Enseignant français','Franse leerkracht', 'Französische Lehrkraft'), insHref:'inscription-fr.html' },
+    { p:'FR', ins:T('Enseignant français','Franse leerkracht', 'Französische Lehrkraft'), insHref: avantBascule() ? lienWinDev() : 'inscription-fr.html' }, // 2026-11-28 (Marc) : jusqu'au 17/01/2027, les profs français s'inscrivent aussi sur WinDev
   ];
   // le pays choisi en premier
   pays.sort((a,b) => (a.p === PAYS ? -1 : b.p === PAYS ? 1 : 0));
@@ -952,8 +952,7 @@ function remplirMenusHero(){
       pays.map(x => lien(x.insHref, x.ins, { soon:x.insSoon, choisi:x.p === PAYS })).join('')
     + (PAYS === 'BE' ? lien(avantBascule() ? lienWinDev() : null, T('Éducateur sans matricule','Opvoeder zonder stamnummer', 'Erzieher ohne Matrikelnummer'), avantBascule() ? {} : { soon:ouv }) : '')
     + '<div class="sep">' + T('Parrainage','Aanbrengen', 'Empfehlung') + '</div>'
-    // 2026-11-28 (Marc) : avant la bascule, l'inscription d'un parrainé BE/LU passe par WinDev comme les autres (France : nouveau site)
-    + lien((PAYS !== 'FR' && avantBascule()) ? lienWinDev() : lienParrainage(), T('🤝 Inscription avec parrainage','🤝 Inschrijving met aanbrenger', '🤝 Anmeldung mit Empfehlung'));
+    + lien(lienParrainage(), T('🤝 Parrainé(e) par un collègue ?','🤝 Aangebracht door een collega?', '🤝 Von einem Kollegen empfohlen?'));
   document.getElementById('connexion-dropdown').innerHTML =
       pays.map(x => lien(lienConnexion(), x.ins, { choisi:x.p === PAYS })).join('');
 }
